@@ -106,3 +106,9 @@ therefore never schedules the whole future — it maintains a rolling window:
 - Recurrence and scheduler-window logic are pure Dart and must stay unit
   testable without an emulator.
 - Repository tests use `NativeDatabase.memory()`.
+- Widget tests that touch the database go through `test/helpers/harness.dart`.
+  Two drift-under-`testWidgets` traps live there, both of which present as a
+  hang rather than a failure: a cancelled query stream schedules a timer that
+  needs the fake clock still running, and `AppDatabase.close()` deadlocks
+  inside a test body. Never use `pumpAndSettle` on a screen showing an
+  indeterminate progress indicator.

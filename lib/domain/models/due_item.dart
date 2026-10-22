@@ -17,7 +17,10 @@ class DueItem {
   final Reminder reminder;
   final Pet pet;
 
-  /// Whether this was due before today.
-  bool isOverdue(DateTime today) =>
-      event.scheduledFor.toLocal().isBefore(today);
+  /// Whether this was due on an earlier day than [startOfToday].
+  ///
+  /// Takes the start of the day, not "now": something due today at 09:00 is
+  /// not overdue at 14:00, it is still today's.
+  bool isOverdue(DateTime startOfToday) =>
+      event.scheduledFor.toLocal().isBefore(startOfToday);
 }

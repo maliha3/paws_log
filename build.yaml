@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Store date times as ISO-8601 text rather than unix seconds. In the
+          # integer format drift hands values back as system-local DateTimes,
+          # which quietly breaks the "all timestamps are UTC" rule in
+          # CLAUDE.md; in text format a UTC value round-trips as UTC.
+          store_date_time_values_as_text: true

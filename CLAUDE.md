@@ -51,7 +51,13 @@ Rules:
 ## Ids and time
 
 - Ids are UUID v4 strings, generated in the repository.
-- All timestamps stored as UTC `DateTime`.
+- All timestamps stored as UTC `DateTime`. Drift is configured with
+  `store_date_time_values_as_text` (see `build.yaml`) because the default
+  integer format hands values back as system-local `DateTime`s.
+- Zone-aware `TZDateTime` stays inside the date maths. Everything crossing a
+  repository boundary is a plain UTC `DateTime` — use `toPlainUtc()`, not
+  `toUtc()`, which returns another `TZDateTime` and compares unequal to what
+  the database returns.
 - Occurrences keep their **wall-clock** time across DST, so recurrence
   arithmetic runs in `tz.TZDateTime` in the device's zone, not raw UTC.
 - `timeOfDayMinutes` is minutes past local midnight. Default 09:00.
@@ -67,6 +73,13 @@ A reminder has a `repeatUnit` (none/days/weeks/months/years), a
 - Yearly rules on Feb 29 fall to Feb 28 in common years, anchor unchanged.
 - **Overdue policy: skip ahead.** A 3-month reminder five months late advances
   to the next future date from the anchor. Missed cycles are not replayed.
+- A new reminder's first occurrence is its anchor, even if that is in the past,
+  so "the vaccine was due last week" shows as overdue instead of jumping a
+  year. Skip-ahead applies when completing, not when creating.
+- An active reminder has exactly one `pending` event. Completing it closes
+  that event and opens the next.
+- A snooze moves when a notification fires, not the due date: the event stays
+  `pending` and stays on Today.
 
 ## Notifications
 

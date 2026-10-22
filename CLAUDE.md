@@ -88,8 +88,14 @@ therefore never schedules the whole future — it maintains a rolling window:
 
 - **56** earliest pending occurrences scheduled at any time.
 - **8** slots reserved for snoozes fired at runtime.
-- The last scheduled notification doubles as a refill trigger, so the window
-  advances even if the app is not opened for months.
+- **The window cannot refill itself.** Neither platform runs Dart when a local
+  notification is merely *delivered*, so there is no way to top the window up
+  from the background. It is rebuilt on launch, on resume, after any write
+  that moves a due date, and when a notification action is pressed — that
+  last one does run Dart, on a background isolate, even with the app closed.
+  56 slots is years of cover for a few reminders per pet at monthly to yearly
+  cadence, so this is a non-issue in practice. A genuine background refill
+  would need WorkManager and BGTaskScheduler, which v1 does not carry.
 - Notification ids are a stable hash of the event id, making cancel and
   reschedule idempotent.
 - Actions on every reminder: **Done**, **Snooze 1 hour**, **Snooze to

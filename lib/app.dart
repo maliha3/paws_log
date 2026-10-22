@@ -6,8 +6,32 @@ import 'data/providers.dart';
 import 'features/onboarding/welcome_screen.dart';
 import 'features/today/today_screen.dart';
 
-class PawsLogApp extends StatelessWidget {
+class PawsLogApp extends ConsumerStatefulWidget {
   const PawsLogApp({super.key});
+
+  @override
+  ConsumerState<PawsLogApp> createState() => _PawsLogAppState();
+}
+
+class _PawsLogAppState extends ConsumerState<PawsLogApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // The notification window can go stale while the app is backgrounded —
+    // occurrences fire, and the OS does not tell us. Rebuild it on the way
+    // back in.
+    _lifecycle = AppLifecycleListener(
+      onResume: () => ref.read(scheduleSyncProvider).syncAll(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp(

@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PawsLog needs access to your photos so you can add a picture of your cat.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PawsLog needs access to your camera so you can take a picture of your cat.</string>
 </dict>
 </plist>

@@ -148,6 +148,32 @@ void main() {
       lessThanOrEqualTo(AppConstants.iosPendingNotificationLimit),
     );
 
+    // 6 — The Phase 2 screens, on the real stack: a second tab, a profile
+    // that gathers everything, and a weighing written through the real
+    // sqlite file.
+    await tapAndPump(tester, find.text('Pets'));
+    expect(find.text('Mochi'), findsWidgets);
+    await tapAndPump(tester, find.text('Mochi').last);
+
+    for (final section in [
+      'Weight',
+      'Medicines',
+      'Vaccinations',
+      'Vet visits',
+    ]) {
+      expect(find.text(section), findsOneWidget, reason: section);
+    }
+    expect(
+      find.text('Yearly vaccine'),
+      findsOneWidget,
+      reason: 'completing it earlier filled in the vaccination history',
+    );
+
+    await tapAndPump(tester, find.byTooltip('Add a weighing'));
+    await tester.enterText(find.widgetWithText(TextField, 'Weight'), '4.2');
+    await tapAndPump(tester, find.text('Save'));
+    expect(find.text('4.20'), findsOneWidget);
+
     // Optionally hold the final frame so a screenshot can be taken from
     // outside; the test tears the app down as soon as it returns.
     const holdSeconds = int.fromEnvironment('PAWSLOG_HOLD_SECONDS');

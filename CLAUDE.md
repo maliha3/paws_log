@@ -165,6 +165,10 @@ the native sqlite build, path_provider's documents directory, the device
 timezone lookup, and notifications actually reaching the OS. Nothing else
 covers those.
 
+iOS deployment target is **14.0**, raised from Flutter's default 13.0 because
+file_picker requires it. This only shows up as a build failure on a device —
+`flutter analyze` and the unit tests are blind to it.
+
 Two flags it needs:
 
 - `--dart-define=PAWSLOG_SUPPRESS_PERMISSION_PROMPT=true`. An integration test

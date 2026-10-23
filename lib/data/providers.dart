@@ -74,6 +74,15 @@ final settingsRepositoryProvider = Provider<SettingsRepository>(
   (ref) => SettingsRepository(ref.watch(appDatabaseProvider)),
 );
 
+/// Whether the paid features are unlocked.
+///
+/// Stubbed — see [SettingsRepository.watchIsPremium]. Defaults to false while
+/// the first read is in flight, so a gated action is never let through by
+/// accident.
+final isPremiumProvider = StreamProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).watchIsPremium(),
+);
+
 /// The unit weights are shown in. Storage is always grams.
 final weightUnitProvider = StreamProvider<WeightUnit>(
   (ref) => ref.watch(settingsRepositoryProvider).watchWeightUnit(),

@@ -2,14 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/widgets/pet_avatar.dart';
+import '../../domain/models/pet.dart';
 import '../../data/providers.dart';
 import '../backup/backup_screen.dart';
+import '../premium/premium_gate.dart';
 import 'pet_detail_screen.dart';
 import 'pet_edit_screen.dart';
 
 /// The pets the owner is tracking.
 class PetsScreen extends ConsumerWidget {
   const PetsScreen({super.key});
+
+  /// The first pet is free; the rest are not.
+  ///
+  /// The count comes from the pets actually on screen, so restoring a backup
+  /// made on a paid install leaves every pet visible and merely stops another
+  /// being added.
+  Future<void> _addPet(
+    BuildContext context,
+    WidgetRef ref,
+    List<Pet> existing,
+  ) async {
+    void open() => Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (context) => const PetEditScreen()),
+    );
+
+    if (existing.length < freePetLimit) {
+      open();
+      return;
+    }
+    await runIfUnlocked(
+      context,
+      ref,
+      feature: PremiumFeature.extraPets,
+      action: open,
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,9 +59,7 @@ class PetsScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (context) => const PetEditScreen()),
-        ),
+        onPressed: () => _addPet(context, ref, pets.value ?? const []),
         icon: const Icon(Icons.add),
         label: const Text('Add a pet'),
       ),

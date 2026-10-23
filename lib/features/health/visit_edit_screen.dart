@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../data/providers.dart';
 import '../../domain/models/vet_visit.dart';
 import '../../services/photo_store.dart';
+import '../premium/premium_gate.dart';
 
 /// Records a vet visit, and doubles as its detail view.
 class VisitEditScreen extends ConsumerStatefulWidget {
@@ -70,7 +71,14 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
     }
   }
 
-  Future<void> _addPhotos() async {
+  Future<void> _addPhotos() => runIfUnlocked(
+    context,
+    ref,
+    feature: PremiumFeature.visitPhotos,
+    action: _pickAndAttach,
+  );
+
+  Future<void> _pickAndAttach() async {
     final paths = await ref
         .read(photoStoreProvider)
         .pickMany(folder: PhotoStore.visitAttachments);

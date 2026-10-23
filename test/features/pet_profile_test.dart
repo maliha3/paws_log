@@ -6,6 +6,7 @@ import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
+import 'package:paws_log/data/repositories/settings_repository.dart';
 import 'package:paws_log/data/repositories/weight_repository.dart';
 import 'package:paws_log/domain/models/medicine.dart';
 import 'package:paws_log/domain/models/pet.dart';
@@ -83,6 +84,9 @@ void main() {
 
   testWidgets('a second pet can be added', (tester) async {
     await pets.create(name: 'Mochi');
+    // Past the first pet this is a paid feature; the gate itself is covered
+    // in premium_gate_test.dart.
+    await SettingsRepository(db).setPremium(value: true);
     await openPets(tester);
 
     await tapAndSettle(tester, find.text('Add a pet'));
@@ -99,6 +103,7 @@ void main() {
 
   testWidgets('a name is required to add a pet', (tester) async {
     await pets.create(name: 'Mochi');
+    await SettingsRepository(db).setPremium(value: true);
     await openPets(tester);
 
     await tapAndSettle(tester, find.text('Add a pet'));

@@ -12,6 +12,7 @@ class SettingsRepository {
   final AppDatabase _db;
 
   static const String weightUnitKey = 'weight_unit';
+  static const String premiumKey = 'is_premium';
 
   Stream<WeightUnit> watchWeightUnit() =>
       _watch(weightUnitKey).map(_parseWeightUnit);
@@ -34,6 +35,20 @@ class SettingsRepository {
       return WeightUnit.kilograms;
     }
   }
+
+  /// Whether the owner has unlocked the paid features.
+  ///
+  /// Stubbed: nothing checks a receipt yet, the value is simply stored. It
+  /// lives in the settings table so both paths are reachable while the real
+  /// purchase flow does not exist, and so the gate behaves consistently
+  /// across restarts.
+  Stream<bool> watchIsPremium() =>
+      _watch(premiumKey).map((stored) => stored == 'true');
+
+  Future<bool> isPremium() async => await _read(premiumKey) == 'true';
+
+  Future<void> setPremium({required bool value}) =>
+      _write(premiumKey, value.toString());
 
   Stream<String?> _watch(String key) => (_db.select(
     _db.appSettings,

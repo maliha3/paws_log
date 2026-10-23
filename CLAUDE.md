@@ -23,6 +23,27 @@ show "Confirm the schedule with your vet."
 
 No backend, no accounts, no analytics in v1. All data is local.
 
+## The premium gate
+
+`isPremium` is **stubbed**: nothing checks a receipt or talks to a store. The
+flag is a row in the settings table, which is why both halves of the app are
+reachable and testable before a purchase flow exists, and why the paywall's
+real button says purchases are unavailable rather than pretending to charge.
+A debug-only button flips the flag.
+
+Gated: a second pet, photos on a visit, the vet summary.
+
+- **Gates are on doing, never on seeing.** An owner whose access lapsed, or
+  who restored a backup made on a paid install, keeps every pet, photo and
+  record they already have; the app just stops letting them add more. Hiding
+  data someone entered would be taking it away.
+- The free pet comes through onboarding, which is never gated. With no pets
+  the app is in onboarding, so there is no Pets tab to add a first pet from.
+- The gate **fails closed**: an unreadable flag reads as locked.
+- Read the flag through `SettingsRepository`, not `isPremiumProvider`.
+  Nothing watches that provider, so reading it starts its subscription and
+  hands back `loading` — which locks out a paying owner on every tap.
+
 ## Layout
 
 Feature-first. Shared code goes down a layer, never sideways.

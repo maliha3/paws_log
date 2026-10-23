@@ -112,6 +112,9 @@ therefore never schedules the whole future — it maintains a rolling window:
 - Recurrence and scheduler-window logic are pure Dart and must stay unit
   testable without an emulator.
 - Repository tests use `NativeDatabase.memory()`.
+- A `group` body runs at collection time, before `setUpAll`, so anything
+  needing the timezone database must be a function rather than a group-level
+  `final`.
 - Widget tests that touch the database go through `test/helpers/harness.dart`.
   Two drift-under-`testWidgets` traps live there, both of which present as a
   hang rather than a failure: a cancelled query stream schedules a timer that

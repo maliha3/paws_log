@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/models/pet.dart';
+import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
 import 'repositories/pet_repository.dart';
 import 'repositories/reminder_event_repository.dart';
 import 'repositories/reminder_repository.dart';
+import 'repositories/settings_repository.dart';
 
 /// The database, opened once for the app's lifetime.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -38,6 +40,15 @@ final reminderEventRepositoryProvider = Provider<ReminderEventRepository>(
     ref.watch(appDatabaseProvider),
     scheduleSync: ref.watch(scheduleSyncProvider),
   ),
+);
+
+final settingsRepositoryProvider = Provider<SettingsRepository>(
+  (ref) => SettingsRepository(ref.watch(appDatabaseProvider)),
+);
+
+/// The unit weights are shown in. Storage is always grams.
+final weightUnitProvider = StreamProvider<WeightUnit>(
+  (ref) => ref.watch(settingsRepositoryProvider).watchWeightUnit(),
 );
 
 /// Active pets, live.

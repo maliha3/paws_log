@@ -7,8 +7,16 @@ import '../../core/constants.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
+import '../../domain/models/dose_log.dart';
 import '../../domain/repeat_rule.dart';
+import 'converters/minutes_list_converter.dart';
+import 'tables/app_settings.dart';
+import 'tables/dose_logs.dart';
+import 'tables/medicines.dart';
 import 'tables/pets.dart';
+import 'tables/vaccination_records.dart';
+import 'tables/vet_visits.dart';
+import 'tables/weight_entries.dart';
 import 'tables/reminder_events.dart';
 import 'tables/reminders.dart';
 
@@ -17,7 +25,20 @@ part 'app_database.g.dart';
 /// The app's single sqlite database.
 ///
 /// Only repositories talk to this; see the rules in CLAUDE.md.
-@DriftDatabase(tables: [Pets, Reminders, ReminderEvents])
+@DriftDatabase(
+  tables: [
+    Pets,
+    Reminders,
+    ReminderEvents,
+    Medicines,
+    DoseLogs,
+    VetVisits,
+    VisitAttachments,
+    VaccinationRecords,
+    WeightEntries,
+    AppSettings,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: AppConstants.databaseName));
 
@@ -25,10 +46,25 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Phase 2: medicines, the health log, vaccination history, weights
+        // and settings. All additive — nothing in v1 changes shape, so
+        // existing pets, reminders and their history carry straight over.
+        await m.createTable(medicines);
+        await m.createTable(doseLogs);
+        await m.createTable(vetVisits);
+        await m.createTable(visitAttachments);
+        await m.createTable(vaccinationRecords);
+        await m.createTable(weightEntries);
+        await m.createTable(appSettings);
+      }
+    },
     beforeOpen: (details) async {
       // The cascades on reminders and events are only honoured with foreign
       // keys switched on, and sqlite defaults them off per connection.

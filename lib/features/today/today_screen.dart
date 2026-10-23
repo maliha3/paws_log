@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/dose_schedule.dart';
 import '../../core/theme/category_palette.dart';
+import '../../core/widgets/cat_illustration.dart';
 import '../../core/widgets/paw_mark.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
@@ -70,9 +71,16 @@ class _NothingDue extends StatelessWidget {
         const SizedBox(height: 60),
         Column(
           children: [
-            const AnimatedPawMark(size: 72),
-            const SizedBox(height: 20),
-            Text('Nothing due today', style: theme.textTheme.titleLarge),
+            SleepingCat(
+                  size: 180,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.85),
+                  accent: theme.colorScheme.onPrimary,
+                )
+                .animate()
+                .fadeIn(duration: 450.ms)
+                .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOut),
+            const SizedBox(height: 24),
+            Text('All clear today', style: theme.textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
               'Reminders and doses turn up here on the day they are due.',

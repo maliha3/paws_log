@@ -66,7 +66,7 @@ void main() {
     await pets.create(name: 'Mochi');
     await pumpApp(tester);
 
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
 
     await disposeTree(tester);
   });
@@ -75,7 +75,7 @@ void main() {
     await seed(petName: 'Mochi', title: 'Deworming', dueInDays: 5);
     await pumpApp(tester);
 
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
     expect(find.text('Deworming'), findsNothing);
 
     await disposeTree(tester);
@@ -128,7 +128,7 @@ void main() {
 
     await tapAndSettle(tester, find.text('Done'));
 
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
     expect(find.text('Deworming done'), findsOneWidget, reason: 'the snackbar');
 
     final events = await db.select(db.reminderEvents).get();
@@ -150,7 +150,7 @@ void main() {
     await pumpApp(tester);
 
     await tapAndSettle(tester, find.text('Done'));
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
 
     await tapAndSettle(tester, find.text('Undo'));
 
@@ -186,7 +186,7 @@ void main() {
     await tapAndSettle(tester, find.byTooltip('More'));
     await tapAndSettle(tester, find.text('Skip'));
 
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
     final events = await db.select(db.reminderEvents).get();
     expect(
       events.where((e) => e.status == ReminderEventStatus.skipped),

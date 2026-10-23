@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../core/widgets/paw_mark.dart';
+import '../../core/widgets/cat_illustration.dart';
 import '../../core/widgets/pill_button.dart';
 import '../../core/widgets/soft_backdrop.dart';
 
@@ -32,10 +32,23 @@ class WelcomeScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const Spacer(flex: 2),
-                        const Halo(
-                          size: 200,
-                          child: AnimatedPawMark(size: 104),
-                        ),
+                        // The cat sits on a soft disc, the way the
+                        // reference rests its photo on a colour block.
+                        Halo(
+                              size: 230,
+                              child: SleepingCat(
+                                size: 190,
+                                color: theme.colorScheme.primary,
+                                accent: theme.colorScheme.onPrimary,
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(duration: 500.ms)
+                            .scale(
+                              begin: const Offset(0.85, 0.85),
+                              curve: Curves.easeOutBack,
+                              duration: 600.ms,
+                            ),
                         const SizedBox(height: 32),
                         Text(
                               'PawsLog',

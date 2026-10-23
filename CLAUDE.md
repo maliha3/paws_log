@@ -322,6 +322,13 @@ which is exactly how this surfaced. Tests build "today" with
 - **Type**: Nunito, a *variable* font. One file; weight is an axis, so
   `fontWeight` alone is ignored and `fontVariations` is what moves it. All of
   that lives in `AppTheme._style`.
+- **Illustration is drawn, never photographed.** `SleepingCat` and the
+  background paw prints are `CustomPainter` work for the same reasons as the
+  mark, plus one more: shipping stock photography of someone else's cat is a
+  licensing problem the app does not need. `test/preview/cat_preview_test.dart`
+  renders the drawing to a PNG so it can be looked at — skipped by default,
+  because a golden is tied to the machine that made it and that file is for
+  previewing a drawing, not guarding it.
 - **The mark** is drawn (`PawMark`), not an image: crisp at any size, takes
   the colour it is given, and can animate. `tool/make_icon.py` draws the app
   icon from the same geometry — change one, change both.

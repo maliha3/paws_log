@@ -176,7 +176,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Amoxicillin'), findsNothing);
-    expect(find.text('Nothing due today'), findsOneWidget);
+    expect(find.text('All clear today'), findsOneWidget);
 
     await disposeTree(tester);
   });

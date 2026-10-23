@@ -29,11 +29,6 @@ void main() {
   // The database is deliberately not closed; see test/helpers/harness.dart.
   setUp(() => db = memoryDatabase());
 
-  DateTime todayUtc() {
-    final now = DateTime.now();
-    return DateTime.utc(now.year, now.month, now.day);
-  }
-
   /// A pet with something in every section.
   Future<void> populate() async {
     final pet = await PetRepository(db).create(
@@ -48,7 +43,7 @@ void main() {
       title: 'Flea and tick treatment',
       category: ReminderCategory.fleaTick,
       repeat: const RepeatRule.months(1),
-      anchorDate: todayUtc(),
+      anchorDate: todayInTestZone(),
       timeOfDayMinutes: 9 * 60,
     );
     await MedicineRepository(db).create(
@@ -57,8 +52,8 @@ void main() {
       dosage: '1 tablet twice daily',
       schedule: DoseSchedule(
         timesOfDayMinutes: const [8 * 60, 20 * 60],
-        startDate: todayUtc(),
-        endDate: todayUtc(),
+        startDate: todayInTestZone(),
+        endDate: todayInTestZone(),
       ),
     );
     await WeightRepository(db).create(

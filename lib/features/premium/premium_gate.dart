@@ -51,10 +51,11 @@ Future<void> runIfUnlocked(
   required PremiumFeature feature,
   required FutureOr<void> Function() action,
 }) async {
-  // Read through the repository rather than `isPremiumProvider`. Nothing
+  // Read through the service rather than `isPremiumProvider`. Nothing
   // watches that provider, so reading it starts its subscription and hands
-  // back `loading` — which would lock out a paying owner on every tap.
-  final unlocked = await ref.read(settingsRepositoryProvider).isPremium();
+  // back `loading` — which would lock out a paying owner on every tap. The
+  // service answers from its cache when the store cannot be reached.
+  final unlocked = await ref.read(entitlementServiceProvider).isActive();
   if (!context.mounted) {
     return;
   }

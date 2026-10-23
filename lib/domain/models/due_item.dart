@@ -19,8 +19,11 @@ class DueItem {
 
   /// Whether this was due on an earlier day than [startOfToday].
   ///
-  /// Takes the start of the day, not "now": something due today at 09:00 is
-  /// not overdue at 14:00, it is still today's.
+  /// [startOfToday] is local midnight **as a UTC instant** — use
+  /// `startOfLocalDay`. Not "now": something due today at 09:00 is not
+  /// overdue at 14:00, it is still today's. Both sides are UTC instants, so
+  /// this never mixes `DateTime.toLocal()` with the zone the rest of the app
+  /// works in.
   bool isOverdue(DateTime startOfToday) =>
-      event.scheduledFor.toLocal().isBefore(startOfToday);
+      event.scheduledFor.isBefore(startOfToday);
 }

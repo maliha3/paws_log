@@ -9,6 +9,11 @@ import '../domain/models/vaccination_record.dart';
 import '../domain/models/vet_visit.dart';
 import '../services/backup/backup_service.dart';
 import '../services/backup/backup_sharing.dart';
+import '../core/purchase_config.dart';
+import '../services/entitlements/entitlement_service.dart';
+import '../services/entitlements/entitlement_source.dart';
+import '../services/entitlements/revenuecat_entitlements.dart';
+import '../services/entitlements/stub_entitlements.dart';
 import '../services/photo_store.dart';
 import '../services/vet_summary/vet_summary_service.dart';
 import '../services/vet_summary/vet_summary_sharing.dart';
@@ -76,13 +81,33 @@ final settingsRepositoryProvider = Provider<SettingsRepository>(
   (ref) => SettingsRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Whether the paid features are unlocked.
+/// Where the entitlement comes from.
 ///
-/// Stubbed — see [SettingsRepository.watchIsPremium]. Defaults to false while
-/// the first read is in flight, so a gated action is never let through by
-/// accident.
+/// RevenueCat when the build has a key, and a local stub otherwise — so
+/// development, CI and the tests work without credentials, and a missing key
+/// can never look like a working store.
+final entitlementSourceProvider = Provider<EntitlementSource>((ref) {
+  if (!PurchaseConfig.hasStoreKeys) {
+    return StubEntitlements(ref.watch(settingsRepositoryProvider));
+  }
+  return RevenueCatEntitlements();
+});
+
+final entitlementServiceProvider = Provider<EntitlementService>(
+  (ref) => EntitlementService(
+    source: ref.watch(entitlementSourceProvider),
+    settings: ref.watch(settingsRepositoryProvider),
+  ),
+);
+
+/// Whether the paid features are unlocked, as it changes.
 final isPremiumProvider = StreamProvider<bool>(
-  (ref) => ref.watch(settingsRepositoryProvider).watchIsPremium(),
+  (ref) => ref.watch(entitlementServiceProvider).watchActive(),
+);
+
+/// The plans the store is offering. Empty when nothing is configured.
+final premiumPlansProvider = FutureProvider<List<PremiumPlan>>(
+  (ref) => ref.watch(entitlementServiceProvider).plans(),
 );
 
 /// The unit weights are shown in. Storage is always grams.

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/date_x.dart';
+import '../../domain/dose_schedule.dart';
 import '../../data/providers.dart';
 import '../../domain/models/due_dose.dart';
 import '../../domain/models/due_item.dart';
@@ -67,7 +67,7 @@ final todayProvider = Provider<AsyncValue<List<PetDayGroup>>>((ref) {
     groupByPet(
       reminders: reminders.requireValue,
       doses: doses.requireValue,
-      startOfToday: dateOnly(DateTime.now()),
+      startOfToday: startOfLocalDay(DateTime.now()),
     ),
   );
 });

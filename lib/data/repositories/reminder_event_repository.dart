@@ -67,16 +67,16 @@ class ReminderEventRepository {
   /// Archived pets and inactive reminders drop out. [now] is injected so
   /// tests and widget previews can pin "today".
   Stream<List<DueItem>> watchDueAndOverdue({DateTime? now}) {
-    final today = now ?? DateTime.now();
-    // Local end of today, so an evening reminder still counts as due today.
-    final endExclusive = DateTime(today.year, today.month, today.day + 1);
+    // End of today in the app's zone, so an evening reminder still counts as
+    // due today — and so this agrees with how doses are selected.
+    final endExclusive = startOfLocalDay(
+      now ?? DateTime.now(),
+    ).add(const Duration(days: 1));
 
     final query = _dueItemQuery()
       ..where(
         _db.reminderEvents.status.equalsValue(ReminderEventStatus.pending) &
-            _db.reminderEvents.scheduledFor.isSmallerThanValue(
-              endExclusive.toUtc(),
-            ),
+            _db.reminderEvents.scheduledFor.isSmallerThanValue(endExclusive),
       )
       ..orderBy([OrderingTerm.asc(_db.reminderEvents.scheduledFor)]);
 

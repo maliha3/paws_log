@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/app.dart';
-import 'package:paws_log/core/date_x.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/dose_log_repository.dart';
@@ -36,11 +35,6 @@ void main() {
     petIds.clear();
   });
 
-  DateTime todayUtc() {
-    final day = dateOnly(DateTime.now());
-    return DateTime.utc(day.year, day.month, day.day);
-  }
-
   Future<String> petId(String name) async =>
       petIds[name] ??= (await pets.create(name: name)).id;
 
@@ -57,8 +51,8 @@ void main() {
       dosage: dosage,
       schedule: DoseSchedule(
         timesOfDayMinutes: times,
-        startDate: todayUtc(),
-        endDate: todayUtc(),
+        startDate: todayInTestZone(),
+        endDate: todayInTestZone(),
       ),
     );
   }
@@ -97,7 +91,7 @@ void main() {
       title: 'Deworming',
       category: ReminderCategory.deworming,
       repeat: const RepeatRule.months(3),
-      anchorDate: todayUtc(),
+      anchorDate: todayInTestZone(),
       timeOfDayMinutes: 9 * 60,
     );
     await pumpApp(tester);

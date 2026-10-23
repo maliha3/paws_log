@@ -125,11 +125,7 @@ void main() {
       title: 'Yearly vaccine',
       category: ReminderCategory.vaccine,
       repeat: const RepeatRule.years(1),
-      anchorDate: DateTime.utc(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-      ),
+      anchorDate: todayInTestZone(),
       timeOfDayMinutes: 9 * 60,
     );
     final event = (await db.select(db.reminderEvents).getSingle()).id;

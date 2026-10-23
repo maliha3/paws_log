@@ -83,6 +83,23 @@ Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
   await settle(tester);
 }
 
+/// Today's date in [testZoneName], as a date-only value at UTC midnight.
+///
+/// Tests must never build "today" from the system clock. The app works in
+/// the pinned test zone, and for part of every day the system date and the
+/// zone's date are different — which made anything seeded as "due today"
+/// pass or fail depending on the hour the suite happened to run.
+DateTime todayInTestZone() {
+  final now = tz.TZDateTime.now(tz.local);
+  return DateTime.utc(now.year, now.month, now.day);
+}
+
+/// [days] from today, in the test zone, as a date-only value.
+DateTime daysFromTodayInTestZone(int days) {
+  final today = todayInTestZone();
+  return DateTime.utc(today.year, today.month, today.day + days);
+}
+
 /// A fresh, empty database for one test.
 AppDatabase memoryDatabase() => AppDatabase.forTesting(NativeDatabase.memory());
 

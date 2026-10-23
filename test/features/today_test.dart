@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/app.dart';
-import 'package:paws_log/core/date_x.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
@@ -34,12 +33,6 @@ void main() {
     petIds.clear();
   });
 
-  /// Today's date as a date-only value, which is what an anchor takes.
-  DateTime daysFromToday(int days) {
-    final day = dateOnly(DateTime.now()).add(Duration(days: days));
-    return DateTime.utc(day.year, day.month, day.day);
-  }
-
   Future<void> seed({
     required String petName,
     required String title,
@@ -53,7 +46,7 @@ void main() {
       title: title,
       category: category,
       repeat: const RepeatRule.months(3),
-      anchorDate: daysFromToday(dueInDays),
+      anchorDate: daysFromTodayInTestZone(dueInDays),
       timeOfDayMinutes: 9 * 60,
     );
   }

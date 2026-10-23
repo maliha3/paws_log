@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/date_x.dart';
+import '../../domain/dose_schedule.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
 import '../../domain/models/due_dose.dart';
@@ -20,8 +20,9 @@ class TodayScreen extends ConsumerWidget {
     final groups = ref.watch(todayProvider);
     final now = DateTime.now();
     // Overdue means "due on an earlier day", so the comparison is against
-    // the start of today rather than the current moment.
-    final startOfToday = dateOnly(now);
+    // the start of today rather than the current moment — in the app's zone,
+    // which is the same one the dates were built in.
+    final startOfToday = startOfLocalDay(now);
 
     return Scaffold(
       // The date sits in the list rather than under the title: an AppBar
@@ -111,7 +112,15 @@ class _PetSection extends StatelessWidget {
             children: [
               PetAvatar(name: group.pet.name, photoPath: group.pet.photoPath),
               const SizedBox(width: 12),
-              Text(group.pet.name, style: theme.textTheme.titleLarge),
+              // The badge takes the width it needs and the name gives way:
+              // at large text sizes "3 overdue" is wider than the name.
+              Expanded(
+                child: Text(
+                  group.pet.name,
+                  style: theme.textTheme.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               const SizedBox(width: 8),
               if (overdue.isNotEmpty)
                 _Badge(
@@ -401,9 +410,9 @@ class _DueRow extends ConsumerWidget {
     final snoozed = item.event.snoozedUntil;
 
     if (isOverdue) {
-      final days = dateOnly(
-        DateTime.now(),
-      ).difference(dateOnly(scheduled)).inDays;
+      final days = localDateOnly(DateTime.now())
+          .difference(localDateOnly(item.event.scheduledFor))
+          .inDays;
       final overdueText = days <= 1
           ? 'Overdue since yesterday'
           : 'Overdue by $days days';

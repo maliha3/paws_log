@@ -25,11 +25,30 @@ No backend, no accounts, no analytics in v1. All data is local.
 
 ## The premium gate
 
-`isPremium` is **stubbed**: nothing checks a receipt or talks to a store. The
-flag is a row in the settings table, which is why both halves of the app are
-reachable and testable before a purchase flow exists, and why the paywall's
-real button says purchases are unavailable rather than pretending to charge.
-A debug-only button flips the flag.
+Entitlements come from RevenueCat. Every product — monthly, yearly and
+lifetime — grants one entitlement (`premium`), so the app only ever asks
+whether that is active and never which plan paid for it. Upgrading from
+monthly to lifetime is therefore a non-event in the code.
+
+`docs/monetisation-setup.md` is the App Store Connect and RevenueCat
+checklist.
+
+- Keys arrive by `--dart-define` and are never committed. A build with **no
+  key falls back to a stub that sells nothing**, so development, CI and the
+  tests work without credentials and a missing key can never be mistaken for
+  a working store. A debug-only button flips the stub.
+- `EntitlementService` mirrors every answer into the settings table. That
+  cache is the point: a paying owner opening the app on a train must not be
+  told they have lost access because RevenueCat is unreachable. The store
+  stays the source of truth; the cache only covers the gap.
+- Prices are **always** the store's own localised strings. The app has no
+  idea about the owner's currency, tax or regional pricing, and must never
+  format a price itself.
+- The paywall carries what Apple requires before a purchase: title, duration
+  and price per plan, that a subscription renews until cancelled, Restore
+  Purchases, and links to the terms and privacy policy.
+- Backing out of the store sheet is the commonest outcome there is. It is
+  never reported as an error.
 
 Gated: a second pet, photos on a visit, the vet summary.
 
@@ -39,8 +58,9 @@ Gated: a second pet, photos on a visit, the vet summary.
   data someone entered would be taking it away.
 - The free pet comes through onboarding, which is never gated. With no pets
   the app is in onboarding, so there is no Pets tab to add a first pet from.
-- The gate **fails closed**: an unreadable flag reads as locked.
-- Read the flag through `SettingsRepository`, not `isPremiumProvider`.
+- The gate **fails closed**: an unreadable flag reads as locked, and so does
+  a first run with no network.
+- Read the flag through `EntitlementService`, not `isPremiumProvider`.
   Nothing watches that provider, so reading it starts its subscription and
   hands back `loading` — which locks out a paying owner on every tap.
 
@@ -278,6 +298,12 @@ Tests also have to scroll: a `ListView` does not build off-screen children,
 so a finder matches nothing and `ensureVisible` has nothing to scroll to.
 `scrollAndTap` and `scrollIntoView` in the harness handle it, and far more
 sits below the fold at 2x.
+
+One notion of "local". Today, recurrence and doses all work in `tz.local`,
+never `DateTime.toLocal()`. On a device they agree, so mixing them hides;
+in tests the pinned zone and the system zone differ for part of every day,
+which is exactly how this surfaced. Tests build "today" with
+`todayInTestZone()` for the same reason.
 
 Colours come from the `ColorScheme` only — there are no hardcoded `Colors.*`
 outside `app_theme.dart` and the PDF, which uses fixed inks because it is for

@@ -12,39 +12,57 @@ class WelcomeScreen extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              Icon(Icons.pets, size: 88, color: theme.colorScheme.primary),
-              const SizedBox(height: 32),
-              Text(
-                'PawsLog',
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Keep track of your cat’s vaccines, deworming and flea '
-                'treatments — and get a nudge when something is due.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const Spacer(flex: 3),
-              FilledButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const AddPetScreen(),
+        // Scrollable with a minimum height: the layout still centres itself
+        // on a roomy screen, but at large text sizes it scrolls rather than
+        // overflowing, because a Spacer cannot give ground. IntrinsicHeight
+        // is what gives those Spacers a bounded height inside the scrollable.
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      Icon(
+                        Icons.pets,
+                        size: 88,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'PawsLog',
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Keep track of your cat’s vaccines, deworming and '
+                        'flea treatments — and get a nudge when something is '
+                        'due.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const Spacer(flex: 3),
+                      FilledButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (context) => const AddPetScreen(),
+                          ),
+                        ),
+                        child: const Text('Get started'),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
-                child: const Text('Get started'),
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),

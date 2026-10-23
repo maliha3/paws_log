@@ -49,7 +49,7 @@ void main() {
     await openPet(tester);
 
     expect(find.text('Weight'), findsOneWidget);
-    expect(find.text('No weighings recorded.'), findsOneWidget);
+    expect(find.textContaining('No weighings yet'), findsOneWidget);
     expect(find.byType(WeightChart), findsNothing);
 
     await disposeTree(tester);

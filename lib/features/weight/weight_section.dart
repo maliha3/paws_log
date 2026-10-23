@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/widgets/empty_section.dart';
 import '../../data/providers.dart';
 import '../../domain/models/weight_entry.dart';
 import 'weight_chart.dart';
@@ -73,14 +74,11 @@ class _Body extends ConsumerWidget {
     final theme = Theme.of(context);
 
     if (entries.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          'No weighings recorded.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
+      return const EmptySection(
+        icon: Icons.monitor_weight_outlined,
+        message:
+            'No weighings yet. Record two or more and the trend between them '
+            'shows here.',
       );
     }
 
@@ -167,8 +165,11 @@ class _Latest extends StatelessWidget {
     final scheme = theme.colorScheme;
     final earlier = previous;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    // Wrap, not Row: at large text sizes the change moves to its own line
+    // rather than running off the side.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.end,
+      spacing: 12,
       children: [
         Text(
           unit.format(latest.grams),
@@ -176,7 +177,6 @@ class _Latest extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(width: 4),
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
@@ -186,7 +186,6 @@ class _Latest extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
         if (earlier != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),

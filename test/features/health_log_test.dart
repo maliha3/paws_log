@@ -48,9 +48,9 @@ void main() {
     expect(find.text('Medicines'), findsOneWidget);
     expect(find.text('Vaccinations'), findsOneWidget);
     expect(find.text('Vet visits'), findsOneWidget);
-    expect(find.text('No visits recorded.'), findsOneWidget);
+    expect(find.textContaining('No visits yet'), findsOneWidget);
     expect(
-      find.textContaining('Marking a vaccine reminder done records it here.'),
+      find.textContaining('Marking a vaccine reminder done'),
       findsOneWidget,
     );
 
@@ -82,7 +82,7 @@ void main() {
     // And it reopens for editing.
     await tapAndSettle(tester, find.text('Limping on back left leg'));
     expect(find.text('Visit'), findsOneWidget);
-    expect(find.text('No photos attached.'), findsOneWidget);
+    expect(find.textContaining('No photos attached'), findsOneWidget);
 
     await disposeTree(tester);
   });

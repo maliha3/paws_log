@@ -153,7 +153,7 @@ void main() {
       await tapAndSettle(tester, find.text('Annual checkup'));
 
       expect(
-        find.text('No photos attached.'),
+        find.textContaining('No photos attached'),
         findsNothing,
         reason: 'the attachment is still listed',
       );

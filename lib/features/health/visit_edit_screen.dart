@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/widgets/empty_section.dart';
 import '../../data/providers.dart';
 import '../../domain/models/vet_visit.dart';
 import '../../services/photo_store.dart';
@@ -295,11 +296,11 @@ class _Thumbnails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (paths.isEmpty) {
-      return Text(
-        'No photos attached.',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+      return const EmptySection(
+        icon: Icons.photo_outlined,
+        message:
+            'No photos attached. Lab results, prescriptions, or whatever you '
+            'noticed.',
       );
     }
 

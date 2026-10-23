@@ -51,7 +51,9 @@ class PaywallScreen extends ConsumerWidget {
     final scheme = theme.colorScheme;
 
     return SafeArea(
-      child: Padding(
+      // Scrollable: a bottom sheet has only so much room, and at large text
+      // sizes this content is taller than any phone.
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -193,7 +193,7 @@ void main() {
 
     await tapAndSettle(tester, find.text('Pets'));
     await tapAndSettle(tester, find.text('Mochi'));
-    expect(find.text('No medicines on record.'), findsOneWidget);
+    expect(find.textContaining('No medicines'), findsOneWidget);
 
     await tapAndSettle(tester, find.byTooltip('Add a medicine'));
     await tester.enterText(

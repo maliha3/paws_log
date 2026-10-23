@@ -24,24 +24,10 @@ class TodayScreen extends ConsumerWidget {
     final startOfToday = dateOnly(now);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Today'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(28),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 10),
-              child: Text(
-                DateFormat.yMMMMEEEEd().format(now),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+      // The date sits in the list rather than under the title: an AppBar
+      // bottom has a fixed height, which cannot hold the text once someone
+      // turns their type size up.
+      appBar: AppBar(title: const Text('Today')),
       body: groups.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) =>
@@ -49,8 +35,17 @@ class TodayScreen extends ConsumerWidget {
         data: (groups) => groups.isEmpty
             ? const _NothingDue()
             : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                    child: Text(
+                      DateFormat.yMMMMEEEEd().format(now),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                   for (final group in groups)
                     _PetSection(group: group, startOfToday: startOfToday),
                 ],
@@ -81,7 +76,8 @@ class _NothingDue extends StatelessWidget {
             Text('Nothing due today', style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'You are all caught up.',
+              'Reminders and doses turn up here on the day they are due.',
+              textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

@@ -256,6 +256,36 @@ A finished course is history and is left off. A cat added five minutes ago
 has none of this and still gets a page — their owner may be taking them to
 the vet today.
 
+## Appearance and accessibility
+
+`test/features/accessibility_test.dart` pumps every screen in both themes at
+1x and 2x text. A RenderFlex overflow throws in a widget test, so "no
+exception" is a real assertion: these fail the moment a layout stops coping
+with someone's type size. Add a screen there when you add a screen.
+
+What 2x text breaks, from the four that it caught:
+
+- A `Spacer` cannot give ground, so a centred column overflows. Wrap it in
+  `SingleChildScrollView` + `ConstrainedBox(minHeight:)` + `IntrinsicHeight`
+  — the last one is what gives the Spacer a bounded height again.
+- An `AppBar` `bottom` has a fixed height and cannot hold scaled text. Put
+  the content in the list instead.
+- A `Row` of a big number and its trailing detail runs off the side. `Wrap`
+  lets the detail drop to its own line.
+- A bottom sheet is taller than the phone. Scroll it.
+
+Tests also have to scroll: a `ListView` does not build off-screen children,
+so a finder matches nothing and `ensureVisible` has nothing to scroll to.
+`scrollAndTap` and `scrollIntoView` in the harness handle it, and far more
+sits below the fold at 2x.
+
+Colours come from the `ColorScheme` only — there are no hardcoded `Colors.*`
+outside `app_theme.dart` and the PDF, which uses fixed inks because it is for
+print. Dark mode is its own scheme, not an inverted light one.
+
+The app icon is a placeholder, not a design: it exists so the app does not
+ship with the Flutter logo. `tool/make_icon.py` regenerates it.
+
 ## Working agreements
 
 - Run `flutter analyze` and `flutter test` before every commit. Both clean.

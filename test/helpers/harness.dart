@@ -50,6 +50,31 @@ void usePhoneSurface(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
+/// Scrolls a lazy list until [finder] exists, then taps it.
+///
+/// `tapAndSettle` alone is not enough for anything below the fold: a
+/// `ListView` does not build its off-screen children, so the finder matches
+/// nothing and there is no widget for `ensureVisible` to scroll to. At large
+/// text sizes much more of a screen sits below the fold.
+Future<void> scrollAndTap(WidgetTester tester, Finder finder) async {
+  await scrollIntoView(tester, finder);
+  await tapAndSettle(tester, finder);
+}
+
+/// Scrolls a lazy list until [finder] matches something, if it does not
+/// already. Safe to call when the widget is on screen, or has no scrollable.
+Future<void> scrollIntoView(WidgetTester tester, Finder finder) async {
+  if (finder.evaluate().isNotEmpty) {
+    return;
+  }
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await settle(tester);
+}
+
 /// Scrolls [finder] into view if needed, then taps it.
 Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);

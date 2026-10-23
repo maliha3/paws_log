@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/widgets/empty_section.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
 import '../../domain/models/medicine.dart';
@@ -197,7 +198,12 @@ class _MedicinesSection extends ConsumerWidget {
           ),
           error: (error, _) => Text('Something went wrong.\n$error'),
           data: (medicines) => medicines.isEmpty
-              ? const _EmptySection('No medicines on record.')
+              ? const EmptySection(
+                  icon: Icons.medication_outlined,
+                  message:
+                      'No medicines. Add one and its doses appear on Today, '
+                      'ready to tick off.',
+                )
               : Column(
                   children: [
                     for (final medicine in medicines)
@@ -318,23 +324,6 @@ class _SectionHeader extends StatelessWidget {
   );
 }
 
-class _EmptySection extends StatelessWidget {
-  const _EmptySection(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 12),
-    child: Text(
-      message,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-    ),
-  );
-}
-
 class _VaccinationsSection extends ConsumerWidget {
   const _VaccinationsSection({required this.petId});
 
@@ -353,9 +342,11 @@ class _VaccinationsSection extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (error, _) => Text('$error'),
           data: (records) => records.isEmpty
-              ? const _EmptySection(
-                  'Nothing yet. Marking a vaccine reminder done records it '
-                  'here.',
+              ? const EmptySection(
+                  icon: Icons.vaccines_outlined,
+                  message:
+                      'No vaccinations yet. Marking a vaccine reminder done '
+                      'records it here, with the date it is next due.',
                 )
               : Column(
                   children: [
@@ -408,7 +399,12 @@ class _VisitsSection extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (error, _) => Text('$error'),
           data: (visits) => visits.isEmpty
-              ? const _EmptySection('No visits recorded.')
+              ? const EmptySection(
+                  icon: Icons.local_hospital_outlined,
+                  message:
+                      'No visits yet. Record what the vet said, with photos '
+                      'of anything worth keeping.',
+                )
               : Column(
                   children: [
                     for (final visit in visits)

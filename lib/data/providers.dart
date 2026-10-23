@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
 import '../domain/models/vaccination_record.dart';
+import '../domain/models/vet_visit.dart';
+import '../services/photo_store.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
@@ -13,6 +15,7 @@ import 'repositories/reminder_event_repository.dart';
 import 'repositories/reminder_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/vaccination_repository.dart';
+import 'repositories/vet_visit_repository.dart';
 
 /// The database, opened once for the app's lifetime.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -84,6 +87,25 @@ final vaccinationsForPetProvider =
     StreamProvider.family<List<VaccinationRecord>, String>(
       (ref, petId) =>
           ref.watch(vaccinationRepositoryProvider).watchForPet(petId),
+    );
+
+final vetVisitRepositoryProvider = Provider<VetVisitRepository>(
+  (ref) => VetVisitRepository(
+    ref.watch(appDatabaseProvider),
+    photoStore: ref.watch(photoStoreProvider),
+  ),
+);
+
+/// One pet's visits, live.
+final visitsForPetProvider = StreamProvider.family<List<VetVisit>, String>(
+  (ref, petId) => ref.watch(vetVisitRepositoryProvider).watchForPet(petId),
+);
+
+/// One visit's attachments, live.
+final attachmentsForVisitProvider =
+    StreamProvider.family<List<VisitAttachment>, String>(
+      (ref, visitId) =>
+          ref.watch(vetVisitRepositoryProvider).watchAttachments(visitId),
     );
 
 /// One pet's medicines, live.

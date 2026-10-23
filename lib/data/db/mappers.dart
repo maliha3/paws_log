@@ -8,6 +8,7 @@ import '../../domain/models/dose_log.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/vaccination_record.dart';
+import '../../domain/models/vet_visit.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
 import '../../domain/repeat_rule.dart';
@@ -97,5 +98,29 @@ extension VaccinationRecordRowMapper on VaccinationRecordRow {
     sourceEventId: sourceEventId,
     notes: notes,
     createdAt: createdAt,
+  );
+}
+
+extension VetVisitRowMapper on VetVisitRow {
+  VetVisit toDomain() => VetVisit(
+    id: id,
+    petId: petId,
+    visitedOn: visitedOn,
+    reason: reason,
+    clinic: clinic,
+    vetName: vetName,
+    notes: notes,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
+}
+
+extension VisitAttachmentRowMapper on VisitAttachmentRow {
+  VisitAttachment toDomain() => VisitAttachment(
+    id: id,
+    visitId: visitId,
+    filePath: filePath,
+    caption: caption,
+    addedAt: addedAt,
   );
 }

@@ -19,26 +19,43 @@ class PhotoStore {
   final ImagePicker _picker;
   final Uuid uuid;
 
-  static const String _folder = 'pet_photos';
+  /// Where pet portraits live.
+  static const String petPhotos = 'pet_photos';
+
+  /// Where photos attached to a vet visit live.
+  static const String visitAttachments = 'visit_attachments';
 
   /// Asks the owner for an image and returns the stored copy's path, or null
   /// if they backed out.
-  Future<String?> pick(ImageSource source) async {
+  Future<String?> pick(
+    ImageSource source, {
+    String folder = petPhotos,
+  }) async {
     final picked = await _picker.pickImage(
       source: source,
-      maxWidth: 1200,
-      maxHeight: 1200,
+      maxWidth: 1600,
+      maxHeight: 1600,
       imageQuality: 85,
     );
     if (picked == null) {
       return null;
     }
-    return _store(picked);
+    return _store(picked, folder);
   }
 
-  Future<String> _store(XFile picked) async {
+  /// Asks for several images at once, for attaching to a visit.
+  Future<List<String>> pickMany({String folder = visitAttachments}) async {
+    final picked = await _picker.pickMultiImage(
+      maxWidth: 1600,
+      maxHeight: 1600,
+      imageQuality: 85,
+    );
+    return [for (final file in picked) await _store(file, folder)];
+  }
+
+  Future<String> _store(XFile picked, String folderName) async {
     final documents = await getApplicationDocumentsDirectory();
-    final folder = Directory(p.join(documents.path, _folder));
+    final folder = Directory(p.join(documents.path, folderName));
     if (!folder.existsSync()) {
       await folder.create(recursive: true);
     }

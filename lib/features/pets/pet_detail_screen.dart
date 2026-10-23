@@ -6,6 +6,7 @@ import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
+import '../health/visit_edit_screen.dart';
 import '../medicines/medicine_edit_screen.dart';
 
 /// Everything recorded about one pet.
@@ -38,6 +39,10 @@ class PetDetailScreen extends ConsumerWidget {
           _Header(pet: pet),
           const SizedBox(height: 24),
           _MedicinesSection(petId: petId),
+          const SizedBox(height: 24),
+          _VaccinationsSection(petId: petId),
+          const SizedBox(height: 24),
+          _VisitsSection(petId: petId),
         ],
       ),
     );
@@ -108,27 +113,19 @@ class _MedicinesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final medicines = ref.watch(medicinesForPetProvider(petId));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text('Medicines', style: theme.textTheme.titleLarge),
+        _SectionHeader(
+          title: 'Medicines',
+          addTooltip: 'Add a medicine',
+          onAdd: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => MedicineEditScreen(petId: petId),
             ),
-            TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => MedicineEditScreen(petId: petId),
-                ),
-              ),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add'),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: 4),
         medicines.when(
@@ -138,15 +135,7 @@ class _MedicinesSection extends ConsumerWidget {
           ),
           error: (error, _) => Text('Something went wrong.\n$error'),
           data: (medicines) => medicines.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'No medicines on record.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                )
+              ? const _EmptySection('No medicines on record.')
               : Column(
                   children: [
                     for (final medicine in medicines)
@@ -232,6 +221,159 @@ class _MedicineTile extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+/// A heading with an "Add" affordance, shared by the profile's sections.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.onAdd, this.addTooltip});
+
+  final String title;
+  final VoidCallback? onAdd;
+
+  /// Several sections offer an "Add", so the button says which it is for —
+  /// for a screen reader, and for anything else trying to tell them apart.
+  final String? addTooltip;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+      ),
+      if (onAdd != null)
+        Tooltip(
+          message: addTooltip ?? 'Add',
+          child: TextButton.icon(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add'),
+          ),
+        ),
+    ],
+  );
+}
+
+class _EmptySection extends StatelessWidget {
+  const _EmptySection(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    child: Text(
+      message,
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
+}
+
+class _VaccinationsSection extends ConsumerWidget {
+  const _VaccinationsSection({required this.petId});
+
+  final String petId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final records = ref.watch(vaccinationsForPetProvider(petId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionHeader(title: 'Vaccinations'),
+        const SizedBox(height: 4),
+        records.when(
+          loading: () => const SizedBox.shrink(),
+          error: (error, _) => Text('$error'),
+          data: (records) => records.isEmpty
+              ? const _EmptySection(
+                  'Nothing yet. Marking a vaccine reminder done records it '
+                  'here.',
+                )
+              : Column(
+                  children: [
+                    for (final record in records)
+                      Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: const Icon(Icons.vaccines_outlined),
+                          title: Text(record.name),
+                          subtitle: Text(
+                            [
+                              'Given ${DateFormat.yMMMd().format(record.administeredOn)}',
+                              if (record.nextDueOn != null)
+                                'next ${DateFormat.yMMMd().format(record.nextDueOn!)}',
+                            ].join(' · '),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VisitsSection extends ConsumerWidget {
+  const _VisitsSection({required this.petId});
+
+  final String petId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final visits = ref.watch(visitsForPetProvider(petId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(
+          title: 'Vet visits',
+          addTooltip: 'Add a vet visit',
+          onAdd: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => VisitEditScreen(petId: petId),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        visits.when(
+          loading: () => const SizedBox.shrink(),
+          error: (error, _) => Text('$error'),
+          data: (visits) => visits.isEmpty
+              ? const _EmptySection('No visits recorded.')
+              : Column(
+                  children: [
+                    for (final visit in visits)
+                      Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: const Icon(Icons.local_hospital_outlined),
+                          title: Text(visit.reason),
+                          subtitle: Text(
+                            [
+                              DateFormat.yMMMd().format(visit.visitedOn),
+                              if (visit.clinic != null) visit.clinic!,
+                            ].join(' · '),
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  VisitEditScreen(petId: petId, visit: visit),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }

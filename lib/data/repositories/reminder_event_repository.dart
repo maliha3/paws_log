@@ -1,12 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../domain/dose_schedule.dart';
 import '../../domain/models/due_item.dart';
+import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
+import '../../domain/models/vaccination_record.dart';
 import '../../domain/repeat_rule.dart';
 import '../../domain/schedule_sync.dart';
 import '../db/app_database.dart';
 import '../db/mappers.dart';
+import 'vaccination_repository.dart';
 
 /// What a completion changed, so it can be undone.
 ///
@@ -18,6 +22,7 @@ class CompletionOutcome {
     required this.reminderId,
     required this.previousStatus,
     this.createdEventId,
+    this.createdVaccinationId,
     this.previousNextDueAt,
     this.previousSnoozedUntil,
   });
@@ -28,6 +33,12 @@ class CompletionOutcome {
 
   /// The follow-on occurrence, if the reminder repeats.
   final String? createdEventId;
+
+  /// The vaccination record written for this completion, if any.
+  ///
+  /// Completing a vaccine reminder is what puts a shot in the health log, so
+  /// undoing it has to take the record back out again.
+  final String? createdVaccinationId;
 
   final DateTime? previousNextDueAt;
   final DateTime? previousSnoozedUntil;
@@ -168,11 +179,31 @@ class ReminderEventRepository {
             ),
           );
 
+      // A vaccine that was given belongs in the health log. Only on `done`:
+      // skipping a vaccine reminder means it was not given.
+      String? createdVaccinationId;
+      if (status == ReminderEventStatus.done &&
+          reminder.category == ReminderCategory.vaccine) {
+        createdVaccinationId = uuid.v4();
+        await _db.into(_db.vaccinationRecords).insert(
+          VaccinationRecord(
+            id: createdVaccinationId,
+            petId: reminder.petId,
+            name: reminder.title,
+            administeredOn: localDateOnly(timestamp),
+            nextDueOn: next == null ? null : localDateOnly(next),
+            sourceEventId: eventId,
+            createdAt: timestamp,
+          ).toInsertable(),
+        );
+      }
+
       return CompletionOutcome(
         eventId: eventId,
         reminderId: reminder.id,
         previousStatus: event.status,
         createdEventId: createdEventId,
+        createdVaccinationId: createdVaccinationId,
         previousNextDueAt: reminder.nextDueAt,
         previousSnoozedUntil: event.snoozedUntil,
       );
@@ -186,6 +217,11 @@ class ReminderEventRepository {
   /// restores the event and the reminder's next due date.
   Future<void> undo(CompletionOutcome outcome) async {
     await _db.transaction(() async {
+      if (outcome.createdVaccinationId != null) {
+        await (_db.delete(_db.vaccinationRecords)
+              ..where((r) => r.id.equals(outcome.createdVaccinationId!)))
+            .go();
+      }
       if (outcome.createdEventId != null) {
         await (_db.delete(_db.reminderEvents)
               ..where((e) => e.id.equals(outcome.createdEventId!)))

@@ -7,6 +7,7 @@ library;
 import '../../domain/models/dose_log.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
 import '../../domain/repeat_rule.dart';
@@ -83,5 +84,18 @@ extension DoseLogRowMapper on DoseLogRow {
     status: status,
     takenAt: takenAt,
     notes: notes,
+  );
+}
+
+extension VaccinationRecordRowMapper on VaccinationRecordRow {
+  VaccinationRecord toDomain() => VaccinationRecord(
+    id: id,
+    petId: petId,
+    name: name,
+    administeredOn: administeredOn,
+    nextDueOn: nextDueOn,
+    sourceEventId: sourceEventId,
+    notes: notes,
+    createdAt: createdAt,
   );
 }

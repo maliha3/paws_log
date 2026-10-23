@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
+import '../domain/models/vaccination_record.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
@@ -11,6 +12,7 @@ import 'repositories/pet_repository.dart';
 import 'repositories/reminder_event_repository.dart';
 import 'repositories/reminder_repository.dart';
 import 'repositories/settings_repository.dart';
+import 'repositories/vaccination_repository.dart';
 
 /// The database, opened once for the app's lifetime.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -72,6 +74,17 @@ final weightUnitProvider = StreamProvider<WeightUnit>(
 final petsProvider = StreamProvider<List<Pet>>(
   (ref) => ref.watch(petRepositoryProvider).watchPets(),
 );
+
+final vaccinationRepositoryProvider = Provider<VaccinationRepository>(
+  (ref) => VaccinationRepository(ref.watch(appDatabaseProvider)),
+);
+
+/// One pet's vaccination history, live.
+final vaccinationsForPetProvider =
+    StreamProvider.family<List<VaccinationRecord>, String>(
+      (ref, petId) =>
+          ref.watch(vaccinationRepositoryProvider).watchForPet(petId),
+    );
 
 /// One pet's medicines, live.
 final medicinesForPetProvider =

@@ -106,6 +106,19 @@ dose being *missed*.
 - Today shows the whole day's course, including doses whose time has not come
   — unlike reminders, where only what is due shows up.
 
+## Vaccination history
+
+Marking a `vaccine`-category reminder **done** also writes a
+`VaccinationRecord` — that completion is the moment a shot is known to have
+been given. Skipping one writes nothing: a skipped vaccine was not given.
+
+`CompletionOutcome` carries the record's id so undo removes it along with the
+follow-on occurrence and the restored `nextDueAt`. All three go back or none
+do.
+
+`source_event_id` is not a foreign key, so deleting a reminder leaves the
+history standing. Deleting the *pet* does cascade.
+
 ## Notifications
 
 iOS silently drops pending local notifications past **64**. The scheduler

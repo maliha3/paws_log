@@ -59,6 +59,11 @@ DateTime startOfLocalDay(DateTime instant, {tz.Location? location}) {
   return wallClock(date, 0, location: zone).toPlainUtc();
 }
 
+/// The calendar day [instant] falls on in [location], as a date-only value
+/// held at UTC midnight.
+DateTime localDateOnly(DateTime instant, {tz.Location? location}) =>
+    _localDateOnly(instant, location ?? tz.local);
+
 DateTime _dateOnly(DateTime value) {
   final utc = value.toUtc();
   return DateTime.utc(utc.year, utc.month, utc.day);

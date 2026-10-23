@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,11 +32,15 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>(
   ),
 );
 
-/// Initialises the plugin and asks for permission.
+/// Sets up the plugin, without asking for permission.
 ///
-/// Returns false when the owner declined, in which case reminders are still
-/// recorded and still show on Today — they just will not arrive on their own.
-Future<bool> initializeNotifications(
+/// Permission is deliberately not requested here. `DarwinInitializationSettings`
+/// defaults its three `request*Permission` flags to true, and `initialize`
+/// then waits for the owner to answer a system dialog — which on a cold first
+/// launch happens *before* `runApp`, so they are left looking at their home
+/// screen with a prompt over it. The flags are off and
+/// [requestNotificationPermission] is called later, from inside the app.
+Future<void> initializeNotifications(
   ProviderContainer container, {
   required void Function(NotificationResponse) onForegroundResponse,
 }) async {
@@ -45,6 +50,9 @@ Future<bool> initializeNotifications(
     settings: InitializationSettings(
       android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
         notificationCategories: [NotificationActions.darwinCategory],
       ),
     ),
@@ -57,17 +65,42 @@ Future<bool> initializeNotifications(
       .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >();
-  if (android != null) {
-    await android.createNotificationChannel(
-      PluginNotificationGateway.channel,
-    );
-    return await android.requestNotificationsPermission() ?? false;
-  }
+  await android?.createNotificationChannel(PluginNotificationGateway.channel);
+}
 
-  final ios = plugin
-      .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin
-      >();
-  return await ios?.requestPermissions(alert: true, badge: true, sound: true) ??
-      false;
+/// Asks the owner to allow notifications.
+///
+/// Called once the first schedule has been set up, so the prompt arrives with
+/// some context rather than over a home screen. Returns false when they
+/// decline, in which case reminders are still recorded and still show on
+/// Today — they just will not arrive on their own.
+Future<bool> requestNotificationPermission(
+  FlutterLocalNotificationsPlugin plugin,
+) async {
+  try {
+    final android = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android != null) {
+      return await android.requestNotificationsPermission() ?? false;
+    }
+
+    final ios = plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    return await ios?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        ) ??
+        false;
+  } on Object catch (error) {
+    // Asking is a courtesy, not a step onboarding depends on. A platform
+    // that cannot answer — a widget test, an unsupported target — must not
+    // take the owner's first save down with it.
+    debugPrint('Could not request notification permission: $error');
+    return false;
+  }
 }

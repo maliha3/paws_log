@@ -106,6 +106,28 @@ therefore never schedules the whole future — it maintains a rolling window:
   permission flow on Android 14+; a care reminder does not need minute
   precision.
 
+## Running on a device
+
+`flutter test integration_test/app_test.dart -d <device>` drives the real app:
+the native sqlite build, path_provider's documents directory, the device
+timezone lookup, and notifications actually reaching the OS. Nothing else
+covers those.
+
+Two flags it needs:
+
+- `--dart-define=PAWSLOG_SUPPRESS_PERMISSION_PROMPT=true`. An integration test
+  drives the Flutter view directly and cannot answer a system dialog, and iOS
+  makes the app inactive while one is up, so pumped frames stop arriving and
+  the test simply stalls.
+- The test grants itself *provisional* notification authorisation, which iOS
+  gives without a dialog. Without it `zonedSchedule` is rejected and nothing
+  shows up pending, whether or not the scheduler worked.
+
+Starter reminders are due at 09:00 on the day they are created, so after
+midday there is nothing in the future to schedule and a pending count of zero
+is correct. Completing one opens the next occurrence, which is what the test
+checks reaches the OS.
+
 ## Working agreements
 
 - Run `flutter analyze` and `flutter test` before every commit. Both clean.

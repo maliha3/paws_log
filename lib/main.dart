@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,8 +38,9 @@ Future<void> main() async {
     },
   );
 
-  // Catch up on anything that moved while the app was closed.
-  await container.read(notificationSchedulerProvider).syncAll();
+  // Catch up on anything that moved while the app was closed. Not awaited:
+  // nothing on screen depends on it, and it should not hold up first paint.
+  unawaited(container.read(notificationSchedulerProvider).syncAll());
 
   runApp(
     UncontrolledProviderScope(

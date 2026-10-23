@@ -1,9 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers.dart';
+import '../../services/notifications/notification_providers.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/reminder_draft.dart';
 import '../../domain/starter_reminders.dart';
+
+/// Set by integration tests via `--dart-define`.
+///
+/// An integration test drives the Flutter view directly and cannot answer a
+/// system permission dialog; worse, iOS makes the app inactive while one is
+/// up, so pumped frames stop arriving and the test simply stalls.
+const bool suppressPermissionPrompt = bool.fromEnvironment(
+  'PAWSLOG_SUPPRESS_PERMISSION_PROMPT',
+);
 
 /// Everything the owner has entered during onboarding.
 ///
@@ -128,6 +140,15 @@ class OnboardingController extends Notifier<OnboardingDraft> {
         drafts: state.reminders,
         now: now,
       );
+
+      // Ask only now, with a schedule on screen to explain what the
+      // notifications would be for. Not awaited: declining is a valid answer
+      // and must not hold up the move to Today.
+      if (state.keptReminderCount > 0 && !suppressPermissionPrompt) {
+        unawaited(
+          requestNotificationPermission(ref.read(notificationPluginProvider)),
+        );
+      }
     } finally {
       state = state.copyWith(isSaving: false);
     }

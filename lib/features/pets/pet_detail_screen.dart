@@ -8,6 +8,7 @@ import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
 import '../health/visit_edit_screen.dart';
 import '../medicines/medicine_edit_screen.dart';
+import '../premium/premium_gate.dart';
 import '../weight/weight_section.dart';
 import 'pet_edit_screen.dart';
 
@@ -37,6 +38,27 @@ class PetDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(pet.name),
         actions: [
+          IconButton(
+            tooltip: 'Vet summary',
+            icon: const Icon(Icons.description_outlined),
+            onPressed: () => runIfUnlocked(
+              context,
+              ref,
+              feature: PremiumFeature.vetSummary,
+              action: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await ref.read(vetSummarySharingProvider).shareFor(pet);
+                } on Object catch (error) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Could not build the summary: $error'),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
           IconButton(
             tooltip: 'Edit pet',
             icon: const Icon(Icons.edit_outlined),

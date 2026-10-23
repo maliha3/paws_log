@@ -240,6 +240,22 @@ worse than none, because the owner only finds out when they restore.
   tested. `BackupSharing` is the thin layer over the share sheet and file
   picker.
 
+## Vet summary
+
+One PDF page per pet: profile, vaccinations with dates, the medicines they
+are on *now*, the weight trend, and the last three visits. It carries the
+same standing note the app does — a record of what the owner entered, not a
+clinical document.
+
+`VetSummaryPdf` is a pure function of a `VetSummary`: no repositories, no
+plugins, no clock. `VetSummaryService` gathers the data and
+`VetSummarySharing` holds the share sheet, which is what lets the layout be
+exercised in a plain test.
+
+A finished course is history and is left off. A cat added five minutes ago
+has none of this and still gets a page — their owner may be taking them to
+the vet today.
+
 ## Working agreements
 
 - Run `flutter analyze` and `flutter test` before every commit. Both clean.

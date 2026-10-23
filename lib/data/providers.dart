@@ -10,6 +10,8 @@ import '../domain/models/vet_visit.dart';
 import '../services/backup/backup_service.dart';
 import '../services/backup/backup_sharing.dart';
 import '../services/photo_store.dart';
+import '../services/vet_summary/vet_summary_service.dart';
+import '../services/vet_summary/vet_summary_sharing.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
@@ -167,4 +169,19 @@ final backupServiceProvider = Provider<BackupService>((ref) {
 
 final backupSharingProvider = Provider<BackupSharing>(
   (ref) => BackupSharing(ref.watch(backupServiceProvider)),
+);
+
+
+final vetSummaryServiceProvider = Provider<VetSummaryService>(
+  (ref) => VetSummaryService(
+    vaccinations: ref.watch(vaccinationRepositoryProvider),
+    medicines: ref.watch(medicineRepositoryProvider),
+    weights: ref.watch(weightRepositoryProvider),
+    visits: ref.watch(vetVisitRepositoryProvider),
+    settings: ref.watch(settingsRepositoryProvider),
+  ),
+);
+
+final vetSummarySharingProvider = Provider<VetSummarySharing>(
+  (ref) => VetSummarySharing(ref.watch(vetSummaryServiceProvider)),
 );

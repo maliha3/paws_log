@@ -9,6 +9,7 @@ import '../../domain/models/pet.dart';
 import '../health/visit_edit_screen.dart';
 import '../medicines/medicine_edit_screen.dart';
 import '../weight/weight_section.dart';
+import 'pet_edit_screen.dart';
 
 /// Everything recorded about one pet.
 ///
@@ -33,7 +34,43 @@ class PetDetailScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(pet.name)),
+      appBar: AppBar(
+        title: Text(pet.name),
+        actions: [
+          IconButton(
+            tooltip: 'Edit pet',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => PetEditScreen(pet: pet),
+              ),
+            ),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Pet options',
+            onSelected: (action) async {
+              final repository = ref.read(petRepositoryProvider);
+              final navigator = Navigator.of(context);
+              if (action == 'archive') {
+                await repository.archive(pet.id);
+              } else {
+                await repository.delete(pet.id);
+              }
+              navigator.pop();
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'archive',
+                child: Text('Archive'),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete everything'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
 import 'pet_detail_screen.dart';
+import 'pet_edit_screen.dart';
 
 /// The pets the owner is tracking.
 class PetsScreen extends ConsumerWidget {
@@ -15,6 +16,13 @@ class PetsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Pets')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (context) => const PetEditScreen()),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Add a pet'),
+      ),
       body: pets.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Something went wrong.\n$error')),

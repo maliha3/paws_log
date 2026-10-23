@@ -9,6 +9,7 @@ import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/vet_visit.dart';
+import '../../domain/models/weight_entry.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
 import '../../domain/repeat_rule.dart';
@@ -122,5 +123,16 @@ extension VisitAttachmentRowMapper on VisitAttachmentRow {
     filePath: filePath,
     caption: caption,
     addedAt: addedAt,
+  );
+}
+
+extension WeightEntryRowMapper on WeightEntryRow {
+  WeightEntry toDomain() => WeightEntry(
+    id: id,
+    petId: petId,
+    measuredOn: measuredOn,
+    grams: grams,
+    note: note,
+    createdAt: createdAt,
   );
 }

@@ -8,6 +8,7 @@ import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
 import '../health/visit_edit_screen.dart';
 import '../medicines/medicine_edit_screen.dart';
+import '../weight/weight_section.dart';
 
 /// Everything recorded about one pet.
 ///
@@ -37,6 +38,8 @@ class PetDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
           _Header(pet: pet),
+          const SizedBox(height: 24),
+          WeightSection(petId: petId),
           const SizedBox(height: 24),
           _MedicinesSection(petId: petId),
           const SizedBox(height: 24),

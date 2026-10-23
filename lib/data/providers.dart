@@ -16,6 +16,7 @@ import 'repositories/reminder_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/vaccination_repository.dart';
 import 'repositories/vet_visit_repository.dart';
+import 'repositories/weight_repository.dart';
 
 /// The database, opened once for the app's lifetime.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -87,6 +88,16 @@ final vaccinationsForPetProvider =
     StreamProvider.family<List<VaccinationRecord>, String>(
       (ref, petId) =>
           ref.watch(vaccinationRepositoryProvider).watchForPet(petId),
+    );
+
+final weightRepositoryProvider = Provider<WeightRepository>(
+  (ref) => WeightRepository(ref.watch(appDatabaseProvider)),
+);
+
+/// One pet's weighings, oldest first.
+final weightsForPetProvider =
+    StreamProvider.family<List<WeightEntry>, String>(
+      (ref, petId) => ref.watch(weightRepositoryProvider).watchForPet(petId),
     );
 
 final vetVisitRepositoryProvider = Provider<VetVisitRepository>(

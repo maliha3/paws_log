@@ -4,6 +4,8 @@
 /// this is the one place that knows how the two line up.
 library;
 
+import '../../domain/models/dose_log.dart';
+import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
@@ -50,6 +52,36 @@ extension ReminderEventRowMapper on ReminderEventRow {
     status: status,
     completedAt: completedAt,
     snoozedUntil: snoozedUntil,
+    notes: notes,
+  );
+}
+
+extension MedicineRowMapper on MedicineRow {
+  Medicine toDomain() => Medicine(
+    id: id,
+    petId: petId,
+    name: name,
+    dosage: dosage,
+    schedule: DoseSchedule(
+      timesOfDayMinutes: timesOfDayMinutes,
+      startDate: startDate,
+      intervalDays: intervalDays,
+      endDate: endDate,
+    ),
+    notes: notes,
+    isActive: isActive,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
+}
+
+extension DoseLogRowMapper on DoseLogRow {
+  DoseLog toDomain() => DoseLog(
+    id: id,
+    medicineId: medicineId,
+    scheduledFor: scheduledFor,
+    status: status,
+    takenAt: takenAt,
     notes: notes,
   );
 }

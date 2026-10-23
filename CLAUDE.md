@@ -46,7 +46,8 @@ Rules:
 - Repositories return domain models, not drift row classes.
 - Anything that changes a due date must go through the repository method that
   also triggers a notification resync. No partial writes.
-- Date math lives in `domain/repeat_rule.dart`. Nowhere else.
+- Date math lives in `domain/` and nowhere else: `repeat_rule.dart` for
+  reminder recurrence, `dose_schedule.dart` for medicine courses.
 
 ## Ids and time
 
@@ -80,6 +81,30 @@ A reminder has a `repeatUnit` (none/days/weeks/months/years), a
   that event and opens the next.
 - A snooze moves when a notification fires, not the due date: the event stays
   `pending` and stays on Today.
+
+## Medicines
+
+Medicines do not reuse `Reminder`'s recurrence. "Every 3 months" cannot
+express "08:00 and 20:00, for ten days", and a reminder has no notion of a
+dose being *missed*.
+
+- `timesOfDayMinutes` holds one entry per dose, `intervalDays` the gap
+  between dosing days, and a course runs from `startDate` to an inclusive
+  `endDate`, or open-endedly when that is null.
+- A finite course has its whole run generated up front; an open-ended one is
+  generated to a 14-day horizon and topped up on launch and resume.
+- Dose ids are derived from the medicine and the instant, so regenerating is
+  idempotent and never disturbs a dose already logged.
+- The end date is a *date*. Its UTC midnight is not the end of that day in
+  the owner's zone, so a generation window built from it clips the final
+  day's doses.
+- Editing a schedule replaces only *pending future* doses. Taken, missed and
+  skipped doses are adherence history and are never rewritten.
+- A dose is missed once its day is over, not the moment it passes. Only
+  `markOverdueMissed` decides that; `pending` elsewhere means exactly
+  "not yet logged".
+- Today shows the whole day's course, including doses whose time has not come
+  — unlike reminders, where only what is due shows up.
 
 ## Notifications
 

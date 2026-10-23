@@ -4,6 +4,8 @@ import '../domain/models/pet.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
+import 'repositories/dose_log_repository.dart';
+import 'repositories/medicine_repository.dart';
 import 'repositories/pet_repository.dart';
 import 'repositories/reminder_event_repository.dart';
 import 'repositories/reminder_repository.dart';
@@ -37,6 +39,20 @@ final reminderRepositoryProvider = Provider<ReminderRepository>(
 
 final reminderEventRepositoryProvider = Provider<ReminderEventRepository>(
   (ref) => ReminderEventRepository(
+    ref.watch(appDatabaseProvider),
+    scheduleSync: ref.watch(scheduleSyncProvider),
+  ),
+);
+
+final medicineRepositoryProvider = Provider<MedicineRepository>(
+  (ref) => MedicineRepository(
+    ref.watch(appDatabaseProvider),
+    scheduleSync: ref.watch(scheduleSyncProvider),
+  ),
+);
+
+final doseLogRepositoryProvider = Provider<DoseLogRepository>(
+  (ref) => DoseLogRepository(
     ref.watch(appDatabaseProvider),
     scheduleSync: ref.watch(scheduleSyncProvider),
   ),

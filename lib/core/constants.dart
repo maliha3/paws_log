@@ -20,6 +20,10 @@ abstract final class AppConstants {
   /// Default time of day for a new reminder: 09:00, in minutes past midnight.
   static const int defaultReminderTimeMinutes = 9 * 60;
 
+  /// How far ahead doses are generated for an open-ended course. A course
+  /// with an end date gets its whole run generated instead.
+  static const int doseHorizonDays = 14;
+
   /// Shown on every screen that proposes a care schedule.
   static const String vetDisclaimer = 'Confirm the schedule with your vet.';
 }

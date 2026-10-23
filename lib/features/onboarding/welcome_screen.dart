@@ -36,11 +36,7 @@ class WelcomeScreen extends StatelessWidget {
                         // reference rests its photo on a colour block.
                         Halo(
                               size: 230,
-                              child: SleepingCat(
-                                size: 190,
-                                color: theme.colorScheme.primary,
-                                accent: theme.colorScheme.onPrimary,
-                              ),
+                              child: SleepingCat(size: 190),
                             )
                             .animate()
                             .fadeIn(duration: 500.ms)

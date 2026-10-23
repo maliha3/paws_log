@@ -71,11 +71,7 @@ class _NothingDue extends StatelessWidget {
         const SizedBox(height: 60),
         Column(
           children: [
-            SleepingCat(
-                  size: 180,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.85),
-                  accent: theme.colorScheme.onPrimary,
-                )
+            const SleepingCat(size: 180)
                 .animate()
                 .fadeIn(duration: 450.ms)
                 .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOut),

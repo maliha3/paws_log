@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
 import '../domain/models/vaccination_record.dart';
 import '../domain/models/vet_visit.dart';
+import '../services/backup/backup_service.dart';
+import '../services/backup/backup_sharing.dart';
 import '../services/photo_store.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
@@ -134,3 +139,23 @@ final needsOnboardingProvider = Provider<bool?>((ref) {
   final pets = ref.watch(petsProvider);
   return pets.hasValue ? pets.requireValue.isEmpty : null;
 });
+
+
+/// Where photo files live, resolved once.
+final photosRootProvider = FutureProvider<Directory>(
+  (ref) => getApplicationDocumentsDirectory(),
+);
+
+final backupServiceProvider = Provider<BackupService>((ref) {
+  // The documents directory is resolved asynchronously, but every backup
+  // action is user-initiated and the directory is read by then.
+  final root = ref.watch(photosRootProvider).value;
+  return BackupService(
+    ref.watch(appDatabaseProvider),
+    photosRoot: root ?? Directory.current,
+  );
+});
+
+final backupSharingProvider = Provider<BackupSharing>(
+  (ref) => BackupSharing(ref.watch(backupServiceProvider)),
+);

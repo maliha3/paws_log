@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
+import '../backup/backup_screen.dart';
 import 'pet_detail_screen.dart';
 import 'pet_edit_screen.dart';
 
@@ -15,7 +16,20 @@ class PetsScreen extends ConsumerWidget {
     final pets = ref.watch(petsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pets')),
+      appBar: AppBar(
+        title: const Text('Pets'),
+        actions: [
+          IconButton(
+            tooltip: 'Backup',
+            icon: const Icon(Icons.settings_backup_restore),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const BackupScreen(),
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (context) => const PetEditScreen()),

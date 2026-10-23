@@ -193,6 +193,28 @@ the scheduler. The scheduler builds its own read-only repositories. Tests
 wire it the same way; getting that wrong makes a write silently fail to
 rebuild the window.
 
+## Backup
+
+A backup is a zip: `backup.json` plus `photos/`. Not bare JSON — attachments
+and pet portraits are files on disk, and a backup that silently drops them is
+worse than none, because the owner only finds out when they restore.
+
+- Photo paths inside the archive are relative to the documents directory and
+  rewritten to absolute paths on import, since they differ between installs.
+  A path that would escape with `..` falls back to its basename.
+- A row whose file has vanished keeps the row and drops the reference, so a
+  restore shows a placeholder rather than a path to nothing.
+- Import **replaces**, it does not merge. Two installs that have both moved
+  on share no notion of which version of a row is right, and silently keeping
+  the wrong one is worse than being told.
+- Rows are serialised through drift's `toJson`/`fromJson` with a custom
+  `ValueSerializer`: DateTimes as ISO-8601 so the UTC flag survives, and the
+  medicine dosing-times `List<int>` converted by hand because `jsonDecode`
+  returns `List<dynamic>` and drift's default casts it straight through.
+- `BackupService` touches no plugins, which is what lets the round trip be
+  tested. `BackupSharing` is the thin layer over the share sheet and file
+  picker.
+
 ## Working agreements
 
 - Run `flutter analyze` and `flutter test` before every commit. Both clean.

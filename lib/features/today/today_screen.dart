@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import '../../core/date_x.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
+import '../../domain/models/due_dose.dart';
 import '../../domain/models/due_item.dart';
+import '../../domain/models/dose_log.dart';
 import '../../domain/models/reminder.dart';
 import 'today_controller.dart';
 
@@ -95,14 +97,14 @@ class _NothingDue extends StatelessWidget {
 class _PetSection extends StatelessWidget {
   const _PetSection({required this.group, required this.startOfToday});
 
-  final PetDueGroup group;
+  final PetDayGroup group;
   final DateTime startOfToday;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final overdue = group.overdue(startOfToday);
-    final dueToday = group.dueToday(startOfToday);
+    final overdue = group.overdue;
+    final dueToday = group.dueToday;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +128,119 @@ class _PetSection extends StatelessWidget {
         ),
         for (final item in overdue) _DueRow(item: item, isOverdue: true),
         for (final item in dueToday) _DueRow(item: item, isOverdue: false),
+        if (group.doses.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
+            child: Text(
+              'Medicines',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          for (final dose in group.doses) _DoseRow(dose: dose),
+        ],
       ],
+    );
+  }
+}
+
+/// One dose of the day. Unlike a reminder, a dose whose time has not come is
+/// still shown — the owner wants the whole day's course in front of them.
+class _DoseRow extends ConsumerWidget {
+  const _DoseRow({required this.dose});
+
+  final DueDose dose;
+
+  Future<void> _log(BuildContext context, WidgetRef ref, bool taken) async {
+    final doses = ref.read(doseLogRepositoryProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final outcome = taken
+        ? await doses.logTaken(dose.dose.id)
+        : await doses.skip(dose.dose.id);
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          '${dose.medicine.name} ${taken ? 'logged' : 'skipped'}',
+        ),
+        action: SnackBarAction(
+          label: 'Undo',
+          // Holds the repository, not `ref`: logging rebuilds this row away,
+          // so by the time the action fires its ref is disposed.
+          onPressed: () => doses.undo(outcome),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final time = TimeOfDay.fromDateTime(
+      dose.dose.scheduledFor.toLocal(),
+    ).format(context);
+    final isMissed = dose.dose.status == DoseStatus.missed;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+        child: Row(
+          children: [
+            Icon(
+              Icons.medication_liquid_outlined,
+              color: isMissed ? scheme.error : scheme.primary,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(dose.medicine.name, style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 2),
+                  Text(
+                    [
+                      time,
+                      if (dose.medicine.dosage != null) dose.medicine.dosage!,
+                      if (!dose.dose.isPending) dose.dose.status.label,
+                    ].join(' · '),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isMissed ? scheme.error : scheme.onSurfaceVariant,
+                      fontWeight: isMissed ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (dose.dose.status == DoseStatus.taken)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Icon(Icons.check_circle, color: scheme.primary),
+              )
+            else
+              FilledButton.tonal(
+                onPressed: () => _log(context, ref, true),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(72, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  textStyle: theme.textTheme.labelLarge,
+                ),
+                child: const Text('Take'),
+              ),
+            PopupMenuButton<bool>(
+              tooltip: 'Dose options',
+              onSelected: (taken) => _log(context, ref, taken),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: true, child: Text('Mark taken')),
+                PopupMenuItem(value: false, child: Text('Skip')),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

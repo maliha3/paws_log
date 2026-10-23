@@ -5,7 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'data/providers.dart';
 import 'services/maintenance.dart';
 import 'features/onboarding/welcome_screen.dart';
-import 'features/today/today_screen.dart';
+import 'features/shell/home_shell.dart';
 
 class PawsLogApp extends ConsumerStatefulWidget {
   const PawsLogApp({super.key});
@@ -55,6 +55,6 @@ class _Root extends ConsumerWidget {
     if (needsOnboarding == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return needsOnboarding ? const WelcomeScreen() : const TodayScreen();
+    return needsOnboarding ? const WelcomeScreen() : const HomeShell();
   }
 }

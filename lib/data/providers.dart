@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
 import '../domain/models/weight_entry.dart';
 import '../domain/schedule_sync.dart';
@@ -71,6 +72,13 @@ final weightUnitProvider = StreamProvider<WeightUnit>(
 final petsProvider = StreamProvider<List<Pet>>(
   (ref) => ref.watch(petRepositoryProvider).watchPets(),
 );
+
+/// One pet's medicines, live.
+final medicinesForPetProvider =
+    StreamProvider.family<List<Medicine>, String>(
+      (ref, petId) =>
+          ref.watch(medicineRepositoryProvider).watchForPet(petId),
+    );
 
 /// Whether onboarding is still needed.
 ///

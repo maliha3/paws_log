@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'notification_actions.dart';
+import 'notification_payload.dart';
 
 /// The slice of flutter_local_notifications the scheduler depends on.
 ///
@@ -11,12 +12,13 @@ import 'notification_actions.dart';
 abstract interface class NotificationGateway {
   Future<void> cancelAll();
 
-  Future<void> scheduleReminder({
+  Future<void> schedule({
     required int id,
     required String title,
     required String body,
     required tz.TZDateTime when,
-    required String eventId,
+    required String payload,
+    required NotificationKind kind,
   });
 
   /// How many notifications are currently pending with the OS.
@@ -40,18 +42,19 @@ class PluginNotificationGateway implements NotificationGateway {
   Future<void> cancelAll() => _plugin.cancelAll();
 
   @override
-  Future<void> scheduleReminder({
+  Future<void> schedule({
     required int id,
     required String title,
     required String body,
     required tz.TZDateTime when,
-    required String eventId,
+    required String payload,
+    required NotificationKind kind,
   }) => _plugin.zonedSchedule(
     id: id,
     title: title,
     body: body,
     scheduledDate: when,
-    payload: eventId,
+    payload: payload,
     notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         channel.id,
@@ -59,26 +62,10 @@ class PluginNotificationGateway implements NotificationGateway {
         channelDescription: channel.description,
         importance: Importance.high,
         priority: Priority.high,
-        actions: const [
-          AndroidNotificationAction(
-            NotificationActions.done,
-            'Done',
-            showsUserInterface: false,
-          ),
-          AndroidNotificationAction(
-            NotificationActions.snoozeHour,
-            'Snooze 1 hour',
-            showsUserInterface: false,
-          ),
-          AndroidNotificationAction(
-            NotificationActions.snoozeTomorrow,
-            'Tomorrow',
-            showsUserInterface: false,
-          ),
-        ],
+        actions: NotificationActions.androidActionsFor(kind),
       ),
-      iOS: const DarwinNotificationDetails(
-        categoryIdentifier: NotificationActions.categoryId,
+      iOS: DarwinNotificationDetails(
+        categoryIdentifier: NotificationActions.categoryIdFor(kind),
       ),
     ),
     // Inexact: an exact alarm needs a user-facing permission prompt on
@@ -95,7 +82,16 @@ class PluginNotificationGateway implements NotificationGateway {
 /// where notifications are switched off.
 @visibleForTesting
 class RecordingNotificationGateway implements NotificationGateway {
-  final List<({int id, String eventId, tz.TZDateTime when})> scheduled = [];
+  final List<
+    ({
+      int id,
+      String payload,
+      NotificationKind kind,
+      tz.TZDateTime when,
+      String title,
+    })
+  >
+  scheduled = [];
   int cancelAllCount = 0;
 
   @override
@@ -105,14 +101,21 @@ class RecordingNotificationGateway implements NotificationGateway {
   }
 
   @override
-  Future<void> scheduleReminder({
+  Future<void> schedule({
     required int id,
     required String title,
     required String body,
     required tz.TZDateTime when,
-    required String eventId,
+    required String payload,
+    required NotificationKind kind,
   }) async {
-    scheduled.add((id: id, eventId: eventId, when: when));
+    scheduled.add((
+      id: id,
+      payload: payload,
+      kind: kind,
+      when: when,
+      title: title,
+    ));
   }
 
   @override

@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'core/time_zone.dart';
 import 'data/providers.dart';
-import 'services/notifications/notification_actions.dart';
+import 'services/maintenance.dart';
 import 'services/notifications/notification_providers.dart';
 
 Future<void> main() async {
@@ -31,16 +31,15 @@ Future<void> main() async {
     onForegroundResponse: (response) {
       // Fire and forget: the repository write resyncs the window, and the
       // streams move Today on their own.
-      applyNotificationAction(
-        container.read(reminderEventRepositoryProvider),
-        response,
-      );
+      container.read(notificationActionHandlerProvider).apply(response);
     },
   );
 
-  // Catch up on anything that moved while the app was closed. Not awaited:
-  // nothing on screen depends on it, and it should not hold up first paint.
-  unawaited(container.read(notificationSchedulerProvider).syncAll());
+  // Catch up on everything that moved while the app was closed: doses whose
+  // day passed, courses needing more doses generated, and the notification
+  // window. Not awaited — nothing on screen depends on it, and it should not
+  // hold up first paint.
+  unawaited(runMaintenance(container));
 
   runApp(
     UncontrolledProviderScope(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/providers.dart';
+import 'services/maintenance.dart';
 import 'features/onboarding/welcome_screen.dart';
 import 'features/today/today_screen.dart';
 
@@ -19,11 +20,11 @@ class _PawsLogAppState extends ConsumerState<PawsLogApp> {
   @override
   void initState() {
     super.initState();
-    // The notification window can go stale while the app is backgrounded —
-    // occurrences fire, and the OS does not tell us. Rebuild it on the way
-    // back in.
+    // Time passes while the app is backgrounded and nothing tells us:
+    // notifications fire, doses go unlogged, courses run short of generated
+    // doses. Catch all of it up on the way back in.
     _lifecycle = AppLifecycleListener(
-      onResume: () => ref.read(scheduleSyncProvider).syncAll(),
+      onResume: () => runMaintenanceForWidget(ref),
     );
   }
 

@@ -111,8 +111,22 @@ dose being *missed*.
 iOS silently drops pending local notifications past **64**. The scheduler
 therefore never schedules the whole future — it maintains a rolling window:
 
-- **56** earliest pending occurrences scheduled at any time.
+- **56** earliest pending items scheduled at any time, drawn from *both*
+  sources: reminder occurrences and medicine doses.
 - **8** slots reserved for snoozes fired at runtime.
+- **14** of the 56 are held for reminder occurrences. Time order alone does
+  not work once medicines exist: a twice-daily course produces sixty
+  notifications a month, so filling by date covers about three weeks and a
+  yearly vaccine is never scheduled again. The floor may promote a reminder
+  months out over a dose tomorrow — that is the point. Held slots nobody
+  claims go back to doses.
+- A notification's payload is `<kind>:<id>`, and the notification id is a
+  hash of the payload rather than the bare row id, so a reminder occurrence
+  and a dose can never collide. A payload with no prefix is read as a
+  reminder event, covering notifications scheduled before doses existed.
+- Reminder notifications carry Done / Snooze 1 hour / Tomorrow; dose
+  notifications carry Taken / Skip. Snoozing a dose to tomorrow would mean
+  skipping it, which is a different answer with its own button.
 - **The window cannot refill itself.** Neither platform runs Dart when a local
   notification is merely *delivered*, so there is no way to top the window up
   from the background. It is rebuilt on launch, on resume, after any write
@@ -152,6 +166,19 @@ Starter reminders are due at 09:00 on the day they are created, so after
 midday there is nothing in the future to schedule and a pending count of zero
 is correct. Completing one opens the next occurrence, which is what the test
 checks reaches the OS.
+
+## Launch and resume
+
+`runMaintenance` catches up everything that depends on elapsed time, which is
+exactly what the app cannot observe while closed. Order matters: doses are
+marked missed first, then courses are topped up, then the notification window
+is rebuilt so it reflects both.
+
+Anything wired through `scheduleSyncProvider` must not be read by the
+scheduler itself — that is circular, since the writing repositories depend on
+the scheduler. The scheduler builds its own read-only repositories. Tests
+wire it the same way; getting that wrong makes a write silently fail to
+rebuild the window.
 
 ## Working agreements
 

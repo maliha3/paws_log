@@ -13,6 +13,10 @@ abstract final class AppConstants {
   /// How many of the 64 slots hold scheduled occurrences.
   static const int scheduledNotificationBudget = 56;
 
+  /// Slots held for reminder occurrences so a twice-daily medicine cannot
+  /// crowd low-frequency care out of the window entirely.
+  static const int reminderNotificationFloor = 14;
+
   /// Slots held back for snoozes fired at runtime.
   static const int snoozeNotificationReserve =
       iosPendingNotificationLimit - scheduledNotificationBudget;

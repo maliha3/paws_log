@@ -4,7 +4,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../core/time_zone.dart';
 import '../../data/db/app_database.dart';
+import '../../data/repositories/dose_log_repository.dart';
 import '../../data/repositories/reminder_event_repository.dart';
+import 'notification_payload.dart';
 
 /// Identifiers for the buttons on a reminder notification.
 ///
@@ -12,13 +14,21 @@ import '../../data/repositories/reminder_event_repository.dart';
 /// old build can be acted on by a new one — so they are never renamed.
 abstract final class NotificationActions {
   static const String categoryId = 'reminder';
+  static const String doseCategoryId = 'dose';
+
   static const String done = 'done';
   static const String snoozeHour = 'snooze_hour';
   static const String snoozeTomorrow = 'snooze_tomorrow';
+  static const String taken = 'taken';
+  static const String skip = 'skip';
 
-  /// The iOS category carrying the three buttons.
-  ///
-  /// Not const: `DarwinNotificationAction.plain` is a factory.
+  static String categoryIdFor(NotificationKind kind) => switch (kind) {
+    NotificationKind.reminder => categoryId,
+    NotificationKind.dose => doseCategoryId,
+  };
+
+  /// The iOS categories. Not const: `DarwinNotificationAction.plain` is a
+  /// factory.
   static final DarwinNotificationCategory darwinCategory =
       DarwinNotificationCategory(
         categoryId,
@@ -28,35 +38,82 @@ abstract final class NotificationActions {
           DarwinNotificationAction.plain(snoozeTomorrow, 'Tomorrow'),
         ],
       );
+
+  /// A dose is taken or it is not. Snoozing it to tomorrow would mean
+  /// skipping it, which is a different answer and has its own button.
+  static final DarwinNotificationCategory doseDarwinCategory =
+      DarwinNotificationCategory(
+        doseCategoryId,
+        actions: [
+          DarwinNotificationAction.plain(taken, 'Taken'),
+          DarwinNotificationAction.plain(skip, 'Skip'),
+        ],
+      );
+
+  static List<DarwinNotificationCategory> get allDarwinCategories => [
+    darwinCategory,
+    doseDarwinCategory,
+  ];
+
+  static List<AndroidNotificationAction> androidActionsFor(
+    NotificationKind kind,
+  ) => switch (kind) {
+    NotificationKind.reminder => const [
+      AndroidNotificationAction(done, 'Done', showsUserInterface: false),
+      AndroidNotificationAction(
+        snoozeHour,
+        'Snooze 1 hour',
+        showsUserInterface: false,
+      ),
+      AndroidNotificationAction(
+        snoozeTomorrow,
+        'Tomorrow',
+        showsUserInterface: false,
+      ),
+    ],
+    NotificationKind.dose => const [
+      AndroidNotificationAction(taken, 'Taken', showsUserInterface: false),
+      AndroidNotificationAction(skip, 'Skip', showsUserInterface: false),
+    ],
+  };
 }
 
 /// Applies a notification button press to the database.
 ///
 /// Shared by the foreground and background handlers so an action means the
 /// same thing whether or not the app happened to be open.
-/// [now] is injectable so this is testable at a fixed instant; production
-/// leaves it unset and the repository uses the wall clock.
-Future<void> applyNotificationAction(
-  ReminderEventRepository events,
-  NotificationResponse response, {
-  DateTime? now,
-}) async {
-  final eventId = response.payload;
-  if (eventId == null || eventId.isEmpty) {
-    return;
-  }
-  switch (response.actionId) {
-    case NotificationActions.done:
-      await events.markDone(eventId, now: now);
-    case NotificationActions.snoozeHour:
-      await events.snoozeOneHour(eventId, now: now);
-    case NotificationActions.snoozeTomorrow:
-      await events.snoozeToTomorrow(eventId, now: now);
-    default:
-      // A plain tap on the notification body just opens the app.
-      break;
+class NotificationActionHandler {
+  const NotificationActionHandler({required this.events, required this.doses});
+
+  final ReminderEventRepository events;
+  final DoseLogRepository doses;
+
+  /// [now] is injectable so this is testable at a fixed instant; production
+  /// leaves it unset and the repositories use the wall clock.
+  Future<void> apply(NotificationResponse response, {DateTime? now}) async {
+    final target = NotificationKind.decode(response.payload);
+    if (target == null) {
+      return;
+    }
+    switch ((target.kind, response.actionId)) {
+      case (NotificationKind.reminder, NotificationActions.done):
+        await events.markDone(target.id, now: now);
+      case (NotificationKind.reminder, NotificationActions.snoozeHour):
+        await events.snoozeOneHour(target.id, now: now);
+      case (NotificationKind.reminder, NotificationActions.snoozeTomorrow):
+        await events.snoozeToTomorrow(target.id, now: now);
+      case (NotificationKind.dose, NotificationActions.taken):
+        await doses.logTaken(target.id, now: now);
+      case (NotificationKind.dose, NotificationActions.skip):
+        await doses.skip(target.id, now: now);
+      default:
+        // A plain tap on the notification body just opens the app, and an
+        // action that does not belong to its kind is ignored.
+        break;
+    }
   }
 }
+
 
 /// Handles a button press while the app is not running.
 ///
@@ -76,7 +133,10 @@ Future<void> handleBackgroundNotificationAction(
 
   final db = AppDatabase();
   try {
-    await applyNotificationAction(ReminderEventRepository(db), response);
+    await NotificationActionHandler(
+      events: ReminderEventRepository(db),
+      doses: DoseLogRepository(db),
+    ).apply(response);
   } finally {
     await db.close();
   }

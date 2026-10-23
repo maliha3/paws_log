@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers.dart';
+import '../../data/repositories/dose_log_repository.dart';
 import '../../data/repositories/reminder_event_repository.dart';
 import 'notification_actions.dart';
 import 'notification_gateway.dart';
@@ -29,6 +30,15 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>(
     // depends on `scheduleSyncProvider`, which resolves to this scheduler.
     // The scheduler only reads, so it does not need the hook.
     events: ReminderEventRepository(ref.watch(appDatabaseProvider)),
+    doses: DoseLogRepository(ref.watch(appDatabaseProvider)),
+  ),
+);
+
+/// Applies notification button presses while the app is running.
+final notificationActionHandlerProvider = Provider<NotificationActionHandler>(
+  (ref) => NotificationActionHandler(
+    events: ref.watch(reminderEventRepositoryProvider),
+    doses: ref.watch(doseLogRepositoryProvider),
   ),
 );
 
@@ -53,7 +63,7 @@ Future<void> initializeNotifications(
         requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
-        notificationCategories: [NotificationActions.darwinCategory],
+        notificationCategories: NotificationActions.allDarwinCategories,
       ),
     ),
     onDidReceiveNotificationResponse: onForegroundResponse,

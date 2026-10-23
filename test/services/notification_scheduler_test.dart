@@ -3,14 +3,18 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/core/constants.dart';
 import 'package:paws_log/data/db/app_database.dart';
+import 'package:paws_log/data/repositories/dose_log_repository.dart';
+import 'package:paws_log/data/repositories/medicine_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/reminder_event_repository.dart';
 import 'package:paws_log/data/repositories/reminder_repository.dart';
+import 'package:paws_log/domain/models/medicine.dart';
 import 'package:paws_log/domain/models/reminder.dart';
 import 'package:paws_log/domain/repeat_rule.dart';
 import 'package:paws_log/services/notifications/notification_actions.dart';
 import 'package:paws_log/services/notifications/notification_gateway.dart';
 import 'package:paws_log/services/notifications/notification_ids.dart';
+import 'package:paws_log/services/notifications/notification_payload.dart';
 import 'package:paws_log/services/notifications/notification_scheduler.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -20,6 +24,8 @@ void main() {
   late PetRepository pets;
   late ReminderRepository reminders;
   late ReminderEventRepository events;
+  late DoseLogRepository doses;
+  late MedicineRepository medicines;
   late RecordingNotificationGateway gateway;
   late NotificationScheduler scheduler;
   late DateTime now;
@@ -34,12 +40,17 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     pets = PetRepository(db);
     gateway = RecordingNotificationGateway();
-    events = ReminderEventRepository(db);
+    // Wired exactly as the app wires it: the scheduler reads through its own
+    // repositories with no sync hook, because the writing ones depend on it.
     scheduler = NotificationScheduler(
       gateway: gateway,
-      events: events,
+      events: ReminderEventRepository(db),
+      doses: DoseLogRepository(db),
       clock: () => now,
     );
+    events = ReminderEventRepository(db, scheduleSync: scheduler);
+    doses = DoseLogRepository(db, scheduleSync: scheduler);
+    medicines = MedicineRepository(db, scheduleSync: scheduler);
     // The writing repository resyncs through the scheduler, exactly as the
     // app wires it.
     reminders = ReminderRepository(db, scheduleSync: scheduler);
@@ -95,7 +106,9 @@ void main() {
 
     // Day 1 is in, day 57 is past the budget and so is not.
     final all = await db.select(db.reminderEvents).get();
-    final scheduledIds = gateway.scheduled.map((e) => e.eventId).toSet();
+    final scheduledIds = gateway.scheduled
+        .map((e) => NotificationKind.decode(e.payload)!.id)
+        .toSet();
     final byDay = {
       for (final event in all) event.scheduledFor: event.id,
     };
@@ -136,14 +149,14 @@ void main() {
     await seedDailyOneOffs(petId, 3);
 
     await scheduler.syncAll();
-    final first = gateway.scheduled.map((e) => (e.id, e.eventId)).toList();
+    final first = gateway.scheduled.map((e) => (e.id, e.payload)).toList();
 
     await scheduler.syncAll();
-    final second = gateway.scheduled.map((e) => (e.id, e.eventId)).toList();
+    final second = gateway.scheduled.map((e) => (e.id, e.payload)).toList();
 
     expect(second, equals(first));
     for (final entry in gateway.scheduled) {
-      expect(entry.id, notificationIdFor(entry.eventId));
+      expect(entry.id, notificationIdFor(entry.payload));
       expect(entry.id, greaterThanOrEqualTo(0));
     }
   });
@@ -175,14 +188,14 @@ void main() {
 
     final target = gateway.scheduled.first;
     await events.snooze(
-      target.eventId,
+      NotificationKind.decode(target.payload)!.id,
       until: now.add(const Duration(days: 10)),
     );
     await scheduler.syncAll();
 
     expect(gateway.scheduled, hasLength(3), reason: 'nothing was evicted');
     final moved = gateway.scheduled
-        .firstWhere((entry) => entry.eventId == target.eventId);
+        .firstWhere((entry) => entry.payload == target.payload);
     expect(moved.when.isAfter(target.when), isTrue);
     expect(moved.id, target.id, reason: 'same occurrence, same id');
   });
@@ -204,7 +217,10 @@ void main() {
     await scheduler.syncAll();
 
     expect(gateway.scheduled, hasLength(1));
-    expect(gateway.scheduled.single.eventId, isNot(pending.id));
+    expect(
+      NotificationKind.decode(gateway.scheduled.single.payload)!.id,
+      isNot(pending.id),
+    );
     expect(tz.TZDateTime.from(gateway.scheduled.single.when, tz.local).month, 6);
   });
 
@@ -222,14 +238,23 @@ void main() {
   });
 
   group('actions', () {
-    NotificationResponse response(String eventId, String actionId) =>
-        NotificationResponse(
-          notificationResponseType:
-              NotificationResponseType.selectedNotificationAction,
-          id: notificationIdFor(eventId),
-          actionId: actionId,
-          payload: eventId,
-        );
+    NotificationResponse response(
+      String id,
+      String actionId, {
+      NotificationKind kind = NotificationKind.reminder,
+    }) {
+      final payload = kind.payloadFor(id);
+      return NotificationResponse(
+        notificationResponseType:
+            NotificationResponseType.selectedNotificationAction,
+        id: notificationIdFor(payload),
+        actionId: actionId,
+        payload: payload,
+      );
+    }
+
+    NotificationActionHandler handler() =>
+        NotificationActionHandler(events: events, doses: doses);
 
     Future<String> seedOne() async {
       final petId = await addPet();
@@ -248,8 +273,7 @@ void main() {
     test('Done closes the occurrence and opens the next', () async {
       final eventId = await seedOne();
 
-      await applyNotificationAction(
-        events,
+      await handler().apply(
         response(eventId, NotificationActions.done),
         now: now,
       );
@@ -262,8 +286,7 @@ void main() {
     test('Snooze 1 hour keeps it pending and moves when it fires', () async {
       final eventId = await seedOne();
 
-      await applyNotificationAction(
-        events,
+      await handler().apply(
         response(eventId, NotificationActions.snoozeHour),
         now: now,
       );
@@ -280,8 +303,7 @@ void main() {
     test('Snooze to tomorrow uses the reminder\'s own time of day', () async {
       final eventId = await seedOne();
 
-      await applyNotificationAction(
-        events,
+      await handler().apply(
         response(eventId, NotificationActions.snoozeTomorrow),
         now: now,
       );
@@ -296,13 +318,10 @@ void main() {
     test('a plain tap changes nothing', () async {
       final eventId = await seedOne();
 
-      await applyNotificationAction(
-        events,
-        NotificationResponse(
+      await handler().apply(NotificationResponse(
           notificationResponseType: NotificationResponseType.selectedNotification,
           payload: eventId,
-        ),
-      );
+        ));
 
       expect((await events.findById(eventId))!.isPending, isTrue);
       expect(await db.select(db.reminderEvents).get(), hasLength(1));
@@ -311,16 +330,179 @@ void main() {
     test('an action without a payload is ignored', () async {
       await seedOne();
 
-      await applyNotificationAction(
-        events,
-        NotificationResponse(
+      await handler().apply(NotificationResponse(
           notificationResponseType:
               NotificationResponseType.selectedNotificationAction,
           actionId: NotificationActions.done,
-        ),
-      );
+        ));
 
       expect(await db.select(db.reminderEvents).get(), hasLength(1));
+    });
+  });
+
+  group('medicines share the window', () {
+    Future<String> addCourse({
+      required List<int> times,
+      int days = 30,
+    }) async {
+      final petId = await addPet('Luna');
+      final medicine = await medicines.create(
+        petId: petId,
+        name: 'Amoxicillin',
+        dosage: '1 tablet',
+        now: now,
+        schedule: DoseSchedule(
+          timesOfDayMinutes: times,
+          startDate: dateUtc(now),
+          endDate: dateUtc(now.add(Duration(days: days))),
+        ),
+      );
+      return medicine.id;
+    }
+
+    test('a dose is scheduled with its own kind and payload', () async {
+      await addCourse(times: [20 * 60], days: 0);
+      await scheduler.syncAll();
+
+      final entry = gateway.scheduled.single;
+      expect(entry.kind, NotificationKind.dose);
+      expect(entry.title, 'Amoxicillin');
+
+      final decoded = NotificationKind.decode(entry.payload)!;
+      expect(decoded.kind, NotificationKind.dose);
+      expect(await doses.findById(decoded.id), isNotNull);
+    });
+
+    test('doses and reminders merge into one time-ordered window', () async {
+      final petId = await addPet();
+      await reminders.create(
+        petId: petId,
+        title: 'Deworming',
+        category: ReminderCategory.deworming,
+        repeat: const RepeatRule.months(3),
+        anchorDate: dateUtc(now.add(const Duration(days: 1))),
+        timeOfDayMinutes: 9 * 60,
+        now: now,
+      );
+      await addCourse(times: [20 * 60], days: 2);
+
+      await scheduler.syncAll();
+
+      final times = gateway.scheduled.map((e) => e.when).toList();
+      expect(times, equals(List.of(times)..sort()));
+      expect(
+        gateway.scheduled.map((e) => e.kind),
+        containsAll([NotificationKind.dose, NotificationKind.reminder]),
+      );
+    });
+
+    test('a twice-daily course cannot crowd out the yearly vaccine', () async {
+      final petId = await addPet();
+      // A vaccine a long way off — by time order alone it would never be
+      // scheduled once a medicine is running.
+      await reminders.create(
+        petId: petId,
+        title: 'Yearly vaccine',
+        category: ReminderCategory.vaccine,
+        repeat: const RepeatRule.years(1),
+        anchorDate: dateUtc(now.add(const Duration(days: 300))),
+        timeOfDayMinutes: 9 * 60,
+        now: now,
+      );
+      await addCourse(times: [8 * 60, 20 * 60], days: 60);
+
+      await scheduler.syncAll();
+
+      expect(gateway.scheduled, hasLength(56));
+      final kinds = gateway.scheduled.map((e) => e.kind).toList();
+      expect(
+        kinds.where((kind) => kind == NotificationKind.reminder),
+        hasLength(1),
+        reason: 'the only reminder there is keeps its slot',
+      );
+      expect(
+        gateway.scheduled.firstWhere((e) => e.kind == NotificationKind.reminder)
+            .title,
+        'Yearly vaccine',
+      );
+    });
+
+    test('logging a dose rebuilds the window without it', () async {
+      await addCourse(times: [20 * 60], days: 2);
+      await scheduler.syncAll();
+      final before = gateway.scheduled.length;
+
+      final next = gateway.scheduled.first;
+      await doses.logTaken(
+        NotificationKind.decode(next.payload)!.id,
+        now: now,
+      );
+
+      expect(gateway.scheduled, hasLength(before - 1));
+      expect(
+        gateway.scheduled.map((e) => e.payload),
+        isNot(contains(next.payload)),
+      );
+    });
+
+    test('a dose action logs it taken', () async {
+      await addCourse(times: [20 * 60], days: 2);
+      await scheduler.syncAll();
+      final doseId = NotificationKind.decode(
+        gateway.scheduled.first.payload,
+      )!.id;
+
+      await NotificationActionHandler(events: events, doses: doses).apply(
+        NotificationResponse(
+          notificationResponseType:
+              NotificationResponseType.selectedNotificationAction,
+          actionId: NotificationActions.taken,
+          payload: NotificationKind.dose.payloadFor(doseId),
+        ),
+        now: now,
+      );
+
+      expect((await doses.findById(doseId))!.status.name, 'taken');
+    });
+
+    test('a dose action can skip it', () async {
+      await addCourse(times: [20 * 60], days: 2);
+      await scheduler.syncAll();
+      final doseId = NotificationKind.decode(
+        gateway.scheduled.first.payload,
+      )!.id;
+
+      await NotificationActionHandler(events: events, doses: doses).apply(
+        NotificationResponse(
+          notificationResponseType:
+              NotificationResponseType.selectedNotificationAction,
+          actionId: NotificationActions.skip,
+          payload: NotificationKind.dose.payloadFor(doseId),
+        ),
+        now: now,
+      );
+
+      expect((await doses.findById(doseId))!.status.name, 'skipped');
+    });
+
+    test('a reminder action aimed at a dose does nothing', () async {
+      await addCourse(times: [20 * 60], days: 2);
+      await scheduler.syncAll();
+      final doseId = NotificationKind.decode(
+        gateway.scheduled.first.payload,
+      )!.id;
+
+      await NotificationActionHandler(events: events, doses: doses).apply(
+        NotificationResponse(
+          notificationResponseType:
+              NotificationResponseType.selectedNotificationAction,
+          actionId: NotificationActions.snoozeTomorrow,
+          payload: NotificationKind.dose.payloadFor(doseId),
+        ),
+        now: now,
+      );
+
+      expect((await doses.findById(doseId))!.status.name, 'pending');
     });
   });
 }

@@ -305,6 +305,26 @@ in tests the pinned zone and the system zone differ for part of every day,
 which is exactly how this surfaced. Tests build "today" with
 `todayInTestZone()` for the same reason.
 
+## Look
+
+- **Brand**: one warm green, with an amber accent Material reaches for as
+  `tertiary`. Surfaces carry a hint of green so no screen reads as white
+  paper.
+- **Type**: Nunito, a *variable* font. One file; weight is an axis, so
+  `fontWeight` alone is ignored and `fontVariations` is what moves it. All of
+  that lives in `AppTheme._style`.
+- **The mark** is drawn (`PawMark`), not an image: crisp at any size, takes
+  the colour it is given, and can animate. `tool/make_icon.py` draws the app
+  icon from the same geometry — change one, change both.
+- **Category colours** are a `ThemeExtension` with its own light and dark
+  steps, so the "colours come from the theme only" rule still holds. The icon
+  always repeats what the colour says; nothing rests on colour alone.
+- **Motion plays once and briefly.** Rows arrive staggered, the mark springs
+  in, screens use the platform transition. Nothing loops: a looping animation
+  keeps a widget test awake and an owner's eye busy for no reason. Keep
+  durations under ~700ms or the test harness's bounded pumping will not have
+  settled before assertions run.
+
 Colours come from the `ColorScheme` only — there are no hardcoded `Colors.*`
 outside `app_theme.dart` and the PDF, which uses fixed inks because it is for
 print. Dark mode is its own scheme, not an inverted light one.

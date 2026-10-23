@@ -174,6 +174,10 @@ void main() {
     await tapAndPump(tester, find.text('Save'));
     expect(find.text('4.20'), findsOneWidget);
 
+    // Back to Today, which is where the app actually lives.
+    await tapAndPump(tester, find.byTooltip('Back'));
+    await tapAndPump(tester, find.text('Today').first);
+
     // Optionally hold the final frame so a screenshot can be taken from
     // outside; the test tears the app down as soon as it returns.
     const holdSeconds = int.fromEnvironment('PAWSLOG_HOLD_SECONDS');

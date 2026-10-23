@@ -130,7 +130,14 @@ class _Header extends StatelessWidget {
 
     return Row(
       children: [
-        PetAvatar(name: pet.name, photoPath: pet.photoPath, radius: 36),
+        Hero(
+          tag: 'pet-avatar-${pet.id}',
+          child: PetAvatar(
+            name: pet.name,
+            photoPath: pet.photoPath,
+            radius: 36,
+          ),
+        ),
         const SizedBox(width: 16),
         Expanded(
           child: Column(

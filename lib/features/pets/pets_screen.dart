@@ -77,10 +77,13 @@ class PetsScreen extends ConsumerWidget {
                     horizontal: 12,
                     vertical: 8,
                   ),
-                  leading: PetAvatar(
-                    name: pet.name,
-                    photoPath: pet.photoPath,
-                    radius: 24,
+                  leading: Hero(
+                    tag: 'pet-avatar-${pet.id}',
+                    child: PetAvatar(
+                      name: pet.name,
+                      photoPath: pet.photoPath,
+                      radius: 24,
+                    ),
                   ),
                   title: Text(pet.name),
                   subtitle: pet.breed == null ? null : Text(pet.breed!),

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/dose_schedule.dart';
+import '../../core/theme/category_palette.dart';
+import '../../core/widgets/paw_mark.dart';
 import '../../core/widgets/pet_avatar.dart';
 import '../../data/providers.dart';
 import '../../domain/models/due_dose.dart';
@@ -38,15 +41,7 @@ class TodayScreen extends ConsumerWidget {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-                    child: Text(
-                      DateFormat.yMMMMEEEEd().format(now),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
+                  _Summary(now: now, groups: groups),
                   for (final group in groups)
                     _PetSection(group: group, startOfToday: startOfToday),
                 ],
@@ -68,12 +63,8 @@ class _NothingDue extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.check_circle_outline,
-              size: 64,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
+            const AnimatedPawMark(size: 72),
+            const SizedBox(height: 20),
             Text('Nothing due today', style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
@@ -131,8 +122,14 @@ class _PetSection extends StatelessWidget {
             ],
           ),
         ),
-        for (final item in overdue) _DueRow(item: item, isOverdue: true),
-        for (final item in dueToday) _DueRow(item: item, isOverdue: false),
+        for (final (index, item) in overdue.indexed)
+          _DueRow(item: item, isOverdue: true, position: index),
+        for (final (index, item) in dueToday.indexed)
+          _DueRow(
+            item: item,
+            isOverdue: false,
+            position: overdue.length + index,
+          ),
         if (group.doses.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
@@ -143,7 +140,11 @@ class _PetSection extends StatelessWidget {
               ),
             ),
           ),
-          for (final dose in group.doses) _DoseRow(dose: dose),
+          for (final (index, dose) in group.doses.indexed)
+            _DoseRow(
+              dose: dose,
+              position: overdue.length + dueToday.length + index,
+            ),
         ],
       ],
     );
@@ -153,9 +154,10 @@ class _PetSection extends StatelessWidget {
 /// One dose of the day. Unlike a reminder, a dose whose time has not come is
 /// still shown — the owner wants the whole day's course in front of them.
 class _DoseRow extends ConsumerWidget {
-  const _DoseRow({required this.dose});
+  const _DoseRow({required this.dose, this.position = 0});
 
   final DueDose dose;
+  final int position;
 
   Future<void> _log(BuildContext context, WidgetRef ref, bool taken) async {
     final doses = ref.read(doseLogRepositoryProvider);
@@ -167,9 +169,7 @@ class _DoseRow extends ConsumerWidget {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          '${dose.medicine.name} ${taken ? 'logged' : 'skipped'}',
-        ),
+        content: Text('${dose.medicine.name} ${taken ? 'logged' : 'skipped'}'),
         action: SnackBarAction(
           label: 'Undo',
           // Holds the repository, not `ref`: logging rebuilds this row away,
@@ -189,61 +189,69 @@ class _DoseRow extends ConsumerWidget {
     ).format(context);
     final isMissed = dose.dose.status == DoseStatus.missed;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
-        child: Row(
-          children: [
-            Icon(
-              Icons.medication_liquid_outlined,
-              color: isMissed ? scheme.error : scheme.primary,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(dose.medicine.name, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 2),
-                  Text(
-                    [
-                      time,
-                      if (dose.medicine.dosage != null) dose.medicine.dosage!,
-                      if (!dose.dose.isPending) dose.dose.status.label,
-                    ].join(' · '),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isMissed ? scheme.error : scheme.onSurfaceVariant,
-                      fontWeight: isMissed ? FontWeight.w600 : null,
+    return _Arriving(
+      position: position,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: Row(
+            children: [
+              _Glyph(
+                icon: Icons.medication_liquid_outlined,
+                color: isMissed ? scheme.error : context.categories.medicine,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dose.medicine.name,
+                      style: theme.textTheme.titleMedium,
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        time,
+                        if (dose.medicine.dosage != null) dose.medicine.dosage!,
+                        if (!dose.dose.isPending) dose.dose.status.label,
+                      ].join(' · '),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isMissed
+                            ? scheme.error
+                            : scheme.onSurfaceVariant,
+                        fontWeight: isMissed ? FontWeight.w600 : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (dose.dose.status == DoseStatus.taken)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Icon(Icons.check_circle, color: scheme.primary),
+                )
+              else
+                FilledButton.tonal(
+                  onPressed: () => _log(context, ref, true),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(72, 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    textStyle: theme.textTheme.labelLarge,
                   ),
+                  child: const Text('Take'),
+                ),
+              PopupMenuButton<bool>(
+                tooltip: 'Dose options',
+                onSelected: (taken) => _log(context, ref, taken),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: true, child: Text('Mark taken')),
+                  PopupMenuItem(value: false, child: Text('Skip')),
                 ],
               ),
-            ),
-            if (dose.dose.status == DoseStatus.taken)
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Icon(Icons.check_circle, color: scheme.primary),
-              )
-            else
-              FilledButton.tonal(
-                onPressed: () => _log(context, ref, true),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(72, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  textStyle: theme.textTheme.labelLarge,
-                ),
-                child: const Text('Take'),
-              ),
-            PopupMenuButton<bool>(
-              tooltip: 'Dose options',
-              onSelected: (taken) => _log(context, ref, taken),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: true, child: Text('Mark taken')),
-                PopupMenuItem(value: false, child: Text('Skip')),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -280,10 +288,17 @@ class _Badge extends StatelessWidget {
 
 /// One due item, with Done as a single tap.
 class _DueRow extends ConsumerWidget {
-  const _DueRow({required this.item, required this.isOverdue});
+  const _DueRow({
+    required this.item,
+    required this.isOverdue,
+    this.position = 0,
+  });
 
   final DueItem item;
   final bool isOverdue;
+
+  /// Where this row sits in the list, so they arrive in order.
+  final int position;
 
   Future<void> _markDone(BuildContext context, WidgetRef ref) async {
     final events = ref.read(reminderEventRepositoryProvider);
@@ -343,63 +358,68 @@ class _DueRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
-        child: Row(
-          children: [
-            Icon(
-              _iconFor(item.reminder.category),
-              color: isOverdue ? scheme.error : scheme.primary,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.reminder.title,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _dueLabel(context),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isOverdue
-                          ? scheme.error
-                          : scheme.onSurfaceVariant,
-                      fontWeight: isOverdue ? FontWeight.w600 : null,
+    return _Arriving(
+      position: position,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: Row(
+            children: [
+              _Glyph(
+                icon: _iconFor(item.reminder.category),
+                color: isOverdue
+                    ? scheme.error
+                    : context.categories.of(item.reminder.category),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.reminder.title,
+                      style: theme.textTheme.titleMedium,
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _dueLabel(context),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isOverdue
+                            ? scheme.error
+                            : scheme.onSurfaceVariant,
+                        fontWeight: isOverdue ? FontWeight.w600 : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonal(
+                onPressed: () => _markDone(context, ref),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(72, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  textStyle: theme.textTheme.labelLarge,
+                ),
+                child: const Text('Done'),
+              ),
+              PopupMenuButton<_RowAction>(
+                tooltip: 'More',
+                onSelected: (action) => _handleMenu(context, ref, action),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: _RowAction.snoozeHour,
+                    child: Text('Snooze 1 hour'),
                   ),
+                  PopupMenuItem(
+                    value: _RowAction.snoozeTomorrow,
+                    child: Text('Snooze to tomorrow'),
+                  ),
+                  PopupMenuItem(value: _RowAction.skip, child: Text('Skip')),
                 ],
               ),
-            ),
-            FilledButton.tonal(
-              onPressed: () => _markDone(context, ref),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(72, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                textStyle: theme.textTheme.labelLarge,
-              ),
-              child: const Text('Done'),
-            ),
-            PopupMenuButton<_RowAction>(
-              tooltip: 'More',
-              onSelected: (action) => _handleMenu(context, ref, action),
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: _RowAction.snoozeHour,
-                  child: Text('Snooze 1 hour'),
-                ),
-                PopupMenuItem(
-                  value: _RowAction.snoozeTomorrow,
-                  child: Text('Snooze to tomorrow'),
-                ),
-                PopupMenuItem(value: _RowAction.skip, child: Text('Skip')),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -410,9 +430,9 @@ class _DueRow extends ConsumerWidget {
     final snoozed = item.event.snoozedUntil;
 
     if (isOverdue) {
-      final days = localDateOnly(DateTime.now())
-          .difference(localDateOnly(item.event.scheduledFor))
-          .inDays;
+      final days = localDateOnly(
+        DateTime.now(),
+      ).difference(localDateOnly(item.event.scheduledFor)).inDays;
       final overdueText = days <= 1
           ? 'Overdue since yesterday'
           : 'Overdue by $days days';
@@ -431,3 +451,106 @@ class _DueRow extends ConsumerWidget {
 }
 
 enum _RowAction { snoozeHour, snoozeTomorrow, skip }
+
+/// A row arriving: a short fade and lift, offset by its place in the list so
+/// the day appears in order rather than all at once.
+///
+/// Plays once, briefly. A list that keeps moving is a list nobody can read.
+class _Arriving extends StatelessWidget {
+  const _Arriving({required this.position, required this.child});
+
+  final int position;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child
+      .animate(delay: Duration(milliseconds: 40 * position.clamp(0, 8)))
+      .fadeIn(duration: 260.ms)
+      .slideY(begin: 0.12, curve: Curves.easeOutCubic);
+}
+
+/// A category's icon on its own tinted disc.
+///
+/// The colour is what tells the kinds of care apart at a glance; the icon
+/// repeats it so it never rests on colour alone.
+class _Glyph extends StatelessWidget {
+  const _Glyph({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 42,
+    height: 42,
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Icon(icon, size: 22, color: color),
+  );
+}
+
+/// The day, and how much of it is still outstanding.
+///
+/// A bare date told the owner nothing they did not already know. The count
+/// is the thing they opened the app to find out.
+class _Summary extends StatelessWidget {
+  const _Summary({required this.now, required this.groups});
+
+  final DateTime now;
+  final List<PetDayGroup> groups;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final outstanding = groups.fold<int>(
+      0,
+      (total, group) =>
+          total +
+          group.overdue.length +
+          group.dueToday.length +
+          group.doses.where((dose) => dose.dose.isPending).length,
+    );
+    final overdue = groups.fold<int>(
+      0,
+      (total, group) => total + group.overdue.length,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              DateFormat.yMMMMEEEEd().format(now),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          if (outstanding > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: overdue > 0
+                    ? scheme.errorContainer
+                    : scheme.primaryContainer,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '$outstanding left',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: overdue > 0
+                      ? scheme.onErrorContainer
+                      : scheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 300.ms);
+  }
+}

@@ -23,16 +23,35 @@ class PetAvatar extends StatelessWidget {
     // initial has to work as a fallback rather than an error state.
     final hasPhoto = path != null && File(path).existsSync();
 
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: scheme.primaryContainer,
-      foregroundImage: hasPhoto ? FileImage(File(path)) : null,
-      child: Text(
-        name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-        style: TextStyle(
-          color: scheme.onPrimaryContainer,
-          fontSize: radius * 0.8,
-          fontWeight: FontWeight.w600,
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.primaryContainer,
+            Color.alphaBlend(
+              scheme.tertiary.withValues(alpha: 0.35),
+              scheme.primaryContainer,
+            ),
+          ],
+        ),
+      ),
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.transparent,
+        foregroundImage: hasPhoto ? FileImage(File(path)) : null,
+        child: Text(
+          name.isEmpty ? '?' : name.characters.first.toUpperCase(),
+          style: TextStyle(
+            color: scheme.onPrimaryContainer,
+            fontSize: radius * 0.78,
+            fontWeight: FontWeight.w800,
+            fontVariations: const [FontVariation('wght', 800)],
+          ),
         ),
       ),
     );

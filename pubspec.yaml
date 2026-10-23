@@ -52,6 +52,7 @@ dependencies:
   pdf: ^3.13.1
   purchases_flutter: ^10.18.1
   url_launcher: ^6.3.3
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,16 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/app_icon.png
+
+  fonts:
+    # Nunito is a variable font: one file, and weights are selected through
+    # `fontVariations` in the text theme rather than separate files.
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

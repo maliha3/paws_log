@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/widgets/empty_section.dart';
+import '../../core/theme/category_palette.dart';
 import '../../core/widgets/pet_avatar.dart';
+import '../../core/widgets/pill_button.dart';
 import '../../data/providers.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
@@ -30,9 +32,7 @@ class PetDetailScreen extends ConsumerWidget {
         : null;
 
     if (pet == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -82,20 +82,14 @@ class PetDetailScreen extends ConsumerWidget {
               navigator.pop();
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'archive',
-                child: Text('Archive'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete everything'),
-              ),
+              PopupMenuItem(value: 'archive', child: Text('Archive')),
+              PopupMenuItem(value: 'delete', child: Text('Delete everything')),
             ],
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
         children: [
           _Header(pet: pet),
           const SizedBox(height: 24),
@@ -120,42 +114,52 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final facts = [
-      if (pet.breed != null) pet.breed!,
+    final palette = context.categories;
+
+    // Short, unrelated facts read better as tiles than as a sentence.
+    final facts = <(String, String)>[
       if (pet.sex != PetSex.unknown)
-        pet.sex == PetSex.female ? 'Female' : 'Male',
-      if (pet.neutered == true) 'Neutered',
-      if (pet.birthday != null) _age(pet.birthday!),
+        (pet.sex == PetSex.female ? 'Female' : 'Male', 'Sex'),
+      if (pet.birthday != null) (_age(pet.birthday!), 'Age'),
+      if (pet.breed != null) (pet.breed!, 'Breed'),
+      if (pet.neutered != null) (pet.neutered! ? 'Yes' : 'No', 'Neutered'),
     ];
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Hero(
-          tag: 'pet-avatar-${pet.id}',
-          child: PetAvatar(
-            name: pet.name,
-            photoPath: pet.photoPath,
-            radius: 36,
-          ),
+        Row(
+          children: [
+            Hero(
+              tag: 'pet-avatar-${pet.id}',
+              child: PetAvatar(
+                name: pet.name,
+                photoPath: pet.photoPath,
+                radius: 40,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(pet.name, style: theme.textTheme.headlineMedium),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        if (facts.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Text(pet.name, style: theme.textTheme.headlineSmall),
-              if (facts.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  facts.join(' · '),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+              for (final (index, fact) in facts.indexed)
+                FactChip(
+                  value: fact.$1,
+                  label: fact.$2,
+                  background: palette.pastel(index),
+                  foreground: palette.onPastel,
                 ),
-              ],
             ],
           ),
-        ),
+        ],
       ],
     );
   }
@@ -163,16 +167,15 @@ class _Header extends StatelessWidget {
   /// Approximate, in whole years or months. Owners do not want a day count.
   static String _age(DateTime birthday) {
     final now = DateTime.now();
-    final months =
-        (now.year - birthday.year) * 12 + now.month - birthday.month;
+    final months = (now.year - birthday.year) * 12 + now.month - birthday.month;
     if (months < 1) {
       return 'Newborn';
     }
     if (months < 24) {
-      return '$months ${months == 1 ? 'month' : 'months'} old';
+      return '$months mo';
     }
     final years = months ~/ 12;
-    return '$years years old';
+    return '$years yrs';
   }
 }
 
@@ -299,7 +302,6 @@ class _MedicineTile extends ConsumerWidget {
     );
   }
 }
-
 
 /// A heading with an "Add" affordance, shared by the profile's sections.
 class _SectionHeader extends StatelessWidget {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/widgets/paw_mark.dart';
+import '../../core/widgets/pill_button.dart';
 import '../../core/widgets/soft_backdrop.dart';
 
 import 'add_pet_screen.dart';
@@ -59,13 +60,13 @@ class WelcomeScreen extends StatelessWidget {
                             .fadeIn(duration: 400.ms)
                             .slideY(begin: 0.3, curve: Curves.easeOutCubic),
                         const Spacer(flex: 3),
-                        FilledButton(
+                        PillButton(
+                              label: 'Get started',
                               onPressed: () => Navigator.of(context).push(
                                 MaterialPageRoute<void>(
                                   builder: (context) => const AddPetScreen(),
                                 ),
                               ),
-                              child: const Text('Get started'),
                             )
                             .animate(delay: 640.ms)
                             .fadeIn(duration: 400.ms)

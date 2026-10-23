@@ -65,18 +65,22 @@ void main() {
 
     expect(find.textContaining('Ragdoll'), findsOneWidget);
     expect(find.textContaining('Female'), findsOneWidget);
-    expect(find.textContaining('3 years old'), findsOneWidget);
+    expect(find.textContaining('3 yrs'), findsOneWidget);
 
-    // Every section is present on one screen.
+    // Every section is on the page. Scrolled to, because the list is lazy
+    // and the lower sections are below the fold.
     for (final section in [
       'Weight',
       'Medicines',
       'Vaccinations',
       'Vet visits',
     ]) {
+      await scrollIntoView(tester, find.text(section));
       expect(find.text(section), findsOneWidget, reason: section);
     }
+    await scrollIntoView(tester, find.text('4.20'));
     expect(find.text('4.20'), findsOneWidget);
+    await scrollIntoView(tester, find.text('Amoxicillin'));
     expect(find.text('Amoxicillin'), findsOneWidget);
 
     await disposeTree(tester);

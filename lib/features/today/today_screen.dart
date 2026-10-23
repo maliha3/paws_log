@@ -28,40 +28,47 @@ class TodayScreen extends ConsumerWidget {
     final startOfToday = startOfLocalDay(now);
 
     return Scaffold(
-      // The date sits in the list rather than under the title: an AppBar
-      // bottom has a fixed height, which cannot hold the text once someone
-      // turns their type size up.
-      appBar: AppBar(title: const Text('Today')),
-      body: groups.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Something went wrong.\n$error')),
-        data: (groups) => groups.isEmpty
-            ? const _NothingDue()
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                children: [
-                  _Summary(now: now, groups: groups),
-                  for (final group in groups)
-                    _PetSection(group: group, startOfToday: startOfToday),
-                ],
-              ),
+      // No AppBar: the greeting is the header, and it scrolls with the list
+      // rather than sitting in a fixed-height bar that cannot hold scaled
+      // text.
+      // Without an AppBar there is nothing holding the top inset, so the
+      // greeting would sit under the status bar.
+      body: SafeArea(
+        bottom: false,
+        child: groups.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) =>
+              Center(child: Text('Something went wrong.\n$error')),
+          data: (groups) => groups.isEmpty
+              ? _NothingDue(now: now)
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+                  children: [
+                    _Greeting(now: now, groups: groups),
+                    for (final group in groups)
+                      _PetSection(group: group, startOfToday: startOfToday),
+                  ],
+                ),
+        ),
       ),
     );
   }
 }
 
 class _NothingDue extends StatelessWidget {
-  const _NothingDue();
+  const _NothingDue({required this.now});
+
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+      children: [
+        _Greeting(now: now, groups: const []),
+        const SizedBox(height: 60),
+        Column(
           children: [
             const AnimatedPawMark(size: 72),
             const SizedBox(height: 20),
@@ -76,7 +83,7 @@ class _NothingDue extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }
@@ -491,15 +498,23 @@ class _Glyph extends StatelessWidget {
   );
 }
 
-/// The day, and how much of it is still outstanding.
+/// A greeting, the date, and how much is still outstanding.
 ///
-/// A bare date told the owner nothing they did not already know. The count
-/// is the thing they opened the app to find out.
-class _Summary extends StatelessWidget {
-  const _Summary({required this.now, required this.groups});
+/// "Today" in a bar told the owner nothing. What they opened the app to find
+/// out is whether anything is waiting, and whether any of it is late.
+class _Greeting extends StatelessWidget {
+  const _Greeting({required this.now, required this.groups});
 
   final DateTime now;
   final List<PetDayGroup> groups;
+
+  String get _timeOfDay {
+    final hour = now.hour;
+    if (hour < 12) {
+      return 'Good morning';
+    }
+    return hour < 18 ? 'Good afternoon' : 'Good evening';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -520,37 +535,57 @@ class _Summary extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 18),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
-              DateFormat.yMMMMEEEEd().format(now),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        _timeOfDay,
+                        style: theme.textTheme.headlineMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PawMark(size: 20, color: scheme.primary),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  DateFormat.yMMMMEEEEd().format(now),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
-          if (outstanding > 0)
+          if (outstanding > 0) ...[
+            const SizedBox(width: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: overdue > 0
-                    ? scheme.errorContainer
-                    : scheme.primaryContainer,
+                color: overdue > 0 ? scheme.errorContainer : scheme.primary,
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
                 '$outstanding left',
-                style: theme.textTheme.labelMedium?.copyWith(
+                style: theme.textTheme.labelLarge?.copyWith(
                   color: overdue > 0
                       ? scheme.onErrorContainer
-                      : scheme.onPrimaryContainer,
+                      : scheme.onPrimary,
                 ),
               ),
             ),
+          ],
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    ).animate().fadeIn(duration: 320.ms);
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models/reminder.dart';
 
-/// Colours that identify a kind of care.
+/// The soft colours that carry information without shouting.
 ///
 /// A theme extension rather than constants scattered through the widgets, so
 /// the "colours come from the theme only" rule still holds and dark mode gets
@@ -15,27 +15,40 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     required this.fleaTick,
     required this.other,
     required this.medicine,
-    required this.onCategory,
+    required this.pastels,
+    required this.onPastel,
   });
 
-  /// Lighter, warmer steps: these sit on a dark surface.
-  static const CategoryPalette dark = CategoryPalette(
-    vaccine: Color(0xFF7FB3F5),
-    deworming: Color(0xFF6ED3B5),
-    fleaTick: Color(0xFFF2B263),
-    other: Color(0xFFB8C4BE),
-    medicine: Color(0xFFC3A6F0),
-    onCategory: Color(0xFF10201A),
+  /// Light mode: saturated enough to read on cream.
+  static const CategoryPalette light = CategoryPalette(
+    vaccine: Color(0xFF4F7BC9),
+    deworming: Color(0xFF2E9177),
+    fleaTick: Color(0xFFE08A2E),
+    other: Color(0xFF8A7868),
+    medicine: Color(0xFF8A6BC4),
+    pastels: [
+      Color(0xFFEDE6FA), // lavender
+      Color(0xFFFBF0CE), // butter
+      Color(0xFFDFF0E4), // mint
+      Color(0xFFFBE2D2), // peach
+    ],
+    onPastel: Color(0xFF3A2E26),
   );
 
-  /// Deeper steps, for contrast against a light surface.
-  static const CategoryPalette light = CategoryPalette(
-    vaccine: Color(0xFF2C6DB5),
-    deworming: Color(0xFF1C8268),
-    fleaTick: Color(0xFFB9742A),
-    other: Color(0xFF5C6B64),
-    medicine: Color(0xFF6E4BA8),
-    onCategory: Color(0xFFFFFFFF),
+  /// Dark mode: lifted and desaturated, so nothing glows.
+  static const CategoryPalette dark = CategoryPalette(
+    vaccine: Color(0xFF8FB2EE),
+    deworming: Color(0xFF6DCDAE),
+    fleaTick: Color(0xFFF2B263),
+    other: Color(0xFFC2B2A3),
+    medicine: Color(0xFFBCA4EA),
+    pastels: [
+      Color(0xFF332C45),
+      Color(0xFF3B3524),
+      Color(0xFF24362C),
+      Color(0xFF3E2E25),
+    ],
+    onPastel: Color(0xFFF3E9E0),
   );
 
   final Color vaccine;
@@ -46,8 +59,12 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
   /// Medicines are not a reminder category, but they share the row language.
   final Color medicine;
 
-  /// Readable on any of the above.
-  final Color onCategory;
+  /// Backgrounds for small fact chips, used in a fixed order so the same
+  /// fact keeps the same colour rather than shuffling as facts appear.
+  final List<Color> pastels;
+
+  /// Readable on any pastel.
+  final Color onPastel;
 
   Color of(ReminderCategory category) => switch (category) {
     ReminderCategory.vaccine => vaccine,
@@ -56,6 +73,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     ReminderCategory.other => other,
   };
 
+  Color pastel(int index) => pastels[index % pastels.length];
+
   @override
   CategoryPalette copyWith({
     Color? vaccine,
@@ -63,14 +82,16 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     Color? fleaTick,
     Color? other,
     Color? medicine,
-    Color? onCategory,
+    List<Color>? pastels,
+    Color? onPastel,
   }) => CategoryPalette(
     vaccine: vaccine ?? this.vaccine,
     deworming: deworming ?? this.deworming,
     fleaTick: fleaTick ?? this.fleaTick,
     other: other ?? this.other,
     medicine: medicine ?? this.medicine,
-    onCategory: onCategory ?? this.onCategory,
+    pastels: pastels ?? this.pastels,
+    onPastel: onPastel ?? this.onPastel,
   );
 
   @override
@@ -84,12 +105,16 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
       fleaTick: Color.lerp(fleaTick, other.fleaTick, t)!,
       other: Color.lerp(this.other, other.other, t)!,
       medicine: Color.lerp(medicine, other.medicine, t)!,
-      onCategory: Color.lerp(onCategory, other.onCategory, t)!,
+      pastels: [
+        for (var i = 0; i < pastels.length; i++)
+          Color.lerp(pastels[i], other.pastels[i], t)!,
+      ],
+      onPastel: Color.lerp(onPastel, other.onPastel, t)!,
     );
   }
 }
 
-/// Reads the category colours off the current theme.
+/// Reads the soft palette off the current theme.
 extension CategoryPaletteOf on BuildContext {
   CategoryPalette get categories =>
       Theme.of(this).extension<CategoryPalette>() ?? CategoryPalette.light;

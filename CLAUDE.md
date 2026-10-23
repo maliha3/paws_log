@@ -307,9 +307,18 @@ which is exactly how this surfaced. Tests build "today" with
 
 ## Look
 
-- **Brand**: one warm green, with an amber accent Material reaches for as
-  `tertiary`. Surfaces carry a hint of green so no screen reads as white
-  paper.
+- **Brand**: warm amber on cream, with near-black `secondary` carrying the
+  solid controls. Cream rather than white is what stops the app reading as a
+  form; the dark ink against it is what stops the warm palette going mushy.
+- **Signature pieces**: a pill CTA with a dark disc holding the mark
+  (`PillButton`), pastel fact tiles (`FactChip`), a greeting header instead
+  of a title bar, and a floating pill navigation bar.
+- A floating bar means content scrolls *under* it. Anything anchored to the
+  bottom needs lifting clear, and lists need bottom padding — otherwise taps
+  land on the bar instead of the button, which is how the "Add a pet" button
+  stopped working.
+- Removing an `AppBar` removes the top inset with it. A screen without one
+  needs `SafeArea(bottom: false)` or its header sits under the clock.
 - **Type**: Nunito, a *variable* font. One file; weight is an axis, so
   `fontWeight` alone is ignored and `fontVariations` is what moves it. All of
   that lives in `AppTheme._style`.

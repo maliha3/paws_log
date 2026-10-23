@@ -58,16 +58,22 @@ class PetsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addPet(context, ref, pets.value ?? const []),
-        icon: const Icon(Icons.add),
-        label: const Text('Add a pet'),
+      // Lifted clear of the floating navigation bar, which otherwise sits
+      // on top of it and swallows the tap.
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 72),
+        child: FloatingActionButton.extended(
+          onPressed: () => _addPet(context, ref, pets.value ?? const []),
+          icon: const Icon(Icons.add),
+          label: const Text('Add a pet'),
+        ),
       ),
       body: pets.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Something went wrong.\n$error')),
         data: (pets) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          // Room at the bottom for the floating bar and the button above it.
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
           children: [
             for (final pet in pets)
               Card(

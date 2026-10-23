@@ -7,11 +7,16 @@ import 'category_palette.dart';
 /// surfaces soft enough that a list of medical reminders does not read like a
 /// hospital form.
 abstract final class AppTheme {
-  /// The brand green. Warm rather than clinical.
-  static const Color _brand = Color(0xFF2E7D63);
+  /// Warm amber. The app is about a pet, not a patient.
+  static const Color _brand = Color(0xFFEE9A3A);
 
-  /// A warm accent, for highlights and anything worth drawing the eye to.
-  static const Color _accent = Color(0xFFE09B4A);
+  /// Near-black with a brown cast, for type and the solid controls. The
+  /// contrast against cream is what stops the warm palette going mushy.
+  static const Color _ink = Color(0xFF2A211B);
+
+  /// Cream, not white. A white screen is what made this look like a form.
+  static const Color _cream = Color(0xFFFDF6EE);
+  static const Color _creamDeep = Color(0xFF17120F);
 
   static const String _fontFamily = 'Nunito';
 
@@ -25,13 +30,23 @@ abstract final class AppTheme {
           seedColor: _brand,
           brightness: brightness,
         ).copyWith(
-          // Keep Material's harmony, but make the accent the one it reaches
-          // for rather than a hue derived from the green.
-          tertiary: _accent,
-          onTertiary: isLight ? Colors.white : const Color(0xFF2A1A05),
-          // A hint of green in the background, so the app never looks like
-          // plain white paper.
-          surface: isLight ? const Color(0xFFF7FAF8) : const Color(0xFF101614),
+          primary: _brand,
+          onPrimary: _ink,
+          // The solid, confident control colour — the dark pill in the
+          // reference, not the amber.
+          secondary: isLight ? _ink : const Color(0xFFF3E7DC),
+          onSecondary: isLight ? _cream : _ink,
+          surface: isLight ? _cream : _creamDeep,
+          onSurface: isLight ? _ink : const Color(0xFFF3E7DC),
+          surfaceContainerLow: isLight
+              ? const Color(0xFFFFFCF8)
+              : const Color(0xFF221A15),
+          surfaceContainerHighest: isLight
+              ? const Color(0xFFF6EADC)
+              : const Color(0xFF2C2219),
+          outlineVariant: isLight
+              ? const Color(0xFFEADCCB)
+              : const Color(0xFF3A2E25),
         );
 
     final text = _textTheme(scheme);

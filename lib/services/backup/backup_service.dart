@@ -36,6 +36,7 @@ class BackupService {
       'pets': _json(await _db.select(_db.pets).get()),
       'reminders': _json(await _db.select(_db.reminders).get()),
       'reminderEvents': _json(await _db.select(_db.reminderEvents).get()),
+      'prescriptions': _json(await _db.select(_db.prescriptions).get()),
       'medicines': _json(await _db.select(_db.medicines).get()),
       'doseLogs': _json(await _db.select(_db.doseLogs).get()),
       'vetVisits': _json(await _db.select(_db.vetVisits).get()),
@@ -114,6 +115,7 @@ class BackupService {
       await _db.delete(_db.vetVisits).go();
       await _db.delete(_db.doseLogs).go();
       await _db.delete(_db.medicines).go();
+      await _db.delete(_db.prescriptions).go();
       await _db.delete(_db.reminderEvents).go();
       await _db.delete(_db.reminders).go();
       await _db.delete(_db.pets).go();
@@ -130,6 +132,17 @@ class BackupService {
             _db.reminderEvents,
             _rows(tables['reminderEvents'], ReminderEventRow.fromJson),
           )
+          // Visits before prescriptions, and prescriptions before medicines:
+          // a prescription may belong to a visit, and a medicine to a
+          // prescription, and foreign keys are enforced row by row.
+          ..insertAll(
+            _db.vetVisits,
+            _rows(tables['vetVisits'], VetVisitRow.fromJson),
+          )
+          ..insertAll(
+            _db.prescriptions,
+            _rows(tables['prescriptions'], PrescriptionRow.fromJson),
+          )
           ..insertAll(
             _db.medicines,
             _rows(tables['medicines'], MedicineRow.fromJson),
@@ -137,10 +150,6 @@ class BackupService {
           ..insertAll(
             _db.doseLogs,
             _rows(tables['doseLogs'], DoseLogRow.fromJson),
-          )
-          ..insertAll(
-            _db.vetVisits,
-            _rows(tables['vetVisits'], VetVisitRow.fromJson),
           )
           ..insertAll(
             _db.visitAttachments,

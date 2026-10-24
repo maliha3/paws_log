@@ -8,6 +8,7 @@ import '../../domain/dose_schedule.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/prescription.dart';
 import '../health/visit_edit_screen.dart';
+import 'prescription_flow.dart';
 import '../medicines/medicine_edit_screen.dart';
 
 /// One pet's medical record, in four segments.
@@ -80,9 +81,13 @@ class _MedicalScreenState extends ConsumerState<MedicalScreen> {
   /// recorded by marking a vaccine reminder done, which is the whole point of
   /// them being automatic.
   Widget? _addButton() => switch (_segment) {
-    // Scanning arrives with the prescription flow.
-    MedicalSegment.prescriptions => null,
     MedicalSegment.vaccines => null,
+    MedicalSegment.prescriptions => FloatingActionButton(
+      tooltip: 'Add a prescription',
+      onPressed: () =>
+          showAddPrescriptionSheet(context, ref, petId: widget.petId),
+      child: const Icon(Icons.add),
+    ),
     MedicalSegment.medicines => FloatingActionButton(
       tooltip: 'Add a medicine',
       onPressed: () => Navigator.of(context).push(

@@ -81,6 +81,7 @@ class Medicine {
     required this.updatedAt,
     this.dosage,
     this.notes,
+    this.prescriptionId,
     this.isActive = true,
   });
 
@@ -95,6 +96,11 @@ class Medicine {
 
   final DoseSchedule schedule;
   final String? notes;
+
+  /// The prescription this course was read off, when it came from one, so a
+  /// dose can always be checked against the page the vet wrote it on.
+  final String? prescriptionId;
+
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -104,6 +110,7 @@ class Medicine {
     String? dosage,
     DoseSchedule? schedule,
     String? notes,
+    String? prescriptionId,
     bool? isActive,
     DateTime? updatedAt,
   }) => Medicine(
@@ -113,6 +120,7 @@ class Medicine {
     dosage: dosage ?? this.dosage,
     schedule: schedule ?? this.schedule,
     notes: notes ?? this.notes,
+    prescriptionId: prescriptionId ?? this.prescriptionId,
     isActive: isActive ?? this.isActive,
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,

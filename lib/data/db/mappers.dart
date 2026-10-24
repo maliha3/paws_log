@@ -73,6 +73,7 @@ extension MedicineRowMapper on MedicineRow {
       endDate: endDate,
     ),
     notes: notes,
+    prescriptionId: prescriptionId,
     isActive: isActive,
     createdAt: createdAt,
     updatedAt: updatedAt,

@@ -13,6 +13,8 @@ import 'package:paws_log/domain/models/medicine.dart';
 import 'package:paws_log/domain/models/pet.dart';
 import 'package:paws_log/domain/models/reminder.dart';
 import 'package:paws_log/domain/repeat_rule.dart';
+import 'package:paws_log/services/prescriptions/ocr_service.dart';
+import 'package:paws_log/services/prescriptions/scan_service.dart';
 
 import '../helpers/harness.dart';
 
@@ -84,7 +86,22 @@ void main() {
     usePhoneSurface(tester);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          // So the prescription flow can be walked without a camera.
+          scanServiceProvider.overrideWithValue(
+            const FixedScanService(
+              scanned: ['/pages/one.jpg'],
+              picked: ['/pages/one.jpg'],
+            ),
+          ),
+          ocrServiceProvider.overrideWithValue(
+            const FixedOcrService(
+              '1. Amoxicillin clavulanate 50 mg tablets\n'
+              'Give one tablet twice daily for 7 days',
+            ),
+          ),
+        ],
         child: MediaQuery(
           data: MediaQueryData(
             platformBrightness: brightness,
@@ -171,6 +188,18 @@ void main() {
       for (final segment in ['Vaccines', 'Vet visits', 'Prescriptions']) {
         await tapAndSettle(tester, find.text(segment));
       }
+    });
+
+    forEachAppearance('the prescription review', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await scrollAndTap(tester, find.text('Medical record'));
+      await tapAndSettle(tester, find.byTooltip('Add a prescription'));
+      await tapAndSettle(tester, find.text('Scan the pages'));
+
+      expect(find.text('Check the prescription'), findsOneWidget);
+      // The whole form, because it is the densest screen in the app.
+      await scrollIntoView(tester, find.text('Add another medicine'));
     });
 
     forEachAppearance('a vet visit', (tester) async {

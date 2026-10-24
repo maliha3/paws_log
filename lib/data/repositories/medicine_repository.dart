@@ -47,6 +47,7 @@ class MedicineRepository {
     required DoseSchedule schedule,
     String? dosage,
     String? notes,
+    String? prescriptionId,
     DateTime? now,
   }) async {
     final timestamp = (now ?? DateTime.now()).toUtc();
@@ -57,6 +58,7 @@ class MedicineRepository {
       dosage: dosage?.trim().isEmpty ?? true ? null : dosage!.trim(),
       schedule: schedule,
       notes: notes,
+      prescriptionId: prescriptionId,
       createdAt: timestamp,
       updatedAt: timestamp,
     );
@@ -223,6 +225,7 @@ extension on Medicine {
     startDate: schedule.startDate,
     endDate: schedule.endDate,
     notes: notes,
+    prescriptionId: prescriptionId,
     isActive: isActive,
     createdAt: createdAt,
     updatedAt: updatedAt,

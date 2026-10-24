@@ -50,7 +50,7 @@ void main() {
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
           photoStoreProvider.overrideWithValue(
-            FixedPhotoStore(taken: taken, picked: picked),
+            FixedPhotoStore(taken: taken, picked: picked, root: scratch),
           ),
         ],
         child: const PawsLogApp(),
@@ -216,5 +216,209 @@ void main() {
     expect(find.text('Luna only'), findsNothing);
 
     await disposeTree(tester);
+  });
+
+  group('acting on a photo', () {
+    /// Opens the album's only photo full screen with its menu open.
+    Future<void> openMenu(WidgetTester tester) async {
+      await openAlbum(tester);
+      await tapAndSettle(tester, find.byType(Image).first);
+      await tapAndSettle(tester, find.byTooltip('Photo options'));
+    }
+
+    testWidgets('a caption can be written and cleared', (tester) async {
+      await PetPhotoRepository(db).add(petId: petId, path: writeImage('a.jpg'));
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Edit caption'));
+      await tester.enterText(find.byType(TextField), 'Asleep in the sink');
+      await tapAndSettle(tester, find.text('Save'));
+
+      expect(
+        (await db.select(db.petPhotos).get()).single.caption,
+        'Asleep in the sink',
+      );
+      expect(find.text('Asleep in the sink'), findsOneWidget);
+
+      await tapAndSettle(tester, find.byTooltip('Photo options'));
+      await tapAndSettle(tester, find.text('Edit caption'));
+      await tester.enterText(find.byType(TextField), '');
+      await tapAndSettle(tester, find.text('Save'));
+
+      expect((await db.select(db.petPhotos).get()).single.caption, isNull);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('cancelling leaves the caption alone', (tester) async {
+      await PetPhotoRepository(db).add(
+        petId: petId,
+        path: writeImage('a.jpg'),
+        caption: 'On the windowsill',
+      );
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Edit caption'));
+      await tester.enterText(find.byType(TextField), 'Something else');
+      await tapAndSettle(tester, find.text('Cancel'));
+
+      expect(
+        (await db.select(db.petPhotos).get()).single.caption,
+        'On the windowsill',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('deleting asks first, and keeping it does nothing', (
+      tester,
+    ) async {
+      final path = writeImage('a.jpg');
+      await PetPhotoRepository(db).add(petId: petId, path: path);
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Delete'));
+      await tapAndSettle(tester, find.text('Keep'));
+
+      expect(await db.select(db.petPhotos).get(), hasLength(1));
+      expect(File(path).existsSync(), isTrue);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('deleting removes the photo, its file, and closes the viewer', (
+      tester,
+    ) async {
+      final path = writeImage('a.jpg');
+      await PetPhotoRepository(db).add(petId: petId, path: path);
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Delete'));
+      await tapAndSettle(tester, find.text('Delete').last);
+
+      expect(await db.select(db.petPhotos).get(), isEmpty);
+      expect(File(path).existsSync(), isFalse);
+      expect(
+        find.textContaining('No photos yet'),
+        findsOneWidget,
+        reason: 'the viewer had nothing left to show, so it closed',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('deleting one of several stays in the viewer', (tester) async {
+      final album = PetPhotoRepository(db);
+      await album.add(
+        petId: petId,
+        path: writeImage('a.jpg'),
+        takenAt: DateTime.utc(2026, 5, 20),
+        caption: 'Newest',
+      );
+      await album.add(
+        petId: petId,
+        path: writeImage('b.jpg'),
+        takenAt: DateTime.utc(2026, 5, 1),
+        caption: 'Oldest',
+      );
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Delete'));
+      await tapAndSettle(tester, find.text('Delete').last);
+
+      expect(await db.select(db.petPhotos).get(), hasLength(1));
+      expect(find.text('Photo'), findsOneWidget);
+      expect(find.text('Oldest'), findsOneWidget);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('a photo can become the profile photo', (tester) async {
+      final path = writeImage('a.jpg');
+      await PetPhotoRepository(db).add(petId: petId, path: path);
+      await openPet(tester);
+      await openMenu(tester);
+
+      await tapAndSettle(tester, find.text('Set as profile photo'));
+
+      final pet = (await db.select(db.pets).get()).single;
+      expect(pet.photoPath, isNotNull);
+      expect(
+        pet.photoPath,
+        isNot(path),
+        reason: 'the portrait is a copy, so deleting the album photo is safe',
+      );
+      expect(File(pet.photoPath!).existsSync(), isTrue);
+      expect(
+        File(path).existsSync(),
+        isTrue,
+        reason: 'the album keeps its own copy',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('deleting the album photo leaves the portrait standing', (
+      tester,
+    ) async {
+      final path = writeImage('a.jpg');
+      await PetPhotoRepository(db).add(petId: petId, path: path);
+      await openPet(tester);
+      await openMenu(tester);
+      await tapAndSettle(tester, find.text('Set as profile photo'));
+      final portrait = (await db.select(db.pets).get()).single.photoPath!;
+
+      await tapAndSettle(tester, find.byTooltip('Photo options'));
+      await tapAndSettle(tester, find.text('Delete'));
+      await tapAndSettle(tester, find.text('Delete').last);
+
+      expect(await db.select(db.petPhotos).get(), isEmpty);
+      expect(
+        File(portrait).existsSync(),
+        isTrue,
+        reason: 'this is the whole reason the portrait is a copy',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('a new portrait replaces the old file', (tester) async {
+      final album = PetPhotoRepository(db);
+      await album.add(
+        petId: petId,
+        path: writeImage('a.jpg'),
+        takenAt: DateTime.utc(2026, 5, 20),
+      );
+      await album.add(
+        petId: petId,
+        path: writeImage('b.jpg'),
+        takenAt: DateTime.utc(2026, 5, 1),
+      );
+      await openPet(tester);
+      await openMenu(tester);
+      await tapAndSettle(tester, find.text('Set as profile photo'));
+      final first = (await db.select(db.pets).get()).single.photoPath!;
+
+      await tester.drag(find.byType(PageView), const Offset(-400, 0));
+      await settle(tester);
+      await tapAndSettle(tester, find.byTooltip('Photo options'));
+      await tapAndSettle(tester, find.text('Set as profile photo'));
+
+      final second = (await db.select(db.pets).get()).single.photoPath!;
+      expect(second, isNot(first));
+      expect(File(second).existsSync(), isTrue);
+      expect(
+        File(first).existsSync(),
+        isFalse,
+        reason: 'changing your mind should not accumulate files',
+      );
+
+      await disposeTree(tester);
+    });
   });
 }

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/repositories/pet_photo_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
@@ -12,19 +11,16 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../helpers/harness.dart';
 
-/// Records deletions and really removes the files.
-class _RecordingPhotoStore extends PhotoStore {
-  _RecordingPhotoStore() : super(picker: ImagePicker());
+/// Records deletions, and really removes the files.
+class _RecordingPhotoStore extends FixedPhotoStore {
+  _RecordingPhotoStore(Directory root) : super(root: root);
 
   final List<String> deleted = [];
 
   @override
   Future<void> delete(String path) async {
     deleted.add(path);
-    final file = File(path);
-    if (file.existsSync()) {
-      await file.delete();
-    }
+    await super.delete(path);
   }
 }
 
@@ -42,10 +38,10 @@ void main() {
   setUp(() async {
     now = tz.TZDateTime(tz.local, 2026, 5, 4, 9);
     db = memoryDatabase();
-    photos = _RecordingPhotoStore();
+    scratch = Directory.systemTemp.createTempSync('paws_log_vault');
+    photos = _RecordingPhotoStore(scratch);
     pets = PetRepository(db, photoStore: photos);
     album = PetPhotoRepository(db, photoStore: photos);
-    scratch = Directory.systemTemp.createTempSync('paws_log_vault');
     petId = (await pets.create(name: 'Mochi', now: now)).id;
   });
 
@@ -209,6 +205,65 @@ void main() {
       expect(File(path).existsSync(), isTrue);
       expect(await album.countForPet(petId), 1);
       expect(photos.deleted, isEmpty);
+    });
+  });
+
+  group('promoting a photo to the portrait', () {
+    test('copies the file rather than sharing its path', () async {
+      final source = writeImage('vault/one.jpg');
+      await album.add(petId: petId, path: source, now: now);
+
+      await pets.setPortrait(petId, sourcePath: source, now: now);
+
+      final portrait = (await pets.findById(petId))!.photoPath;
+      expect(portrait, isNotNull);
+      expect(portrait, isNot(source));
+      expect(File(portrait!).existsSync(), isTrue);
+      expect(File(portrait).readAsBytesSync(), File(source).readAsBytesSync());
+      expect(
+        File(source).existsSync(),
+        isTrue,
+        reason: 'the album keeps its own copy',
+      );
+    });
+
+    test('so deleting the album photo leaves the portrait standing', () async {
+      final source = writeImage('vault/one.jpg');
+      final photo = await album.add(petId: petId, path: source, now: now);
+      await pets.setPortrait(petId, sourcePath: source, now: now);
+      final portrait = (await pets.findById(petId))!.photoPath!;
+
+      await album.delete(photo.id);
+
+      expect(File(portrait).existsSync(), isTrue);
+      expect((await pets.findById(petId))!.photoPath, portrait);
+    });
+
+    test('replacing the portrait deletes the one it replaced', () async {
+      final first = writeImage('vault/one.jpg');
+      final second = writeImage('vault/two.jpg');
+      await pets.setPortrait(petId, sourcePath: first, now: now);
+      final before = (await pets.findById(petId))!.photoPath!;
+
+      await pets.setPortrait(petId, sourcePath: second, now: now);
+
+      final after = (await pets.findById(petId))!.photoPath!;
+      expect(after, isNot(before));
+      expect(File(after).existsSync(), isTrue);
+      expect(
+        File(before).existsSync(),
+        isFalse,
+        reason: 'changing your mind should not accumulate files',
+      );
+    });
+
+    test('a pet that is gone is left alone', () async {
+      final source = writeImage('vault/one.jpg');
+      await pets.delete(petId);
+
+      await pets.setPortrait(petId, sourcePath: source, now: now);
+
+      expect(await pets.findById(petId), isNull);
     });
   });
 }

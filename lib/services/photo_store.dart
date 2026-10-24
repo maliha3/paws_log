@@ -77,6 +77,20 @@ class PhotoStore {
     return destination;
   }
 
+  /// Copies a file already on disk into [folder], returning the new path.
+  ///
+  /// For a photo that has to belong in two places at once: promoting an album
+  /// photo to the portrait copies it rather than sharing the path, so
+  /// deleting it from the album cannot leave the portrait pointing at
+  /// nothing.
+  Future<String> copyInto(String path, {String folder = petPhotos}) async {
+    final destination = await directory(folder);
+    final extension = p.extension(path).isEmpty ? '.jpg' : p.extension(path);
+    final target = p.join(destination.path, '${uuid.v4()}$extension');
+    await File(path).copy(target);
+    return target;
+  }
+
   /// Removes a stored photo, ignoring one that is already gone.
   Future<void> delete(String path) async {
     final file = File(path);
@@ -88,9 +102,21 @@ class PhotoStore {
 
 /// Hands back fixed paths instead of asking the OS. For tests, and for
 /// walking the photo flows without a camera.
+///
+/// Its file work is deliberately **synchronous**. A widget test runs under a
+/// fake clock, and an asynchronous file-system future started from a widget
+/// callback never completes there — the handler hangs on its first await and
+/// everything after it silently never runs. `runAsync` cannot rescue it,
+/// because the callback is dispatched in the binding's zone rather than the
+/// test's. Synchronous syscalls have no such problem, so the files are real
+/// and the assertions about them mean something.
 @visibleForTesting
 class FixedPhotoStore extends PhotoStore {
-  FixedPhotoStore({this.taken, this.picked = const []});
+  FixedPhotoStore({this.taken, this.picked = const [], Directory? root})
+    : _root = root ?? Directory.systemTemp;
+
+  /// Stands in for the documents directory, which no test host has.
+  final Directory _root;
 
   /// What the camera "returns". Null means the owner backed out.
   final String? taken;
@@ -108,6 +134,35 @@ class FixedPhotoStore extends PhotoStore {
   Future<List<String>> pickMany({
     String folder = PhotoStore.visitAttachments,
   }) async => picked;
+
+  @override
+  Future<Directory> directory(String folderName) async {
+    final folder = Directory(p.join(_root.path, folderName));
+    if (!folder.existsSync()) {
+      folder.createSync(recursive: true);
+    }
+    return folder;
+  }
+
+  @override
+  Future<String> copyInto(
+    String path, {
+    String folder = PhotoStore.petPhotos,
+  }) async {
+    final destination = await directory(folder);
+    final extension = p.extension(path).isEmpty ? '.jpg' : p.extension(path);
+    final target = p.join(destination.path, '${uuid.v4()}$extension');
+    File(path).copySync(target);
+    return target;
+  }
+
+  @override
+  Future<void> delete(String path) async {
+    final file = File(path);
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
+  }
 }
 
 final photoStoreProvider = Provider<PhotoStore>((ref) => PhotoStore());

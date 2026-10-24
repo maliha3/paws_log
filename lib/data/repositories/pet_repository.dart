@@ -84,6 +84,34 @@ class PetRepository {
     );
   }
 
+  /// Points the pet's portrait at a copy of [sourcePath].
+  ///
+  /// A copy, so promoting an album photo and then deleting it from the album
+  /// cannot leave the portrait pointing at nothing. The portrait it replaces
+  /// is deleted, since nothing else refers to it and an owner changing their
+  /// mind a few times should not accumulate files.
+  Future<void> setPortrait(
+    String petId, {
+    required String sourcePath,
+    DateTime? now,
+  }) async {
+    final store = _photos;
+    if (store == null) {
+      return;
+    }
+    final pet = await findById(petId);
+    if (pet == null) {
+      return;
+    }
+    final copy = await store.copyInto(sourcePath, folder: PhotoStore.petPhotos);
+    await update(pet.copyWith(photoPath: copy), now: now);
+
+    final superseded = pet.photoPath;
+    if (superseded != null && superseded != copy) {
+      await store.delete(superseded);
+    }
+  }
+
   /// Deletes a pet, everything recorded about them, and their photo files.
   ///
   /// Foreign keys cascade the rows. Nothing cascades the *files*, so they are

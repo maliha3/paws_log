@@ -152,8 +152,8 @@ dose being *missed*.
 
 ## The Medical section
 
-Per pet, in four segments: **Prescriptions · Medicines (active/past) ·
-Vaccines · Vet visits**.
+Per pet, in five segments: **Prescriptions · Medicines (active/past) ·
+Vaccines · Vet visits · Health**.
 
 A `Prescription` holds its page images in order, the raw OCR text, and the
 vet details. `Medicine.prescriptionId` links each medicine back to the
@@ -220,6 +220,31 @@ prescription is written. `Medicine` stores **actual dose times**, because
 that is what generates doses. The review screen converts on Confirm: 1/day →
 09:00, 2 → 08:00 and 20:00, 3 → 08:00, 14:00 and 20:00, 4 → 08:00, 12:00,
 16:00 and 20:00. The owner can edit the times afterwards like any medicine.
+
+### What has your vet diagnosed?
+
+Conditions and allergies live in the **Health** segment, not on the profile:
+they are medical records, and the profile answers "who is this cat". The one
+exception is the **allergy banner**, which sits at the top of the profile
+whenever the pet has an allergy recorded. An allergy is safety information,
+and the moment it matters — a new food, a locum vet, someone else feeding the
+cat — is rarely the moment anyone goes looking for it. The banner is absent
+entirely when there is nothing to say, so it never becomes furniture people
+stop reading.
+
+The condition editor offers a pick-list — CKD, FIP, cat flu, FIV, FeLV,
+diabetes, hyperthyroidism — and free text alongside it. **This is not the app
+offering an opinion**, which is why the screen asks *"What has your vet
+diagnosed?"* and says in as many words that Paws Log never works out a
+diagnosis of its own. The suggestions exist so an owner types less, not so
+they pick from a shortlist of guesses. The screen carries
+[AppConstants.vetDisclaimer] like every other screen that proposes anything.
+
+Conditions sort **ongoing first, then most recently diagnosed**, undated ones
+last. That sort happens in Dart, not SQL: "ongoing before past" is an order
+over an enum's meaning, and a text column sorts alphabetically — `ongoing`
+happens to sort before `past`, which would make the right answer a
+coincidence waiting to break.
 
 ## Vaccination history
 

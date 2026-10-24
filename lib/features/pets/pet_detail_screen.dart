@@ -6,6 +6,7 @@ import '../../core/widgets/pet_avatar.dart';
 import '../../core/widgets/pill_button.dart';
 import '../../data/providers.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/pet_condition.dart';
 import '../medical/medical_screen.dart';
 import '../photos/photos_screen.dart';
 import '../premium/premium_gate.dart';
@@ -90,7 +91,8 @@ class PetDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
         children: [
           _Header(pet: pet),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          _AllergyBanner(petId: petId),
           _MedicalCard(petId: petId),
           const SizedBox(height: 12),
           _PhotosCard(petId: petId),
@@ -227,6 +229,84 @@ class _PhotosCard extends ConsumerWidget {
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (context) => PhotosScreen(petId: petId),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What this cat reacts to, on the profile rather than only in the record.
+///
+/// An allergy is safety information, and the moment it matters — a new food,
+/// a locum vet, someone else feeding the cat — is rarely the moment anyone
+/// goes looking for it. Absent entirely when there is nothing to say, so it
+/// never becomes furniture people stop reading.
+class _AllergyBanner extends ConsumerWidget {
+  const _AllergyBanner({required this.petId});
+
+  final String petId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final warn = context.categories.fleaTick;
+    final allergies = ref.watch(allergiesForPetProvider(petId));
+    final reactions = allergies.hasValue
+        ? allergies.requireValue
+        : const <PetAllergy>[];
+
+    if (reactions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Material(
+        color: warn.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => MedicalScreen(
+                petId: petId,
+                initialSegment: MedicalSegment.health,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 20, color: warn),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reactions.length == 1 ? 'Allergy' : 'Allergies',
+                        style: theme.textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        reactions
+                            .map(
+                              (allergy) => allergy.reaction == null
+                                  ? allergy.allergen
+                                  : '${allergy.allergen} '
+                                        '(${allergy.reaction})',
+                            )
+                            .join(', '),
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

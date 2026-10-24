@@ -5,6 +5,7 @@ import 'package:paws_log/app.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
+import 'package:paws_log/data/repositories/pet_health_repository.dart';
 import 'package:paws_log/data/repositories/pet_photo_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/reminder_repository.dart';
@@ -68,6 +69,18 @@ void main() {
       petId: pet.id,
       measuredOn: DateTime.utc(2026, 5, 1),
       grams: 4450,
+    );
+    final health = PetHealthRepository(db);
+    await health.addCondition(
+      petId: pet.id,
+      name: 'Chronic kidney disease, stage two',
+      date: DateTime.utc(2026, 1, 10),
+      notes: 'Bloods every six months, low phosphorus diet',
+    );
+    await health.addAllergy(
+      petId: pet.id,
+      allergen: 'Chicken',
+      reaction: 'Itching round the ears and over the shoulders',
     );
     await PetPhotoRepository(db).add(
       petId: pet.id,
@@ -197,9 +210,26 @@ void main() {
       expect(find.text('Amoxicillin clavulanate'), findsOneWidget);
 
       // Every segment, because each lays out differently.
-      for (final segment in ['Vaccines', 'Vet visits', 'Prescriptions']) {
+      for (final segment in [
+        'Vaccines',
+        'Vet visits',
+        'Health',
+        'Prescriptions',
+      ]) {
         await tapAndSettle(tester, find.text(segment));
       }
+    });
+
+    forEachAppearance('the condition editor', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await openMedicalSegment(tester, 'Health');
+      await tapAndSettle(tester, find.byTooltip('Add to the health record'));
+      await tapAndSettle(tester, find.text('Add a condition'));
+
+      expect(find.text('What has your vet diagnosed?'), findsOneWidget);
+      // The suggestion chips wrap, which is the part worth checking at 2x.
+      await scrollIntoView(tester, find.text('Add condition'));
     });
 
     forEachAppearance('the photo album', (tester) async {

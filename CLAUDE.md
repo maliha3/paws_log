@@ -181,6 +181,33 @@ dose being *missed*.
 - Today shows the whole day's course, including doses whose time has not come
   — unlike reminders, where only what is due shows up.
 
+## Grooming
+
+`nailTrim` and `brushing` are reminder categories like any other, with their
+own palette colour and icon. What makes them different is cadence: grooming is
+care the owner does themselves, so it repeats every few days where medical
+care repeats every few months. `ReminderCategory.isGrooming` marks them.
+
+Starter suggestions: **nail trim every three weeks**, and **brushing weekly,
+or every two days for a long coat** — a long coat mats. A coat nobody has
+recorded takes the weekly suggestion, the lighter of the two: guessing "long"
+would put a short-haired cat on a chore its owner does not need. The coat is
+asked for during onboarding, on the screen before the reminders, and choosing
+it retunes the brushing suggestion — only that one interval, so anything else
+the owner has already changed survives going back a screen.
+
+The **shedding-season switch** is off in the suggestion. It is opt-in, and the
+app should not open by proposing a daily job. It only appears in the reminder
+sheet for day and week rules, and the flag is never stored on a rule it cannot
+apply to, since a dormant flag reads as a promise the schedule does not keep.
+See "Shedding season is the one exception to the anchor rule" above for what
+it does.
+
+One thing the scheduler does *not* need: a reminder only ever has one pending
+event, so a brushing reminder every two days costs **one** notification slot,
+not thirty. The 56-slot window and the 14-slot reminder floor are unchanged by
+grooming.
+
 ## The Medical section
 
 Per pet, in five segments: **Prescriptions · Medicines (active/past) ·
@@ -191,7 +218,7 @@ vet details. `Medicine.prescriptionId` links each medicine back to the
 prescription it came from, so a course always has its source.
 
 The record is its own screen, reached from one card on the pet's profile. The
-profile answers "who is this cat" — facts, photo, weight trend — and the four
+profile answers "who is this cat" — facts, photo, weight trend — and the
 segments sit behind it, because stacking them meant scrolling past every
 medicine to reach the vaccines. The segments are chips in a row that scrolls
 sideways rather than squeezing, so the labels survive the largest text sizes.

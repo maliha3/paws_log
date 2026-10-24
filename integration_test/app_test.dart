@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:paws_log/core/constants.dart';
+import 'package:paws_log/domain/starter_reminders.dart';
 import 'package:paws_log/main.dart' as app;
 
 /// Drives the real app on a device or simulator.
@@ -35,6 +36,19 @@ void main() {
     fail('Timed out waiting for $what');
   }
 
+  /// Scrolls a lazy list until [finder] matches, if it does not already.
+  Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+    if (finder.evaluate().isNotEmpty) {
+      return;
+    }
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
+  }
+
   Future<void> tapAndPump(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);
     await tester.pump();
@@ -65,12 +79,18 @@ void main() {
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Mochi');
     await tapAndPump(tester, find.text('Continue'));
 
-    // 3 — Starter reminders.
+    // 3 — Starter reminders, including the two grooming ones.
     expect(find.text('Starter reminders'), findsOneWidget);
     expect(find.text(AppConstants.vetDisclaimer), findsOneWidget);
     expect(find.text('Yearly vaccine'), findsOneWidget);
     expect(find.text('Deworming'), findsOneWidget);
     expect(find.text('Flea & tick treatment'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Brushing'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Nail trim'), findsOneWidget);
 
     await tapAndPump(tester, find.text('Finish'));
 
@@ -122,7 +142,11 @@ void main() {
     // Rows due at the same time have no guaranteed order, so this counts
     // them rather than naming the one it expects to go.
     final rowsBefore = find.text('Done').evaluate().length;
-    expect(rowsBefore, 3);
+    expect(
+      rowsBefore,
+      starterReminderDrafts().length,
+      reason: 'every suggestion opens due today',
+    );
 
     await tapAndPump(tester, find.text('Done').first);
     await pumpUntil(
@@ -155,28 +179,69 @@ void main() {
     expect(find.text('Mochi'), findsWidgets);
     await tapAndPump(tester, find.text('Mochi').last);
 
-    for (final section in [
-      'Weight',
-      'Medicines',
-      'Vaccinations',
-      'Vet visits',
-    ]) {
-      expect(find.text(section), findsOneWidget, reason: section);
+    // The profile is the way in to everything else.
+    for (final card in ['Reminders', 'Medical record', 'Photos', 'Weight']) {
+      await scrollTo(tester, find.text(card));
+      expect(find.text(card), findsOneWidget, reason: card);
     }
+
+    await scrollTo(tester, find.byTooltip('Add a weighing'));
+    await tapAndPump(tester, find.byTooltip('Add a weighing'));
+    await tester.enterText(find.widgetWithText(TextField, 'Weight'), '4.2');
+    await tapAndPump(tester, find.text('Save'));
+    expect(find.text('4.20'), findsOneWidget);
+
+    // 7 — The medical record, five segments behind one card.
+    await scrollTo(tester, find.text('Medical record'));
+    await tapAndPump(tester, find.text('Medical record'));
+    expect(find.textContaining('No prescriptions yet'), findsOneWidget);
+
+    await tapAndPump(tester, find.text('Vaccines'));
     expect(
       find.text('Yearly vaccine'),
       findsOneWidget,
       reason: 'completing it earlier filled in the vaccination history',
     );
 
-    await tapAndPump(tester, find.byTooltip('Add a weighing'));
-    await tester.enterText(find.widgetWithText(TextField, 'Weight'), '4.2');
-    await tapAndPump(tester, find.text('Save'));
-    expect(find.text('4.20'), findsOneWidget);
+    await tapAndPump(tester, find.text('Health'));
+    await tapAndPump(tester, find.byTooltip('Add to the health record'));
+    await tapAndPump(tester, find.text('Add an allergy'));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Reacts to'),
+      'Chicken',
+    );
+    await scrollTo(tester, find.text('Add allergy'));
+    await tapAndPump(tester, find.text('Add allergy'));
+    expect(find.text('Chicken'), findsOneWidget);
 
-    // Back to Today, which is where the app actually lives.
     await tapAndPump(tester, find.byTooltip('Back'));
-    await tapAndPump(tester, find.text('Today').first);
+
+    // The allergy shows on the profile, which is the point of recording it.
+    await pumpUntil(
+      tester,
+      'the allergy banner',
+      () => find.text('Allergy').evaluate().isNotEmpty,
+    );
+
+    // 8 — Reminders, which before this could only be made in onboarding.
+    await scrollTo(tester, find.text('Reminders'));
+    await tapAndPump(tester, find.text('Reminders'));
+    expect(find.text('Brushing'), findsOneWidget);
+    expect(find.text('Nail trim'), findsOneWidget);
+
+    await tapAndPump(tester, find.byTooltip('Add a reminder'));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'What is it'),
+      'Ear check',
+    );
+    await scrollTo(tester, find.text('Save'));
+    await tapAndPump(tester, find.text('Save'));
+    expect(find.text('Ear check'), findsOneWidget);
+
+    // Pausing it takes it off Today, through the real database.
+    await tapAndPump(tester, find.byTooltip('Reminder options').first);
+    await tapAndPump(tester, find.text('Pause'));
+    expect(find.text('Paused'), findsOneWidget);
 
     // Optionally hold the final frame so a screenshot can be taken from
     // outside; the test tears the app down as soon as it returns.

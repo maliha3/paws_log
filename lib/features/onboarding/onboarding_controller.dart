@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers.dart';
 import '../../services/notifications/notification_providers.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_draft.dart';
 import '../../domain/starter_reminders.dart';
 
@@ -105,9 +106,30 @@ class OnboardingController extends Notifier<OnboardingDraft> {
       ? state.copyWith(clearNeutered: true)
       : state.copyWith(neutered: value);
 
-  void setCoatLength(CoatLength? value) => state = value == null
-      ? state.copyWith(clearCoatLength: true)
-      : state.copyWith(coatLength: value);
+  void setCoatLength(CoatLength? value) {
+    state = value == null
+        ? state.copyWith(clearCoatLength: true)
+        : state.copyWith(coatLength: value);
+    _retuneBrushing();
+  }
+
+  /// Re-times the brushing suggestion for the coat just chosen.
+  ///
+  /// The coat is picked on the screen before the reminders, so in practice
+  /// this runs before the owner has seen them. Only the brushing interval is
+  /// touched, so anything they have already changed elsewhere survives.
+  void _retuneBrushing() {
+    final repeat = brushingRepeatFor(state.coatLength);
+    state = state.copyWith(
+      reminders: [
+        for (final draft in state.reminders)
+          if (draft.category == ReminderCategory.brushing)
+            draft.copyWith(repeat: repeat)
+          else
+            draft,
+      ],
+    );
+  }
 
   void toggleReminder(int index, {required bool enabled}) =>
       _replaceReminder(index, state.reminders[index].copyWith(enabled: enabled));

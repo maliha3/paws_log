@@ -6,6 +6,8 @@ import 'package:paws_log/core/constants.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 
+import 'package:paws_log/domain/starter_reminders.dart';
+
 import '../helpers/harness.dart';
 
 void main() {
@@ -120,25 +122,24 @@ void main() {
     );
     expect(find.text('Yearly vaccine'), findsNothing);
 
-    // With everything removed, finishing is still allowed.
-    await tapAndSettle(
-      tester,
-      find.widgetWithIcon(IconButton, Icons.close).first,
-    );
-    await tapAndSettle(
-      tester,
-      find.widgetWithIcon(IconButton, Icons.close).first,
-    );
+    // With everything removed, finishing is still allowed. Counted off the
+    // list rather than hard-coded, so adding a suggestion does not break it.
+    while (find.widgetWithIcon(IconButton, Icons.close).evaluate().isNotEmpty) {
+      await tapAndSettle(
+        tester,
+        find.widgetWithIcon(IconButton, Icons.close).first,
+      );
+    }
     expect(find.text('Finish without reminders'), findsOneWidget);
 
     // And one can be added back.
     await tapAndSettle(tester, find.text('Add a reminder'));
     await tester.enterText(
       find.widgetWithText(TextField, 'What is it'),
-      'Nail trim',
+      'Claw check',
     );
-    await tapAndSettle(tester, find.text('Save'));
-    expect(find.text('Nail trim'), findsOneWidget);
+    await scrollAndTap(tester, find.text('Save'));
+    expect(find.text('Claw check'), findsOneWidget);
     expect(find.text('Finish'), findsOneWidget);
 
     await disposeTree(tester);
@@ -153,10 +154,15 @@ void main() {
     expect(pets, hasLength(1));
     expect(pets.single.name, 'Mochi');
 
+    final suggested = starterReminderDrafts().length;
     final reminders = await db.select(db.reminders).get();
-    expect(reminders, hasLength(3));
+    expect(reminders, hasLength(suggested));
+    expect(
+      reminders.map((reminder) => reminder.title),
+      containsAll(['Yearly vaccine', 'Nail trim', 'Brushing']),
+    );
     // Every reminder opens with exactly one pending occurrence.
-    expect(await db.select(db.reminderEvents).get(), hasLength(3));
+    expect(await db.select(db.reminderEvents).get(), hasLength(suggested));
 
     // Onboarding is behind us, so the root shows Today.
     expect(find.text('Today'), findsWidgets);
@@ -171,7 +177,7 @@ void main() {
     await tapAndSettle(tester, find.text('Finish'));
 
     final reminders = await db.select(db.reminders).get();
-    expect(reminders, hasLength(2));
+    expect(reminders, hasLength(starterReminderDrafts().length - 1));
     expect(
       reminders.map((reminder) => reminder.title),
       isNot(contains('Yearly vaccine')),

@@ -204,4 +204,62 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  testWidgets('a long coat chosen in onboarding retunes the brushing suggestion', (
+    tester,
+  ) async {
+    usePhoneSurface(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: const PawsLogApp(),
+      ),
+    );
+    await settle(tester);
+
+    await tapAndSettle(tester, find.text('Get started'));
+    await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Mochi');
+    await scrollAndTap(tester, find.text('Long'));
+    await scrollAndTap(tester, find.text('Continue'));
+
+    await scrollIntoView(tester, find.text('Brushing'));
+    expect(
+      find.textContaining('Every 2 days'),
+      findsOneWidget,
+      reason: 'a long coat mats, so weekly is not enough',
+    );
+
+    await scrollAndTap(tester, find.textContaining('Finish'));
+    await settle(tester);
+
+    final brushing = (await db.select(db.reminders).get()).firstWhere(
+      (reminder) => reminder.title == 'Brushing',
+    );
+    expect(brushing.repeatUnit.name, 'days');
+    expect(brushing.repeatInterval, 2);
+    expect(brushing.seasonal, isFalse, reason: 'the switch is opt-in');
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('a short coat leaves brushing weekly', (tester) async {
+    usePhoneSurface(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: const PawsLogApp(),
+      ),
+    );
+    await settle(tester);
+
+    await tapAndSettle(tester, find.text('Get started'));
+    await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Mochi');
+    await scrollAndTap(tester, find.text('Short'));
+    await scrollAndTap(tester, find.text('Continue'));
+
+    await scrollIntoView(tester, find.text('Brushing'));
+    expect(find.textContaining('Every week'), findsWidgets);
+
+    await disposeTree(tester);
+  });
 }

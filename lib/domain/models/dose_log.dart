@@ -20,6 +20,35 @@ enum DoseStatus {
   };
 }
 
+/// How a course is going: every dose it has generated, partitioned.
+typedef Adherence = ({int taken, int missed, int skipped, int pending});
+
+/// Counts [doses] by status.
+///
+/// Clock-free on purpose. "Pending" means exactly that — not yet logged and
+/// not yet missed — which includes a dose due earlier today that the owner
+/// can still tick off. Deciding when pending becomes missed belongs to the
+/// sweep and nowhere else.
+Adherence adherenceOf(Iterable<DoseLog> doses) {
+  var taken = 0;
+  var missed = 0;
+  var skipped = 0;
+  var pending = 0;
+  for (final dose in doses) {
+    switch (dose.status) {
+      case DoseStatus.taken:
+        taken++;
+      case DoseStatus.missed:
+        missed++;
+      case DoseStatus.skipped:
+        skipped++;
+      case DoseStatus.pending:
+        pending++;
+    }
+  }
+  return (taken: taken, missed: missed, skipped: skipped, pending: pending);
+}
+
 /// One dose of a [Medicine] — the thing that is due, gets a notification, and
 /// ends up as the adherence record.
 class DoseLog {

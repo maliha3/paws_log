@@ -15,6 +15,7 @@ import 'condition_edit_screen.dart';
 import 'prescription_detail_screen.dart';
 import 'vaccination_edit_screen.dart';
 import 'prescription_flow.dart';
+import '../medicines/course_screen.dart';
 import '../medicines/medicine_edit_screen.dart';
 
 /// One pet's medical record, in four segments.
@@ -413,6 +414,12 @@ class MedicineTile extends ConsumerWidget {
             run,
           ].join(' · '),
           style: theme.textTheme.bodySmall,
+        ),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                CourseScreen(petId: petId, medicine: medicine),
+          ),
         ),
         trailing: PopupMenuButton<String>(
           tooltip: 'Medicine options',

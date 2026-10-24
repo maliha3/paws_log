@@ -180,6 +180,15 @@ dose being *missed*.
   "not yet logged".
 - Today shows the whole day's course, including doses whose time has not come
   — unlike reminders, where only what is due shows up.
+- Tapping a medicine opens its **course screen**: the partition of every dose
+  it has generated, and the list behind it. `adherenceOf` does the counting
+  for both the screen and the repository, so the two agree by construction
+  rather than by both being written carefully. It counts every dose rather
+  than the capped window `watchForMedicine` returns, which would quietly
+  understate a long course.
+- Doses are **never generated for days already gone**. A course backdated a
+  week produces only today's doses onward, which is worth knowing before
+  writing a fixture that expects otherwise.
 
 ## Reminders after onboarding
 
@@ -642,5 +651,8 @@ assumed.
   Two drift-under-`testWidgets` traps live there, both of which present as a
   hang rather than a failure: a cancelled query stream schedules a timer that
   needs the fake clock still running, and `AppDatabase.close()` deadlocks
-  inside a test body. Never use `pumpAndSettle` on a screen showing an
+  inside a test body. The first one bites in an unobvious place — taking
+  `await someStream.first` to read a row *before* pumping cancels that
+  stream, and the test then hangs with no output and no timeout. Read setup
+  rows with a plain `select`. Never use `pumpAndSettle` on a screen showing an
   indeterminate progress indicator.

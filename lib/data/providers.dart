@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/medicine.dart';
+import '../domain/models/dose_log.dart';
 import '../domain/models/pet.dart';
 import '../domain/models/reminder.dart';
 import '../domain/models/pet_condition.dart';
@@ -91,6 +92,20 @@ final allergiesForPetProvider =
 final remindersForPetProvider =
     StreamProvider.family<List<Reminder>, String>(
       (ref, petId) => ref.watch(reminderRepositoryProvider).watchForPet(petId),
+    );
+
+/// How one course is going, live.
+final adherenceForMedicineProvider =
+    StreamProvider.family<Adherence, String>(
+      (ref, medicineId) =>
+          ref.watch(doseLogRepositoryProvider).watchAdherence(medicineId),
+    );
+
+/// One course's doses, newest first.
+final dosesForMedicineProvider =
+    StreamProvider.family<List<DoseLog>, String>(
+      (ref, medicineId) =>
+          ref.watch(doseLogRepositoryProvider).watchForMedicine(medicineId),
     );
 
 /// Which hemisphere the owner says they are in.

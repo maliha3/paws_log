@@ -140,25 +140,25 @@ class DoseLogRepository {
 
   /// How a course is going, as a partition of every dose generated for it.
   ///
-  /// Takes no clock on purpose. "Pending" means exactly that — not yet
-  /// logged and not yet missed — which includes a dose due earlier today that
-  /// the owner can still tick off. Deciding when pending becomes missed is
-  /// [markOverdueMissed]'s job and nowhere else's.
-  Future<({int taken, int missed, int skipped, int pending})> adherence(
-    String medicineId,
-  ) async {
+  /// The counting itself is [adherenceOf], so the screen and this agree by
+  /// construction rather than by both being written carefully.
+  Future<Adherence> adherence(String medicineId) async {
     final rows = await (_db.select(_db.doseLogs)
           ..where((dose) => dose.medicineId.equals(medicineId)))
         .get();
+    return adherenceOf(rows.map((row) => row.toDomain()));
+  }
 
-    int count(DoseStatus status) =>
-        rows.where((dose) => dose.status == status).length;
-
-    return (
-      taken: count(DoseStatus.taken),
-      missed: count(DoseStatus.missed),
-      skipped: count(DoseStatus.skipped),
-      pending: count(DoseStatus.pending),
+  /// The same, live.
+  ///
+  /// Every dose, not the capped window [watchForMedicine] returns: a count
+  /// taken over the most recent two hundred would quietly understate a long
+  /// course.
+  Stream<Adherence> watchAdherence(String medicineId) {
+    final query = _db.select(_db.doseLogs)
+      ..where((dose) => dose.medicineId.equals(medicineId));
+    return query.watch().map(
+      (rows) => adherenceOf(rows.map((row) => row.toDomain())),
     );
   }
 

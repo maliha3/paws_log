@@ -126,6 +126,37 @@ A reminder has a `repeatUnit` (none/days/weeks/months/years), a
 - A snooze moves when a notification fires, not the due date: the event stays
   `pending` and stays on Today.
 
+### Shedding season is the one exception to the anchor rule
+
+`occurrence(anchor, index)` is otherwise a pure function of the anchor and
+the index, which is what the promise above rests on. A grooming reminder with
+`seasonal` set breaks that: its interval halves inside a shedding window, so
+occurrence *n* depends on where in the year occurrence *n-1* fell.
+
+It is still deterministic — it walks one occurrence at a time from the anchor
+instead of jumping — and the cost is confined:
+
+- `halvesInSeason` is true only for **day and week** rules. A month cannot
+  sensibly halve, and stepping month to month would reintroduce exactly the
+  backwards month-end walk that computing from the anchor prevents. Months
+  and years keep the anchor path untouched.
+- The halving is computed **in days**, not in the rule's own unit. Half of
+  "every week" is every three days; halving the interval would leave
+  `weeks(1)` at a full week, because one halves to zero and clamps back up.
+- Never below a day. "Twice as often" has to stop somewhere.
+- `nextAfter` skips its index estimate for these rules, since the estimate
+  assumes a fixed interval. The overdue policy is unchanged: the first
+  occurrence strictly after the given instant is what comes back.
+- Non-seasonal rules take the original O(1) path, byte for byte. A test pins
+  that down, because it is the thing most at risk here.
+
+**The shedding windows are the same months in both hemispheres**: March–May
+and September–November. Shedding turns at the equinoxes, which fall in March
+and September everywhere, so a southern cat sheds in the same two windows —
+they are simply its autumn and its spring. The `Hemisphere` setting therefore
+decides what each window is *called* and nothing else, which is why
+`inSheddingSeason` takes no hemisphere.
+
 ## Medicines
 
 Medicines do not reuse `Reminder`'s recurrence. "Every 3 months" cannot

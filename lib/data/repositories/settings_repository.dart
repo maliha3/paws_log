@@ -1,4 +1,5 @@
 import '../../domain/models/weight_entry.dart';
+import '../../domain/shedding_season.dart';
 import '../db/app_database.dart';
 
 /// App preferences.
@@ -13,6 +14,7 @@ class SettingsRepository {
 
   static const String weightUnitKey = 'weight_unit';
   static const String premiumKey = 'is_premium';
+  static const String hemisphereKey = 'hemisphere';
 
   Stream<WeightUnit> watchWeightUnit() =>
       _watch(weightUnitKey).map(_parseWeightUnit);
@@ -33,6 +35,31 @@ class SettingsRepository {
       // A value written by a newer build, or a corrupted row. Falling back
       // beats taking the screen down over a preference.
       return WeightUnit.kilograms;
+    }
+  }
+
+  /// Which hemisphere the owner is in.
+  ///
+  /// App-wide rather than per pet: it is a fact about where the owner lives.
+  /// It names the shedding windows and does not move them — see
+  /// [inSheddingSeason].
+  Stream<Hemisphere> watchHemisphere() =>
+      _watch(hemisphereKey).map(_parseHemisphere);
+
+  Future<Hemisphere> hemisphere() async =>
+      _parseHemisphere(await _read(hemisphereKey));
+
+  Future<void> setHemisphere(Hemisphere value) =>
+      _write(hemisphereKey, value.name);
+
+  Hemisphere _parseHemisphere(String? stored) {
+    if (stored == null) {
+      return Hemisphere.northern;
+    }
+    try {
+      return Hemisphere.fromName(stored);
+    } on StateError {
+      return Hemisphere.northern;
     }
   }
 

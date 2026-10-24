@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:timezone/timezone.dart' as tz;
 
 import '../core/date_x.dart';
+import 'shedding_season.dart';
 
 /// The unit a [RepeatRule] counts in.
 enum RepeatUnit {
@@ -54,6 +57,22 @@ class RepeatRule {
 
   bool get repeats => unit != RepeatUnit.none;
 
+  /// Whether the seasonal halving actually applies.
+  ///
+  /// Only to day and week rules. A monthly or yearly interval cannot sensibly
+  /// halve, and more importantly the stepping path below walks from one
+  /// occurrence to the next — which for months would reintroduce exactly the
+  /// backwards month-end walk that computing from the anchor exists to
+  /// prevent. So those units keep the anchor-based path, untouched.
+  bool get halvesInSeason =>
+      seasonal &&
+      repeats &&
+      (unit == RepeatUnit.days || unit == RepeatUnit.weeks);
+
+  /// A safety valve, not a limit anyone should reach: the shortest possible
+  /// step is one day, so this is over fifty years of walking.
+  static const int _maxSeasonalSteps = 20000;
+
   /// The [index]th occurrence counted from [anchor]; index 0 is the anchor.
   ///
   /// Always computed from the anchor rather than from the previous occurrence,
@@ -65,6 +84,18 @@ class RepeatRule {
   tz.TZDateTime occurrence(tz.TZDateTime anchor, int index) {
     if (index == 0 || !repeats) {
       return anchor;
+    }
+    if (halvesInSeason) {
+      // One step at a time, because each interval depends on where in the
+      // year the *previous* occurrence fell. That makes this O(index) rather
+      // than O(1), which is why it is opt-in and confined to day and week
+      // rules: a couple of thousand integer date additions is nothing, and
+      // every other rule keeps the jump.
+      var current = anchor;
+      for (var step = 0; step < index; step++) {
+        current = _stepOnce(current, _daysFrom(current));
+      }
+      return current;
     }
     final steps = interval * index;
     switch (unit) {
@@ -105,6 +136,20 @@ class RepeatRule {
     if (!repeats) {
       return null;
     }
+    if (halvesInSeason) {
+      // No jumping: the index estimate assumes a fixed interval, and this
+      // rule does not have one. Walking is still cheap, and the overdue
+      // policy is unchanged — the first occurrence strictly after [after] is
+      // what comes back, so missed cycles are skipped exactly as before.
+      var current = anchor;
+      for (var step = 0; step < _maxSeasonalSteps; step++) {
+        current = _stepOnce(current, _daysFrom(current));
+        if (current.isAfter(after)) {
+          return current;
+        }
+      }
+      return current;
+    }
 
     // Jump roughly to the right place, then close the gap exactly. The
     // estimate can land on either side of the answer, so both directions are
@@ -117,6 +162,34 @@ class RepeatRule {
       index++;
     }
     return occurrence(anchor, index);
+  }
+
+  /// The gap to the next occurrence, **in days**, counted from [from].
+  ///
+  /// Days rather than the rule's own unit, because halving has to happen in
+  /// the smaller one: half of "every week" is every three days, and halving
+  /// the interval instead would leave `weeks(1)` at a full week — one week
+  /// halves to zero and clamps straight back up.
+  ///
+  /// Never below a day. "Twice as often" has to stop somewhere, and a daily
+  /// reminder cannot come twice a day.
+  int _daysFrom(tz.TZDateTime from) {
+    final full = unit == RepeatUnit.weeks ? interval * 7 : interval;
+    return inSheddingSeason(from) ? math.max(1, full ~/ 2) : full;
+  }
+
+  /// Advances [from] by [days], keeping its wall-clock time of day.
+  ///
+  /// Only used by the seasonal path, which is restricted to days and weeks,
+  /// so there is no month-end clamping to get wrong here.
+  tz.TZDateTime _stepOnce(tz.TZDateTime from, int days) {
+    // Day arithmetic in UTC, where every day is exactly 24 hours.
+    final shifted = DateTime.utc(
+      from.year,
+      from.month,
+      from.day,
+    ).add(Duration(days: days));
+    return _at(from, shifted.year, shifted.month, shifted.day);
   }
 
   /// A rough occurrence index for [after], never below zero.
@@ -159,23 +232,31 @@ class RepeatRule {
       RepeatUnit.months => 'month',
       RepeatUnit.years => 'year',
     };
-    return interval == 1 ? 'Every $noun' : 'Every $interval ${noun}s';
+    final base = interval == 1 ? 'Every $noun' : 'Every $interval ${noun}s';
+    return halvesInSeason ? '$base, twice as often while shedding' : base;
   }
 
-  RepeatRule copyWith({RepeatUnit? unit, int? interval}) => RepeatRule(
-    unit: unit ?? this.unit,
-    interval: interval ?? this.interval,
-  );
+  RepeatRule copyWith({RepeatUnit? unit, int? interval, bool? seasonal}) =>
+      RepeatRule(
+        unit: unit ?? this.unit,
+        interval: interval ?? this.interval,
+        seasonal: seasonal ?? this.seasonal,
+      );
 
   @override
   bool operator ==(Object other) =>
-      other is RepeatRule && other.unit == unit && other.interval == interval;
+      other is RepeatRule &&
+      other.unit == unit &&
+      other.interval == interval &&
+      other.seasonal == seasonal;
 
   @override
-  int get hashCode => Object.hash(unit, interval);
+  int get hashCode => Object.hash(unit, interval, seasonal);
 
   @override
-  String toString() => 'RepeatRule(${unit.name} x $interval)';
+  String toString() =>
+      'RepeatRule(${unit.name} x $interval'
+      '${seasonal ? ', seasonal' : ''})';
 }
 
 extension TZDateTimeUtc on tz.TZDateTime {

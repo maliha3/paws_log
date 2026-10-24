@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/widgets/empty_section.dart';
+import '../../core/widgets/image_viewer_screen.dart';
 import '../../data/providers.dart';
 import '../../domain/dose_schedule.dart';
 import '../../domain/models/medicine.dart';
@@ -186,13 +187,14 @@ class _Prescriptions extends ConsumerWidget {
   );
 }
 
-class _PrescriptionTile extends StatelessWidget {
+class _PrescriptionTile extends ConsumerWidget {
   const _PrescriptionTile({required this.prescription});
 
   final Prescription prescription;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final pages = prescription.pageCount;
     final details = [
       pages == 1 ? '1 page' : '$pages pages',
@@ -200,12 +202,41 @@ class _PrescriptionTile extends StatelessWidget {
       if (prescription.clinic != null) prescription.clinic!,
     ].join(' · ');
 
+    // What this page put on the schedule, so a course and its source are
+    // never more than a glance apart.
+    final from = ref.watch(medicinesFromPrescriptionProvider(prescription.id));
+    final courses = (from.hasValue ? from.requireValue : const <Medicine>[])
+        .map((medicine) => medicine.name)
+        .join(', ');
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: const Icon(Icons.receipt_long_outlined),
         title: Text(DateFormat.yMMMd().format(prescription.date)),
-        subtitle: Text(details),
+        isThreeLine: courses.isNotEmpty,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(details),
+            if (courses.isNotEmpty)
+              Text(
+                courses,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+        trailing: pages == 0 ? null : const Icon(Icons.chevron_right),
+        onTap: pages == 0
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) =>
+                      ImageViewerScreen(paths: prescription.imagePaths),
+                ),
+              ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/widgets/empty_section.dart';
+import '../../core/widgets/image_viewer_screen.dart';
 import '../../data/providers.dart';
 import '../../domain/models/vet_visit.dart';
 import '../../services/photo_store.dart';
@@ -313,7 +314,18 @@ class _Thumbnails extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: _Thumbnail(path: path),
+                child: InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => ImageViewerScreen(
+                        paths: paths,
+                        initialPage: paths.indexOf(path),
+                        label: 'Photo',
+                      ),
+                    ),
+                  ),
+                  child: _Thumbnail(path: path),
+                ),
               ),
               Positioned(
                 top: -6,

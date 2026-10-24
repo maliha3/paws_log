@@ -159,6 +159,14 @@ final prescriptionsForPetProvider =
           ref.watch(prescriptionRepositoryProvider).watchForPet(petId),
     );
 
+/// The medicines one prescription produced, live.
+final medicinesFromPrescriptionProvider =
+    StreamProvider.family<List<Medicine>, String>(
+      (ref, prescriptionId) => ref
+          .watch(prescriptionRepositoryProvider)
+          .watchMedicines(prescriptionId),
+    );
+
 /// Gets pages onto the device, from the camera or from Photos.
 final scanServiceProvider = Provider<ScanService>(
   (ref) => DeviceScanService(photoStore: ref.watch(photoStoreProvider)),

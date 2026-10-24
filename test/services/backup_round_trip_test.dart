@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
+import 'package:paws_log/data/repositories/prescription_repository.dart';
 import 'package:paws_log/data/repositories/reminder_event_repository.dart';
 import 'package:paws_log/data/repositories/reminder_repository.dart';
 import 'package:paws_log/data/repositories/settings_repository.dart';
@@ -94,11 +95,26 @@ void main() {
         .get();
     await events.markDone(event.first.id, now: now);
 
+    // A scanned prescription, and the course that came off it.
+    final prescription = await PrescriptionRepository(db).create(
+      petId: mochi.id,
+      date: DateTime.utc(2026, 5, 4),
+      vetName: 'Dr Okafor',
+      clinic: 'Riverside Vets',
+      extractedText: 'Amoxicillin 50 mg twice daily for 7 days',
+      imagePaths: [
+        writePhoto('prescriptions/page1.jpg', [11, 12, 13]),
+        writePhoto('prescriptions/page2.jpg', [14, 15]),
+      ],
+      now: now,
+    );
+
     await medicines.create(
       petId: mochi.id,
       name: 'Amoxicillin',
       dosage: '1 tablet',
       notes: 'With food',
+      prescriptionId: prescription.id,
       now: now,
       schedule: DoseSchedule(
         timesOfDayMinutes: const [8 * 60, 20 * 60],
@@ -148,6 +164,9 @@ void main() {
     ],
     'reminderEvents': [
       for (final r in await db.select(db.reminderEvents).get()) r.toJson(),
+    ],
+    'prescriptions': [
+      for (final r in await db.select(db.prescriptions).get()) r.toJson(),
     ],
     'medicines': [
       for (final r in await db.select(db.medicines).get()) r.toJson(),
@@ -200,7 +219,7 @@ void main() {
     );
 
     expect(summary.pets, 2);
-    expect(summary.photos, 3);
+    expect(summary.photos, 5, reason: 'a pet photo, two x-rays, two pages');
     await restored.close();
   });
 
@@ -234,6 +253,86 @@ void main() {
     for (final attachment in attachments) {
       expect(File(attachment.filePath).existsSync(), isTrue, reason: attachment.filePath);
     }
+    await restored.close();
+  });
+
+  test('prescription pages come back, in order, with their contents', () async {
+    final source = memoryDatabase();
+    await populate(source);
+    final before = await source.select(source.prescriptions).getSingle();
+    final originals = [
+      for (final path in before.imagePaths) File(path).readAsBytesSync(),
+    ];
+    final bytes = await serviceFor(source).exportArchive(now: now);
+    await source.close();
+
+    // Wipe the photo directory, as a new device would have.
+    photos.deleteSync(recursive: true);
+    photos.createSync(recursive: true);
+
+    final restored = memoryDatabase();
+    await serviceFor(restored).importArchive(bytes);
+
+    final after = await restored.select(restored.prescriptions).getSingle();
+    expect(after.imagePaths, hasLength(2));
+    expect(after.vetName, 'Dr Okafor');
+    expect(after.extractedText, before.extractedText);
+    for (final (index, path) in after.imagePaths.indexed) {
+      expect(File(path).existsSync(), isTrue, reason: path);
+      expect(
+        File(path).readAsBytesSync(),
+        originals[index],
+        reason: 'page ${index + 1} is the page it was',
+      );
+    }
+    await restored.close();
+  });
+
+  test('a restored course still points at the prescription it came from', () async {
+    final source = memoryDatabase();
+    await populate(source);
+    final bytes = await serviceFor(source).exportArchive(now: now);
+    await source.close();
+
+    final restored = memoryDatabase();
+    await serviceFor(restored).importArchive(bytes);
+
+    final prescription = await restored
+        .select(restored.prescriptions)
+        .getSingle();
+    final medicine = await (restored.select(restored.medicines)
+          ..where((m) => m.name.equals('Amoxicillin')))
+        .getSingle();
+    expect(medicine.prescriptionId, prescription.id);
+    await restored.close();
+  });
+
+  test('a prescription whose page has vanished keeps the pages it has', () async {
+    final source = memoryDatabase();
+    final pet = await PetRepository(source).create(name: 'Mochi', now: now);
+    final kept = writePhoto('prescriptions/kept.jpg', [1, 2, 3]);
+    final gone = writePhoto('prescriptions/gone.jpg', [4, 5, 6]);
+    await PrescriptionRepository(source).create(
+      petId: pet.id,
+      date: DateTime.utc(2026, 5, 4),
+      imagePaths: [kept, gone],
+      now: now,
+    );
+    File(gone).deleteSync();
+
+    final bytes = await serviceFor(source).exportArchive(now: now);
+    await source.close();
+
+    final restored = memoryDatabase();
+    await serviceFor(restored).importArchive(bytes);
+
+    final after = await restored.select(restored.prescriptions).getSingle();
+    expect(
+      after.imagePaths,
+      hasLength(1),
+      reason: 'the missing page is dropped rather than left as a hole',
+    );
+    expect(File(after.imagePaths.single).readAsBytesSync(), [1, 2, 3]);
     await restored.close();
   });
 
@@ -402,7 +501,9 @@ Map<String, List<Map<String, dynamic>>> _withoutPaths(
       for (final row in entry.value)
         {
           for (final column in row.entries)
-            if (column.key != 'photoPath' && column.key != 'filePath')
+            if (column.key != 'photoPath' &&
+                column.key != 'filePath' &&
+                column.key != 'imagePaths')
               column.key: column.value,
         },
     ],

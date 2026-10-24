@@ -206,6 +206,12 @@ handwriting most of all. A misread dose is not a cosmetic bug.
   prescription."*
 - **Save photos only** is always available. An owner who just wants the page
   kept never has to go near the extracted fields.
+- The prescription row is written the moment the pages are on the device, so
+  **backing out of the review keeps the page**. What it never does is touch the
+  schedule.
+- Tapping a page opens it full screen, pinch and double-tap to zoom. Reading
+  the small print is why the photo exists. Visit attachments use the same
+  viewer.
 
 ### Times per day
 
@@ -328,11 +334,21 @@ worse than none, because the owner only finds out when they restore.
   the wrong one is worse than being told.
 - Rows are serialised through drift's `toJson`/`fromJson` with a custom
   `ValueSerializer`: DateTimes as ISO-8601 so the UTC flag survives, and the
-  medicine dosing-times `List<int>` converted by hand because `jsonDecode`
-  returns `List<dynamic>` and drift's default casts it straight through.
+  two list columns — medicine dosing times (`List<int>`) and prescription
+  pages (`List<String>`) — converted by hand, because `jsonDecode` returns
+  `List<dynamic>` and drift's default casts it straight through.
 - `BackupService` touches no plugins, which is what lets the round trip be
   tested. `BackupSharing` is the thin layer over the share sheet and file
   picker.
+
+A prescription's pages are a *list* of paths in one column, so the archive
+packs them with `_packFileLists`. A page whose file has gone is dropped from
+the list rather than nulled in place: pages are read in order, and a hole in
+the middle would be worse than a shorter list.
+
+Insert order on import follows the foreign keys: visits before prescriptions,
+prescriptions before medicines. A medicine carries `prescriptionId`, so an
+import that put medicines back first would fail on the key.
 
 ## Vet summary
 

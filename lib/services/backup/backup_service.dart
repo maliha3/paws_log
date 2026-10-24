@@ -53,6 +53,7 @@ class BackupService {
     // file as we go. Done before the manifest is encoded so the two agree.
     _packFiles(archive, tables['pets']!, 'photoPath');
     _packFiles(archive, tables['visitAttachments']!, 'filePath');
+    _packFileLists(archive, tables['prescriptions']!, 'imagePaths');
 
     final manifest = jsonEncode({
       'formatVersion': formatVersion,
@@ -105,6 +106,11 @@ class BackupService {
     // arrived.
     await _unpackFiles(archive, tables['pets'] ?? [], 'photoPath');
     await _unpackFiles(archive, tables['visitAttachments'] ?? [], 'filePath');
+    await _unpackFileLists(
+      archive,
+      tables['prescriptions'] ?? [],
+      'imagePaths',
+    );
 
     await _db.transaction(() async {
       // Reverse dependency order, so no foreign key is ever left dangling.
@@ -220,6 +226,36 @@ class BackupService {
     }
   }
 
+  /// The same, for a field holding a list of paths.
+  ///
+  /// Page order survives: a missing page is dropped from the list rather than
+  /// nulled in place, because a prescription's pages are read in order and a
+  /// hole in the middle would be worse than a shorter list.
+  void _packFileLists(
+    Archive archive,
+    List<Map<String, dynamic>> rows,
+    String field,
+  ) {
+    for (final row in rows) {
+      final paths = (row[field] as List?)?.cast<String>();
+      if (paths == null) {
+        continue;
+      }
+      final packed = <String>[];
+      for (final path in paths) {
+        final file = File(path);
+        if (!file.existsSync()) {
+          continue;
+        }
+        final name = '$_photoPrefix${_relativeName(path)}';
+        final bytes = file.readAsBytesSync();
+        archive.addFile(ArchiveFile(name, bytes.length, bytes));
+        packed.add(name);
+      }
+      row[field] = packed;
+    }
+  }
+
   /// Writes archived files back under [photosRoot] and points the rows at
   /// where they actually landed.
   Future<void> _unpackFiles(
@@ -248,6 +284,39 @@ class BackupService {
     }
   }
 
+  /// The same, for a field holding a list of paths.
+  Future<void> _unpackFileLists(
+    Archive archive,
+    List<Map<String, dynamic>> rows,
+    String field,
+  ) async {
+    for (final row in rows) {
+      final names = (row[field] as List?)?.cast<String>();
+      if (names == null) {
+        continue;
+      }
+      final restored = <String>[];
+      for (final name in names) {
+        if (!name.startsWith(_photoPrefix)) {
+          continue;
+        }
+        final entry = archive.files
+            .where((file) => file.name == name)
+            .firstOrNull;
+        if (entry == null) {
+          continue;
+        }
+        final destination = File(
+          p.join(photosRoot.path, name.substring(_photoPrefix.length)),
+        );
+        await destination.parent.create(recursive: true);
+        await destination.writeAsBytes(entry.readBytes()!);
+        restored.add(destination.path);
+      }
+      row[field] = restored;
+    }
+  }
+
   /// A stable name for a photo inside the archive.
   String _relativeName(String absolutePath) {
     final relative = p.relative(absolutePath, from: photosRoot.path);
@@ -264,10 +333,11 @@ class BackupService {
 /// DateTimes go in as ISO-8601 strings rather than epoch milliseconds, so a
 /// backup file is legible and the UTC flag survives the round trip.
 ///
-/// The medicine dosing times are a `List<int>` behind a type converter.
-/// `jsonDecode` hands any array back as `List<dynamic>`, which drift's
-/// default serializer casts straight to `List<int>` and throws, so that one
-/// case is converted here instead.
+/// Two columns are lists behind a type converter: the medicine dosing times
+/// (`List<int>`) and a prescription's pages (`List<String>`). `jsonDecode`
+/// hands any array back as `List<dynamic>`, which drift's default serializer
+/// casts straight to the element type and throws, so both are converted
+/// here instead.
 class _BackupSerializer extends ValueSerializer {
   const _BackupSerializer();
 
@@ -279,6 +349,9 @@ class _BackupSerializer extends ValueSerializer {
   T fromJson<T>(dynamic json) {
     if (json is List && <T>[] is List<List<int>?>) {
       return json.cast<int>() as T;
+    }
+    if (json is List && <T>[] is List<List<String>?>) {
+      return json.cast<String>() as T;
     }
     return _inner.fromJson<T>(json);
   }

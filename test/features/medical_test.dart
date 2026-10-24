@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart' show Value;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/app.dart';
@@ -170,6 +172,73 @@ void main() {
 
     expect(find.textContaining('No prescriptions yet'), findsOneWidget);
     expect(find.textContaining('Dr Okafor'), findsNothing);
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('a prescription opens its pages full screen', (tester) async {
+    await PrescriptionRepository(db).create(
+      petId: petId,
+      date: DateTime.utc(2026, 5, 4),
+      imagePaths: const ['/pages/one.jpg', '/pages/two.jpg'],
+    );
+
+    await openPet(tester);
+    await scrollAndTap(tester, find.text('Medical record'));
+    await tapAndSettle(tester, find.text('May 4, 2026'));
+
+    expect(find.text('Page 1 of 2'), findsOneWidget);
+
+    await tester.drag(find.byType(PageView), const Offset(-400, 0));
+    await settle(tester);
+    expect(find.text('Page 2 of 2'), findsOneWidget);
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('a prescription saved without pages has nothing to open', (
+    tester,
+  ) async {
+    await PrescriptionRepository(db).create(
+      petId: petId,
+      date: DateTime.utc(2026, 5, 4),
+      imagePaths: const [],
+    );
+
+    await openPet(tester);
+    await scrollAndTap(tester, find.text('Medical record'));
+    await tapAndSettle(tester, find.text('May 4, 2026'));
+
+    expect(find.textContaining('Page'), findsNothing);
+
+    await disposeTree(tester);
+  });
+
+  testWidgets('a prescription names the courses it produced', (tester) async {
+    final prescription = await PrescriptionRepository(db).create(
+      petId: petId,
+      date: DateTime.utc(2026, 5, 4),
+      imagePaths: const ['/pages/one.jpg'],
+    );
+    final medicine = await MedicineRepository(db).create(
+      petId: petId,
+      name: 'Amoxicillin',
+      schedule: DoseSchedule(
+        timesOfDayMinutes: const [9 * 60],
+        startDate: todayInTestZone(),
+      ),
+    );
+    await (db.update(db.medicines)..where((m) => m.id.equals(medicine.id)))
+        .write(MedicinesCompanion(prescriptionId: Value(prescription.id)));
+
+    await openPet(tester);
+    await scrollAndTap(tester, find.text('Medical record'));
+
+    expect(
+      find.text('Amoxicillin'),
+      findsOneWidget,
+      reason: 'a course and its source are a glance apart',
+    );
 
     await disposeTree(tester);
   });

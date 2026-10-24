@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/category_palette.dart';
+import '../../core/widgets/image_viewer_screen.dart';
 import '../../data/providers.dart';
 import '../../domain/dose_schedule.dart';
 import '../../domain/models/medicine.dart';
@@ -619,15 +620,27 @@ class _PageStripState extends State<_PageStrip> {
               child: PageView.builder(
                 itemCount: widget.paths.length,
                 onPageChanged: (page) => setState(() => _page = page),
-                itemBuilder: (context, index) => Image.file(
-                  File(widget.paths[index]),
-                  fit: BoxFit.contain,
-                  // A page whose file has gone is still a row worth showing;
-                  // the fields below it are the point.
-                  errorBuilder: (context, _, _) => Center(
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      color: theme.colorScheme.onSurfaceVariant,
+                itemBuilder: (context, index) => GestureDetector(
+                  // Small print is why the photo exists, so the strip is a
+                  // way into the viewer as well as a reminder of the page.
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => ImageViewerScreen(
+                        paths: widget.paths,
+                        initialPage: index,
+                      ),
+                    ),
+                  ),
+                  child: Image.file(
+                    File(widget.paths[index]),
+                    fit: BoxFit.contain,
+                    // A page whose file has gone is still a row worth
+                    // showing; the fields below it are the point.
+                    errorBuilder: (context, _, _) => Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),

@@ -253,9 +253,7 @@ sideways rather than squeezing, so the labels survive the largest text sizes.
 
 Medicines split into **Active** and **Past**. A course is past once it has been
 stopped by hand *or* its end date has gone by — a course that has simply run
-out is over, whether or not anyone pressed stop. Vaccines have no Add button:
-they are recorded by marking a vaccine reminder done, which is the point of
-them being automatic.
+out is over, whether or not anyone pressed stop.
 
 ### The OCR engine is Apple Vision, not ML Kit
 
@@ -350,6 +348,13 @@ do.
 
 `source_event_id` is not a foreign key, so deleting a reminder leaves the
 history standing. Deleting the *pet* does cascade.
+
+Records can also be **added and corrected by hand**. The automatic path is
+the point of the feature and is unchanged, but it only covers shots the app
+knew to remind about: one given at a clinic it knew nothing about, or from
+before the owner installed it, had no way in at all, and a wrong date had no
+way out. Editing keeps `source_event_id` untouched, so undoing the completion
+that wrote a record can still find it afterwards.
 
 ## Notifications
 

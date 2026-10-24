@@ -49,6 +49,13 @@ class VaccinationRepository {
     return record;
   }
 
+  /// Applies a correction.
+  ///
+  /// `sourceEventId` travels with the row untouched, so undoing the
+  /// completion that created it can still find it afterwards.
+  Future<void> update(VaccinationRecord record) =>
+      _db.update(_db.vaccinationRecords).replace(record.toInsertable());
+
   Future<void> delete(String id) async {
     await (_db.delete(_db.vaccinationRecords)
           ..where((record) => record.id.equals(id)))

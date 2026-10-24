@@ -8,10 +8,12 @@ import '../../data/providers.dart';
 import '../../domain/dose_schedule.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet_condition.dart';
+import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/prescription.dart';
 import '../health/visit_edit_screen.dart';
 import 'condition_edit_screen.dart';
 import 'prescription_detail_screen.dart';
+import 'vaccination_edit_screen.dart';
 import 'prescription_flow.dart';
 import '../medicines/medicine_edit_screen.dart';
 
@@ -83,11 +85,20 @@ class _MedicalScreenState extends ConsumerState<MedicalScreen> {
     );
   }
 
-  /// Only the segments an owner adds to by hand get a button. Vaccines are
-  /// recorded by marking a vaccine reminder done, which is the whole point of
-  /// them being automatic.
+  /// Vaccines keep their automatic path — marking a vaccine reminder done
+  /// writes one — but the button is there for the rest: a shot given at a
+  /// clinic the app knew nothing about, and one from before the owner
+  /// started using it.
   Widget? _addButton() => switch (_segment) {
-    MedicalSegment.vaccines => null,
+    MedicalSegment.vaccines => FloatingActionButton(
+      tooltip: 'Record a vaccination',
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => VaccinationEditScreen(petId: widget.petId),
+        ),
+      ),
+      child: const Icon(Icons.add),
+    ),
     MedicalSegment.prescriptions => FloatingActionButton(
       tooltip: 'Add a prescription',
       onPressed: () =>
@@ -454,24 +465,11 @@ class _Vaccines extends ConsumerWidget {
             icon: Icons.vaccines_outlined,
             message:
                 'No vaccinations yet. Marking a vaccine reminder done records '
-                'it here, with the date it is next due.',
+                'it here; add one by hand for a shot given elsewhere.',
           )
         else
           for (final record in records)
-            Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.vaccines_outlined),
-                title: Text(record.name),
-                subtitle: Text(
-                  [
-                    'Given ${DateFormat.yMMMd().format(record.administeredOn)}',
-                    if (record.nextDueOn != null)
-                      'next ${DateFormat.yMMMd().format(record.nextDueOn!)}',
-                  ].join(' · '),
-                ),
-              ),
-            ),
+            _VaccinationTile(petId: petId, record: record),
       ],
     ),
   );
@@ -680,4 +678,47 @@ class _AllergyTile extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _VaccinationTile extends ConsumerWidget {
+  const _VaccinationTile({required this.petId, required this.record});
+
+  final String petId;
+  final VaccinationRecord record;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Card(
+    margin: const EdgeInsets.only(bottom: 8),
+    child: ListTile(
+      leading: const Icon(Icons.vaccines_outlined),
+      title: Text(record.name),
+      subtitle: Text(
+        [
+          'Given ${DateFormat.yMMMd().format(record.administeredOn)}',
+          if (record.nextDueOn != null)
+            'next ${DateFormat.yMMMd().format(record.nextDueOn!)}',
+          if (record.notes != null) record.notes!,
+        ].join(' · '),
+      ),
+      trailing: PopupMenuButton<String>(
+        tooltip: 'Vaccination options',
+        onSelected: (action) async {
+          if (action == 'edit') {
+            await Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) =>
+                    VaccinationEditScreen(petId: petId, record: record),
+              ),
+            );
+          } else {
+            await ref.read(vaccinationRepositoryProvider).delete(record.id);
+          }
+        },
+        itemBuilder: (context) => const [
+          PopupMenuItem(value: 'edit', child: Text('Edit')),
+          PopupMenuItem(value: 'delete', child: Text('Delete')),
+        ],
+      ),
+    ),
+  );
 }

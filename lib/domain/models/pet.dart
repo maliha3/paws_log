@@ -49,6 +49,10 @@ class Pet {
     this.breed,
     this.sex = PetSex.unknown,
     this.neutered,
+    this.species,
+    this.microchip,
+    this.vetName,
+    this.vetPhone,
     this.coatLength,
     this.origin,
     this.originDate,
@@ -76,6 +80,17 @@ class Pet {
 
   /// Null means "not recorded" — a real state before the first vet visit.
   final bool? neutered;
+
+  /// Free text. The app is built for cats; an owner who keeps a rabbit
+  /// should not be told their pet is not a kind of pet.
+  final String? species;
+
+  final String? microchip;
+
+  /// The pet's own vet. A prescription carries whoever wrote it; this is the
+  /// practice the owner would ring.
+  final String? vetName;
+  final String? vetPhone;
 
   /// Null until the owner says. Grooming suggestions read it, and a guess
   /// would put a long-haired cat on a short-haired brushing schedule.
@@ -125,6 +140,10 @@ class Pet {
     String? breed,
     PetSex? sex,
     bool? neutered,
+    String? species,
+    String? microchip,
+    String? vetName,
+    String? vetPhone,
     CoatLength? coatLength,
     PetOrigin? origin,
     DateTime? originDate,
@@ -144,6 +163,10 @@ class Pet {
     breed: breed ?? this.breed,
     sex: sex ?? this.sex,
     neutered: neutered ?? this.neutered,
+    species: species ?? this.species,
+    microchip: microchip ?? this.microchip,
+    vetName: vetName ?? this.vetName,
+    vetPhone: vetPhone ?? this.vetPhone,
     coatLength: coatLength ?? this.coatLength,
     origin: origin ?? this.origin,
     originDate: originDate ?? this.originDate,

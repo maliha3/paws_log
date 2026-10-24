@@ -10,6 +10,7 @@ class VetVisit {
     this.clinic,
     this.vetName,
     this.notes,
+    this.cost,
   });
 
   final String id;
@@ -24,6 +25,11 @@ class VetVisit {
   final String? clinic;
   final String? vetName;
   final String? notes;
+
+  /// What it cost, in the smallest unit of the owner's currency. Null when
+  /// they did not record it, which is not the same as free.
+  final int? cost;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -33,6 +39,7 @@ class VetVisit {
     String? clinic,
     String? vetName,
     String? notes,
+    int? cost,
     DateTime? updatedAt,
   }) => VetVisit(
     id: id,

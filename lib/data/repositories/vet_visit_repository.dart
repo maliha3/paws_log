@@ -55,6 +55,7 @@ class VetVisitRepository {
     String? clinic,
     String? vetName,
     String? notes,
+    int? cost,
     List<String> attachmentPaths = const [],
     DateTime? now,
   }) async {
@@ -67,6 +68,7 @@ class VetVisitRepository {
       clinic: _trimmed(clinic),
       vetName: _trimmed(vetName),
       notes: _trimmed(notes),
+      cost: cost,
       createdAt: timestamp,
       updatedAt: timestamp,
     );
@@ -173,6 +175,7 @@ extension on VetVisit {
     clinic: clinic,
     vetName: vetName,
     notes: notes,
+    cost: cost,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

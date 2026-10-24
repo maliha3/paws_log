@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -113,6 +113,22 @@ class AppDatabase extends _$AppDatabase {
         // categories need no migration — `category` is a text column, and a
         // database that has never seen `brushing` simply has no such row.
         await m.addColumn(reminders, reminders.seasonal);
+      }
+      if (from < 7) {
+        // What a visit cost, and the identity and vet details on the pet.
+        // All nullable, so nothing already recorded changes meaning.
+
+        // `vet_visits` only arrived in v2, and the step above built it from
+        // *today's* definition — which already has `cost`. Adding it again
+        // for a database coming from v1 is an error, not a no-op. `pets` has
+        // existed since v1, so its columns always need adding.
+        if (from >= 2) {
+          await m.addColumn(vetVisits, vetVisits.cost);
+        }
+        await m.addColumn(pets, pets.species);
+        await m.addColumn(pets, pets.microchip);
+        await m.addColumn(pets, pets.vetName);
+        await m.addColumn(pets, pets.vetPhone);
       }
     },
     beforeOpen: (details) async {

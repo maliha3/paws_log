@@ -81,6 +81,10 @@ void main() {
         dietType: DietType.mixed,
         foodBrand: 'Royal Canin',
         feedingNotes: 'Two small meals, no chicken',
+        species: 'Cat',
+        microchip: '981098104512345',
+        vetName: 'Riverside Vets',
+        vetPhone: '01234 567890',
       ),
       now: now,
     );
@@ -167,6 +171,7 @@ void main() {
       clinic: 'Riverside Vets',
       vetName: 'Dr Okafor',
       notes: 'Rest for a week.',
+      cost: 4250,
       attachmentPaths: [
         writePhoto('visit_attachments/xray.jpg', [9, 8, 7]),
         writePhoto('visit_attachments/note.jpg', [6, 5]),
@@ -574,6 +579,14 @@ void main() {
     expect(pet.dietType, DietType.mixed);
     expect(pet.foodBrand, 'Royal Canin');
     expect(pet.feedingNotes, 'Two small meals, no chicken');
+    expect(pet.species, 'Cat');
+    expect(pet.microchip, '981098104512345');
+    expect(pet.vetName, 'Riverside Vets');
+    expect(pet.vetPhone, '01234 567890');
+    expect(
+      (await restored.select(restored.vetVisits).get()).single.cost,
+      4250,
+    );
 
     final conditions = await restored.select(restored.petConditions).get();
     expect(conditions, hasLength(2));

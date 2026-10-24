@@ -27,6 +27,10 @@ extension PetRowMapper on PetRow {
     breed: breed,
     sex: sex,
     neutered: neutered,
+    species: species,
+    microchip: microchip,
+    vetName: vetName,
+    vetPhone: vetPhone,
     coatLength: coatLength,
     origin: origin,
     originDate: originDate,
@@ -162,6 +166,7 @@ extension VetVisitRowMapper on VetVisitRow {
     clinic: clinic,
     vetName: vetName,
     notes: notes,
+    cost: cost,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

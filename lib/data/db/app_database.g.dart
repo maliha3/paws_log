@@ -61,6 +61,50 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _speciesMeta = const VerificationMeta(
+    'species',
+  );
+  @override
+  late final GeneratedColumn<String> species = GeneratedColumn<String>(
+    'species',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _microchipMeta = const VerificationMeta(
+    'microchip',
+  );
+  @override
+  late final GeneratedColumn<String> microchip = GeneratedColumn<String>(
+    'microchip',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vetNameMeta = const VerificationMeta(
+    'vetName',
+  );
+  @override
+  late final GeneratedColumn<String> vetName = GeneratedColumn<String>(
+    'vet_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vetPhoneMeta = const VerificationMeta(
+    'vetPhone',
+  );
+  @override
+  late final GeneratedColumn<String> vetPhone = GeneratedColumn<String>(
+    'vet_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<PetSex, String> sex =
       GeneratedColumn<String>(
@@ -217,6 +261,10 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     photoPath,
     birthday,
     breed,
+    species,
+    microchip,
+    vetName,
+    vetPhone,
     sex,
     neutered,
     coatLength,
@@ -273,6 +321,30 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
       context.handle(
         _breedMeta,
         breed.isAcceptableOrUnknown(data['breed']!, _breedMeta),
+      );
+    }
+    if (data.containsKey('species')) {
+      context.handle(
+        _speciesMeta,
+        species.isAcceptableOrUnknown(data['species']!, _speciesMeta),
+      );
+    }
+    if (data.containsKey('microchip')) {
+      context.handle(
+        _microchipMeta,
+        microchip.isAcceptableOrUnknown(data['microchip']!, _microchipMeta),
+      );
+    }
+    if (data.containsKey('vet_name')) {
+      context.handle(
+        _vetNameMeta,
+        vetName.isAcceptableOrUnknown(data['vet_name']!, _vetNameMeta),
+      );
+    }
+    if (data.containsKey('vet_phone')) {
+      context.handle(
+        _vetPhoneMeta,
+        vetPhone.isAcceptableOrUnknown(data['vet_phone']!, _vetPhoneMeta),
       );
     }
     if (data.containsKey('neutered')) {
@@ -374,6 +446,22 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
         DriftSqlType.string,
         data['${effectivePrefix}breed'],
       ),
+      species: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}species'],
+      ),
+      microchip: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}microchip'],
+      ),
+      vetName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vet_name'],
+      ),
+      vetPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vet_phone'],
+      ),
       sex: $PetsTable.$convertersex.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -470,6 +558,16 @@ class PetRow extends DataClass implements Insertable<PetRow> {
   /// Date-only, held at UTC midnight.
   final DateTime? birthday;
   final String? breed;
+
+  /// Free text, not an enum: the app is built for cats, but an owner who
+  /// keeps a rabbit should not be told their pet is not a kind of pet.
+  final String? species;
+  final String? microchip;
+
+  /// The pet's own vet. A prescription carries whoever wrote it; this is the
+  /// practice the owner would ring.
+  final String? vetName;
+  final String? vetPhone;
   final PetSex sex;
 
   /// Null means "not recorded".
@@ -496,6 +594,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     this.photoPath,
     this.birthday,
     this.breed,
+    this.species,
+    this.microchip,
+    this.vetName,
+    this.vetPhone,
     required this.sex,
     this.neutered,
     this.coatLength,
@@ -524,6 +626,18 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     }
     if (!nullToAbsent || breed != null) {
       map['breed'] = Variable<String>(breed);
+    }
+    if (!nullToAbsent || species != null) {
+      map['species'] = Variable<String>(species);
+    }
+    if (!nullToAbsent || microchip != null) {
+      map['microchip'] = Variable<String>(microchip);
+    }
+    if (!nullToAbsent || vetName != null) {
+      map['vet_name'] = Variable<String>(vetName);
+    }
+    if (!nullToAbsent || vetPhone != null) {
+      map['vet_phone'] = Variable<String>(vetPhone);
     }
     {
       map['sex'] = Variable<String>($PetsTable.$convertersex.toSql(sex));
@@ -585,6 +699,18 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       breed: breed == null && nullToAbsent
           ? const Value.absent()
           : Value(breed),
+      species: species == null && nullToAbsent
+          ? const Value.absent()
+          : Value(species),
+      microchip: microchip == null && nullToAbsent
+          ? const Value.absent()
+          : Value(microchip),
+      vetName: vetName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vetName),
+      vetPhone: vetPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vetPhone),
       sex: Value(sex),
       neutered: neutered == null && nullToAbsent
           ? const Value.absent()
@@ -635,6 +761,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       photoPath: serializer.fromJson<String?>(json['photoPath']),
       birthday: serializer.fromJson<DateTime?>(json['birthday']),
       breed: serializer.fromJson<String?>(json['breed']),
+      species: serializer.fromJson<String?>(json['species']),
+      microchip: serializer.fromJson<String?>(json['microchip']),
+      vetName: serializer.fromJson<String?>(json['vetName']),
+      vetPhone: serializer.fromJson<String?>(json['vetPhone']),
       sex: $PetsTable.$convertersex.fromJson(
         serializer.fromJson<String>(json['sex']),
       ),
@@ -668,6 +798,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       'photoPath': serializer.toJson<String?>(photoPath),
       'birthday': serializer.toJson<DateTime?>(birthday),
       'breed': serializer.toJson<String?>(breed),
+      'species': serializer.toJson<String?>(species),
+      'microchip': serializer.toJson<String?>(microchip),
+      'vetName': serializer.toJson<String?>(vetName),
+      'vetPhone': serializer.toJson<String?>(vetPhone),
       'sex': serializer.toJson<String>($PetsTable.$convertersex.toJson(sex)),
       'neutered': serializer.toJson<bool?>(neutered),
       'coatLength': serializer.toJson<String?>(
@@ -697,6 +831,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     Value<String?> photoPath = const Value.absent(),
     Value<DateTime?> birthday = const Value.absent(),
     Value<String?> breed = const Value.absent(),
+    Value<String?> species = const Value.absent(),
+    Value<String?> microchip = const Value.absent(),
+    Value<String?> vetName = const Value.absent(),
+    Value<String?> vetPhone = const Value.absent(),
     PetSex? sex,
     Value<bool?> neutered = const Value.absent(),
     Value<CoatLength?> coatLength = const Value.absent(),
@@ -717,6 +855,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
     birthday: birthday.present ? birthday.value : this.birthday,
     breed: breed.present ? breed.value : this.breed,
+    species: species.present ? species.value : this.species,
+    microchip: microchip.present ? microchip.value : this.microchip,
+    vetName: vetName.present ? vetName.value : this.vetName,
+    vetPhone: vetPhone.present ? vetPhone.value : this.vetPhone,
     sex: sex ?? this.sex,
     neutered: neutered.present ? neutered.value : this.neutered,
     coatLength: coatLength.present ? coatLength.value : this.coatLength,
@@ -739,6 +881,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
       birthday: data.birthday.present ? data.birthday.value : this.birthday,
       breed: data.breed.present ? data.breed.value : this.breed,
+      species: data.species.present ? data.species.value : this.species,
+      microchip: data.microchip.present ? data.microchip.value : this.microchip,
+      vetName: data.vetName.present ? data.vetName.value : this.vetName,
+      vetPhone: data.vetPhone.present ? data.vetPhone.value : this.vetPhone,
       sex: data.sex.present ? data.sex.value : this.sex,
       neutered: data.neutered.present ? data.neutered.value : this.neutered,
       coatLength: data.coatLength.present
@@ -778,6 +924,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           ..write('photoPath: $photoPath, ')
           ..write('birthday: $birthday, ')
           ..write('breed: $breed, ')
+          ..write('species: $species, ')
+          ..write('microchip: $microchip, ')
+          ..write('vetName: $vetName, ')
+          ..write('vetPhone: $vetPhone, ')
           ..write('sex: $sex, ')
           ..write('neutered: $neutered, ')
           ..write('coatLength: $coatLength, ')
@@ -797,12 +947,16 @@ class PetRow extends DataClass implements Insertable<PetRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     name,
     photoPath,
     birthday,
     breed,
+    species,
+    microchip,
+    vetName,
+    vetPhone,
     sex,
     neutered,
     coatLength,
@@ -817,7 +971,7 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     createdAt,
     updatedAt,
     archivedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -827,6 +981,10 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           other.photoPath == this.photoPath &&
           other.birthday == this.birthday &&
           other.breed == this.breed &&
+          other.species == this.species &&
+          other.microchip == this.microchip &&
+          other.vetName == this.vetName &&
+          other.vetPhone == this.vetPhone &&
           other.sex == this.sex &&
           other.neutered == this.neutered &&
           other.coatLength == this.coatLength &&
@@ -849,6 +1007,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
   final Value<String?> photoPath;
   final Value<DateTime?> birthday;
   final Value<String?> breed;
+  final Value<String?> species;
+  final Value<String?> microchip;
+  final Value<String?> vetName;
+  final Value<String?> vetPhone;
   final Value<PetSex> sex;
   final Value<bool?> neutered;
   final Value<CoatLength?> coatLength;
@@ -870,6 +1032,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.photoPath = const Value.absent(),
     this.birthday = const Value.absent(),
     this.breed = const Value.absent(),
+    this.species = const Value.absent(),
+    this.microchip = const Value.absent(),
+    this.vetName = const Value.absent(),
+    this.vetPhone = const Value.absent(),
     this.sex = const Value.absent(),
     this.neutered = const Value.absent(),
     this.coatLength = const Value.absent(),
@@ -892,6 +1058,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.photoPath = const Value.absent(),
     this.birthday = const Value.absent(),
     this.breed = const Value.absent(),
+    this.species = const Value.absent(),
+    this.microchip = const Value.absent(),
+    this.vetName = const Value.absent(),
+    this.vetPhone = const Value.absent(),
     required PetSex sex,
     this.neutered = const Value.absent(),
     this.coatLength = const Value.absent(),
@@ -918,6 +1088,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Expression<String>? photoPath,
     Expression<DateTime>? birthday,
     Expression<String>? breed,
+    Expression<String>? species,
+    Expression<String>? microchip,
+    Expression<String>? vetName,
+    Expression<String>? vetPhone,
     Expression<String>? sex,
     Expression<bool>? neutered,
     Expression<String>? coatLength,
@@ -940,6 +1114,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       if (photoPath != null) 'photo_path': photoPath,
       if (birthday != null) 'birthday': birthday,
       if (breed != null) 'breed': breed,
+      if (species != null) 'species': species,
+      if (microchip != null) 'microchip': microchip,
+      if (vetName != null) 'vet_name': vetName,
+      if (vetPhone != null) 'vet_phone': vetPhone,
       if (sex != null) 'sex': sex,
       if (neutered != null) 'neutered': neutered,
       if (coatLength != null) 'coat_length': coatLength,
@@ -964,6 +1142,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Value<String?>? photoPath,
     Value<DateTime?>? birthday,
     Value<String?>? breed,
+    Value<String?>? species,
+    Value<String?>? microchip,
+    Value<String?>? vetName,
+    Value<String?>? vetPhone,
     Value<PetSex>? sex,
     Value<bool?>? neutered,
     Value<CoatLength?>? coatLength,
@@ -986,6 +1168,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       photoPath: photoPath ?? this.photoPath,
       birthday: birthday ?? this.birthday,
       breed: breed ?? this.breed,
+      species: species ?? this.species,
+      microchip: microchip ?? this.microchip,
+      vetName: vetName ?? this.vetName,
+      vetPhone: vetPhone ?? this.vetPhone,
       sex: sex ?? this.sex,
       neutered: neutered ?? this.neutered,
       coatLength: coatLength ?? this.coatLength,
@@ -1021,6 +1207,18 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     }
     if (breed.present) {
       map['breed'] = Variable<String>(breed.value);
+    }
+    if (species.present) {
+      map['species'] = Variable<String>(species.value);
+    }
+    if (microchip.present) {
+      map['microchip'] = Variable<String>(microchip.value);
+    }
+    if (vetName.present) {
+      map['vet_name'] = Variable<String>(vetName.value);
+    }
+    if (vetPhone.present) {
+      map['vet_phone'] = Variable<String>(vetPhone.value);
     }
     if (sex.present) {
       map['sex'] = Variable<String>($PetsTable.$convertersex.toSql(sex.value));
@@ -1084,6 +1282,10 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
           ..write('photoPath: $photoPath, ')
           ..write('birthday: $birthday, ')
           ..write('breed: $breed, ')
+          ..write('species: $species, ')
+          ..write('microchip: $microchip, ')
+          ..write('vetName: $vetName, ')
+          ..write('vetPhone: $vetPhone, ')
           ..write('sex: $sex, ')
           ..write('neutered: $neutered, ')
           ..write('coatLength: $coatLength, ')
@@ -2517,6 +2719,15 @@ class $VetVisitsTable extends VetVisits
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _costMeta = const VerificationMeta('cost');
+  @override
+  late final GeneratedColumn<int> cost = GeneratedColumn<int>(
+    'cost',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2548,6 +2759,7 @@ class $VetVisitsTable extends VetVisits
     clinic,
     vetName,
     notes,
+    cost,
     createdAt,
     updatedAt,
   ];
@@ -2610,6 +2822,12 @@ class $VetVisitsTable extends VetVisits
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('cost')) {
+      context.handle(
+        _costMeta,
+        cost.isAcceptableOrUnknown(data['cost']!, _costMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2663,6 +2881,10 @@ class $VetVisitsTable extends VetVisits
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      cost: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cost'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2690,6 +2912,14 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
   final String? clinic;
   final String? vetName;
   final String? notes;
+
+  /// What it cost, in the smallest unit of the owner's currency.
+  ///
+  /// An integer rather than a decimal: money in a float is a bug waiting for
+  /// the day someone sums a column. The app stores no currency alongside it —
+  /// it is one owner's own log, in their own money — and formats with the
+  /// device's locale.
+  final int? cost;
   final DateTime createdAt;
   final DateTime updatedAt;
   const VetVisitRow({
@@ -2700,6 +2930,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
     this.clinic,
     this.vetName,
     this.notes,
+    this.cost,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2718,6 +2949,9 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || cost != null) {
+      map['cost'] = Variable<int>(cost);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -2739,6 +2973,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      cost: cost == null && nullToAbsent ? const Value.absent() : Value(cost),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2757,6 +2992,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
       clinic: serializer.fromJson<String?>(json['clinic']),
       vetName: serializer.fromJson<String?>(json['vetName']),
       notes: serializer.fromJson<String?>(json['notes']),
+      cost: serializer.fromJson<int?>(json['cost']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2772,6 +3008,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
       'clinic': serializer.toJson<String?>(clinic),
       'vetName': serializer.toJson<String?>(vetName),
       'notes': serializer.toJson<String?>(notes),
+      'cost': serializer.toJson<int?>(cost),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2785,6 +3022,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
     Value<String?> clinic = const Value.absent(),
     Value<String?> vetName = const Value.absent(),
     Value<String?> notes = const Value.absent(),
+    Value<int?> cost = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => VetVisitRow(
@@ -2795,6 +3033,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
     clinic: clinic.present ? clinic.value : this.clinic,
     vetName: vetName.present ? vetName.value : this.vetName,
     notes: notes.present ? notes.value : this.notes,
+    cost: cost.present ? cost.value : this.cost,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2807,6 +3046,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
       clinic: data.clinic.present ? data.clinic.value : this.clinic,
       vetName: data.vetName.present ? data.vetName.value : this.vetName,
       notes: data.notes.present ? data.notes.value : this.notes,
+      cost: data.cost.present ? data.cost.value : this.cost,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2822,6 +3062,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
           ..write('clinic: $clinic, ')
           ..write('vetName: $vetName, ')
           ..write('notes: $notes, ')
+          ..write('cost: $cost, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2837,6 +3078,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
     clinic,
     vetName,
     notes,
+    cost,
     createdAt,
     updatedAt,
   );
@@ -2851,6 +3093,7 @@ class VetVisitRow extends DataClass implements Insertable<VetVisitRow> {
           other.clinic == this.clinic &&
           other.vetName == this.vetName &&
           other.notes == this.notes &&
+          other.cost == this.cost &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2863,6 +3106,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
   final Value<String?> clinic;
   final Value<String?> vetName;
   final Value<String?> notes;
+  final Value<int?> cost;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2874,6 +3118,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
     this.clinic = const Value.absent(),
     this.vetName = const Value.absent(),
     this.notes = const Value.absent(),
+    this.cost = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2886,6 +3131,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
     this.clinic = const Value.absent(),
     this.vetName = const Value.absent(),
     this.notes = const Value.absent(),
+    this.cost = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2903,6 +3149,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
     Expression<String>? clinic,
     Expression<String>? vetName,
     Expression<String>? notes,
+    Expression<int>? cost,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2915,6 +3162,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
       if (clinic != null) 'clinic': clinic,
       if (vetName != null) 'vet_name': vetName,
       if (notes != null) 'notes': notes,
+      if (cost != null) 'cost': cost,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2929,6 +3177,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
     Value<String?>? clinic,
     Value<String?>? vetName,
     Value<String?>? notes,
+    Value<int?>? cost,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2941,6 +3190,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
       clinic: clinic ?? this.clinic,
       vetName: vetName ?? this.vetName,
       notes: notes ?? this.notes,
+      cost: cost ?? this.cost,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2971,6 +3221,9 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (cost.present) {
+      map['cost'] = Variable<int>(cost.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2993,6 +3246,7 @@ class VetVisitsCompanion extends UpdateCompanion<VetVisitRow> {
           ..write('clinic: $clinic, ')
           ..write('vetName: $vetName, ')
           ..write('notes: $notes, ')
+          ..write('cost: $cost, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -7829,6 +8083,10 @@ typedef $$PetsTableCreateCompanionBuilder =
       Value<String?> photoPath,
       Value<DateTime?> birthday,
       Value<String?> breed,
+      Value<String?> species,
+      Value<String?> microchip,
+      Value<String?> vetName,
+      Value<String?> vetPhone,
       required PetSex sex,
       Value<bool?> neutered,
       Value<CoatLength?> coatLength,
@@ -7852,6 +8110,10 @@ typedef $$PetsTableUpdateCompanionBuilder =
       Value<String?> photoPath,
       Value<DateTime?> birthday,
       Value<String?> breed,
+      Value<String?> species,
+      Value<String?> microchip,
+      Value<String?> vetName,
+      Value<String?> vetPhone,
       Value<PetSex> sex,
       Value<bool?> neutered,
       Value<CoatLength?> coatLength,
@@ -8072,6 +8334,26 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
 
   ColumnFilters<String> get breed => $composableBuilder(
     column: $table.breed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get species => $composableBuilder(
+    column: $table.species,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get microchip => $composableBuilder(
+    column: $table.microchip,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vetName => $composableBuilder(
+    column: $table.vetName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vetPhone => $composableBuilder(
+    column: $table.vetPhone,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8408,6 +8690,26 @@ class $$PetsTableOrderingComposer extends Composer<_$AppDatabase, $PetsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get species => $composableBuilder(
+    column: $table.species,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get microchip => $composableBuilder(
+    column: $table.microchip,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vetName => $composableBuilder(
+    column: $table.vetName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vetPhone => $composableBuilder(
+    column: $table.vetPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get sex => $composableBuilder(
     column: $table.sex,
     builder: (column) => ColumnOrderings(column),
@@ -8502,6 +8804,18 @@ class $$PetsTableAnnotationComposer
 
   GeneratedColumn<String> get breed =>
       $composableBuilder(column: $table.breed, builder: (column) => column);
+
+  GeneratedColumn<String> get species =>
+      $composableBuilder(column: $table.species, builder: (column) => column);
+
+  GeneratedColumn<String> get microchip =>
+      $composableBuilder(column: $table.microchip, builder: (column) => column);
+
+  GeneratedColumn<String> get vetName =>
+      $composableBuilder(column: $table.vetName, builder: (column) => column);
+
+  GeneratedColumn<String> get vetPhone =>
+      $composableBuilder(column: $table.vetPhone, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<PetSex, String> get sex =>
       $composableBuilder(column: $table.sex, builder: (column) => column);
@@ -8830,6 +9144,10 @@ class $$PetsTableTableManager
                 Value<String?> photoPath = const Value.absent(),
                 Value<DateTime?> birthday = const Value.absent(),
                 Value<String?> breed = const Value.absent(),
+                Value<String?> species = const Value.absent(),
+                Value<String?> microchip = const Value.absent(),
+                Value<String?> vetName = const Value.absent(),
+                Value<String?> vetPhone = const Value.absent(),
                 Value<PetSex> sex = const Value.absent(),
                 Value<bool?> neutered = const Value.absent(),
                 Value<CoatLength?> coatLength = const Value.absent(),
@@ -8851,6 +9169,10 @@ class $$PetsTableTableManager
                 photoPath: photoPath,
                 birthday: birthday,
                 breed: breed,
+                species: species,
+                microchip: microchip,
+                vetName: vetName,
+                vetPhone: vetPhone,
                 sex: sex,
                 neutered: neutered,
                 coatLength: coatLength,
@@ -8874,6 +9196,10 @@ class $$PetsTableTableManager
                 Value<String?> photoPath = const Value.absent(),
                 Value<DateTime?> birthday = const Value.absent(),
                 Value<String?> breed = const Value.absent(),
+                Value<String?> species = const Value.absent(),
+                Value<String?> microchip = const Value.absent(),
+                Value<String?> vetName = const Value.absent(),
+                Value<String?> vetPhone = const Value.absent(),
                 required PetSex sex,
                 Value<bool?> neutered = const Value.absent(),
                 Value<CoatLength?> coatLength = const Value.absent(),
@@ -8895,6 +9221,10 @@ class $$PetsTableTableManager
                 photoPath: photoPath,
                 birthday: birthday,
                 breed: breed,
+                species: species,
+                microchip: microchip,
+                vetName: vetName,
+                vetPhone: vetPhone,
                 sex: sex,
                 neutered: neutered,
                 coatLength: coatLength,
@@ -10131,6 +10461,7 @@ typedef $$VetVisitsTableCreateCompanionBuilder =
       Value<String?> clinic,
       Value<String?> vetName,
       Value<String?> notes,
+      Value<int?> cost,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -10144,6 +10475,7 @@ typedef $$VetVisitsTableUpdateCompanionBuilder =
       Value<String?> clinic,
       Value<String?> vetName,
       Value<String?> notes,
+      Value<int?> cost,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -10245,6 +10577,11 @@ class $$VetVisitsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cost => $composableBuilder(
+    column: $table.cost,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10371,6 +10708,11 @@ class $$VetVisitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get cost => $composableBuilder(
+    column: $table.cost,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -10431,6 +10773,9 @@ class $$VetVisitsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get cost =>
+      $composableBuilder(column: $table.cost, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -10551,6 +10896,7 @@ class $$VetVisitsTableTableManager
                 Value<String?> clinic = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int?> cost = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -10562,6 +10908,7 @@ class $$VetVisitsTableTableManager
                 clinic: clinic,
                 vetName: vetName,
                 notes: notes,
+                cost: cost,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -10575,6 +10922,7 @@ class $$VetVisitsTableTableManager
                 Value<String?> clinic = const Value.absent(),
                 Value<String?> vetName = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int?> cost = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -10586,6 +10934,7 @@ class $$VetVisitsTableTableManager
                 clinic: clinic,
                 vetName: vetName,
                 notes: notes,
+                cost: cost,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

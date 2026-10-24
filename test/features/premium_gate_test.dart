@@ -90,7 +90,7 @@ void main() {
 
       expect(find.byType(PaywallScreen), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Luna');
-      await tapAndSettle(tester, find.text('Add pet'));
+      await scrollAndTap(tester, find.text('Add pet'));
       expect(await db.select(db.pets).get(), hasLength(2));
 
       await disposeTree(tester);

@@ -51,6 +51,14 @@ class PetRepository {
     PetSex sex = PetSex.unknown,
     bool? neutered,
     CoatLength? coatLength,
+    PetOrigin? origin,
+    DateTime? originDate,
+    String? originNotes,
+    String? motherInfo,
+    String? fatherInfo,
+    DietType? dietType,
+    String? foodBrand,
+    String? feedingNotes,
     DateTime? now,
   }) async {
     final timestamp = (now ?? DateTime.now()).toUtc();
@@ -63,6 +71,14 @@ class PetRepository {
       sex: sex,
       neutered: neutered,
       coatLength: coatLength,
+      origin: origin,
+      originDate: originDate,
+      originNotes: _clean(originNotes),
+      motherInfo: _clean(motherInfo),
+      fatherInfo: _clean(fatherInfo),
+      dietType: dietType,
+      foodBrand: _clean(foodBrand),
+      feedingNotes: _clean(feedingNotes),
       createdAt: timestamp,
       updatedAt: timestamp,
     );
@@ -84,6 +100,11 @@ class PetRepository {
         updatedAt: Value(timestamp),
       ),
     );
+  }
+
+  static String? _clean(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 
   /// Points the pet's portrait at a copy of [sourcePath].

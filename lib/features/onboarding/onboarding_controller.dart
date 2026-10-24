@@ -28,6 +28,7 @@ class OnboardingDraft {
     this.breed = '',
     this.sex = PetSex.unknown,
     this.neutered,
+    this.coatLength,
     this.reminders = const [],
     this.isSaving = false,
   });
@@ -41,6 +42,11 @@ class OnboardingDraft {
   final String breed;
   final PetSex sex;
   final bool? neutered;
+
+  /// Asked during onboarding because the starter grooming suggestions depend
+  /// on it: a long-haired cat is brushed far more often.
+  final CoatLength? coatLength;
+
   final List<ReminderDraft> reminders;
   final bool isSaving;
 
@@ -59,6 +65,8 @@ class OnboardingDraft {
     PetSex? sex,
     bool? neutered,
     bool clearNeutered = false,
+    CoatLength? coatLength,
+    bool clearCoatLength = false,
     List<ReminderDraft>? reminders,
     bool? isSaving,
   }) => OnboardingDraft(
@@ -68,6 +76,7 @@ class OnboardingDraft {
     breed: breed ?? this.breed,
     sex: sex ?? this.sex,
     neutered: clearNeutered ? null : (neutered ?? this.neutered),
+    coatLength: clearCoatLength ? null : (coatLength ?? this.coatLength),
     reminders: reminders ?? this.reminders,
     isSaving: isSaving ?? this.isSaving,
   );
@@ -95,6 +104,10 @@ class OnboardingController extends Notifier<OnboardingDraft> {
   void setNeutered(bool? value) => state = value == null
       ? state.copyWith(clearNeutered: true)
       : state.copyWith(neutered: value);
+
+  void setCoatLength(CoatLength? value) => state = value == null
+      ? state.copyWith(clearCoatLength: true)
+      : state.copyWith(coatLength: value);
 
   void toggleReminder(int index, {required bool enabled}) =>
       _replaceReminder(index, state.reminders[index].copyWith(enabled: enabled));
@@ -133,6 +146,7 @@ class OnboardingController extends Notifier<OnboardingDraft> {
         breed: state.breed,
         sex: state.sex,
         neutered: state.neutered,
+        coatLength: state.coatLength,
         now: now,
       );
       await ref.read(reminderRepositoryProvider).createFromDrafts(

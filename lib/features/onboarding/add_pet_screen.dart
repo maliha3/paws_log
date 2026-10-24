@@ -232,6 +232,23 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                     controller.setNeutered(selected.first.value),
               ),
             ),
+            const SizedBox(height: 20),
+            _Field(
+              label: 'Coat',
+              child: SegmentedButton<_Coat>(
+                segments: const [
+                  ButtonSegment(value: _Coat.short, label: Text('Short')),
+                  ButtonSegment(value: _Coat.long, label: Text('Long')),
+                  ButtonSegment(
+                    value: _Coat.unknown,
+                    label: Text('Not sure'),
+                  ),
+                ],
+                selected: {_Coat.from(draft.coatLength)},
+                onSelectionChanged: (selected) =>
+                    controller.setCoatLength(selected.first.value),
+              ),
+            ),
             const SizedBox(height: 36),
             FilledButton(onPressed: _continue, child: const Text('Continue')),
           ],
@@ -239,6 +256,24 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       ),
     );
   }
+}
+
+/// Coat length as three buttons, because "not sure" is a real answer and the
+/// grooming suggestion has to cope with it.
+enum _Coat {
+  short(CoatLength.short),
+  long(CoatLength.long),
+  unknown(null);
+
+  const _Coat(this.value);
+
+  final CoatLength? value;
+
+  static _Coat from(CoatLength? value) => switch (value) {
+    CoatLength.short => _Coat.short,
+    CoatLength.long => _Coat.long,
+    null => _Coat.unknown,
+  };
 }
 
 /// A labelled row in the form.

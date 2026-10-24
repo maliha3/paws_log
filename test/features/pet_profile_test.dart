@@ -94,7 +94,7 @@ void main() {
     await tapAndSettle(tester, find.text('Add a pet'));
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Luna');
     await tester.enterText(find.widgetWithText(TextField, 'Breed'), 'Tabby');
-    await tapAndSettle(tester, find.text('Add pet'));
+    await scrollAndTap(tester, find.text('Add pet'));
 
     expect(find.text('Mochi'), findsOneWidget);
     expect(find.text('Luna'), findsOneWidget);
@@ -109,7 +109,7 @@ void main() {
     await openPets(tester);
 
     await tapAndSettle(tester, find.text('Add a pet'));
-    await tapAndSettle(tester, find.text('Add pet'));
+    await scrollAndTap(tester, find.text('Add pet'));
 
     expect(find.text('A name is needed'), findsOneWidget);
     expect(await db.select(db.pets).get(), hasLength(1));
@@ -124,7 +124,7 @@ void main() {
 
     await tapAndSettle(tester, find.byTooltip('Edit pet'));
     await tester.enterText(find.widgetWithText(TextField, 'Breed'), 'Birman');
-    await tapAndSettle(tester, find.text('Save'));
+    await scrollAndTap(tester, find.text('Save'));
 
     expect(find.textContaining('Birman'), findsOneWidget);
     expect((await db.select(db.pets).get()).single.breed, 'Birman');

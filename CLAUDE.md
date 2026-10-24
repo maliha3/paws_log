@@ -588,7 +588,9 @@ which is exactly how this surfaced. Tests build "today" with
   previewing a drawing, not guarding it.
 - **The mark** is drawn (`PawMark`), not an image: crisp at any size, takes
   the colour it is given, and can animate. `tool/make_icon.py` draws the app
-  icon from the same geometry — change one, change both.
+  icon from the same geometry — change one, change both. The icon adds a
+  margin around it and nothing else: iOS rounds the corners and a home screen
+  is crowded, so a paw that reached the edge reads as a smudge at 40 pixels.
 - **Category colours** are a `ThemeExtension` with its own light and dark
   steps, so the "colours come from the theme only" rule still holds. The icon
   always repeats what the colour says; nothing rests on colour alone.
@@ -602,8 +604,16 @@ Colours come from the `ColorScheme` only — there are no hardcoded `Colors.*`
 outside `app_theme.dart` and the PDF, which uses fixed inks because it is for
 print. Dark mode is its own scheme, not an inverted light one.
 
-The app icon is a placeholder, not a design: it exists so the app does not
-ship with the Flutter logo. `tool/make_icon.py` regenerates it.
+The app icon is still a placeholder rather than a design, but it is at least
+*this app's* placeholder: the ink paw on the brand amber, both taken from
+`app_theme.dart`. It was deep green until the colours were checked against the
+app — left over from before the warm palette.
+
+`tool/make_icons.sh` regenerates all twenty: the master, fifteen iOS slots and
+five Android mipmaps. Every one is **drawn at its own resolution** rather than
+resized down from the master, because a 20-pixel icon supersampled from the
+shape beats one squeezed out of a 1024-pixel image — and because nothing in
+that path can pick up the alpha channel iOS rejects.
 
 ## Money
 

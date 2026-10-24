@@ -173,6 +173,23 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Mochi');
       await scrollAndTap(tester, find.text('Continue'));
       expect(find.text('Starter reminders'), findsOneWidget);
+      // Grooming sits at the bottom of a list that is long at 2x text.
+      await scrollIntoView(tester, find.text('Brushing'));
+    });
+
+    forEachAppearance('the reminder sheet, shedding on', (tester) async {
+      await tapAndSettle(tester, find.text('Get started'));
+      await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Mochi');
+      await scrollAndTap(tester, find.text('Continue'));
+      await scrollAndTap(tester, find.text('Add a reminder'));
+
+      await tapAndSettle(tester, find.text('months'));
+      await tapAndSettle(tester, find.text('weeks').last);
+      await scrollAndTap(tester, find.byType(Switch).last);
+
+      // The switch, its two-line explanation and the hemisphere chips are
+      // the densest thing in a sheet, which is where 2x text bites.
+      await scrollIntoView(tester, find.text('Save'));
     });
   });
 

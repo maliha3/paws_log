@@ -7,6 +7,7 @@ import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
 import '../domain/models/pet_condition.dart';
 import '../domain/models/pet_photo.dart';
+import '../domain/shedding_season.dart';
 import '../domain/models/prescription.dart';
 import '../domain/models/vaccination_record.dart';
 import '../domain/models/vet_visit.dart';
@@ -84,6 +85,11 @@ final allergiesForPetProvider =
       (ref, petId) =>
           ref.watch(petHealthRepositoryProvider).watchAllergies(petId),
     );
+
+/// Which hemisphere the owner says they are in.
+final hemisphereProvider = StreamProvider<Hemisphere>(
+  (ref) => ref.watch(settingsRepositoryProvider).watchHemisphere(),
+);
 
 /// One pet's album, live, newest first.
 final photosForPetProvider = StreamProvider.family<List<PetPhoto>, String>(

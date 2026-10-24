@@ -534,6 +534,11 @@ ship with the Flutter logo. `tool/make_icon.py` regenerates it.
 
 Named in the spec, deliberately absent from the code. Not oversights:
 
+- **Managing reminders after onboarding.** `showReminderDraftSheet` is the
+  only reminder editor there is, and it only exists on the starter-reminders
+  screen. An owner past onboarding cannot add a reminder, change one's
+  schedule, or reach the shedding-season switch; a second pet gets no
+  reminders at all. This predates grooming and is the largest gap in the app.
 - `VetVisit.cost`.
 - `Pet.species`, `microchip`, `vetName`, `vetPhone`. A prescription carries
   its own vet name and clinic; the pet does not yet.

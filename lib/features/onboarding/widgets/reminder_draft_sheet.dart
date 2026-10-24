@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants.dart';
+import '../../../data/providers.dart';
 import '../../../domain/models/reminder.dart';
 import '../../../domain/models/reminder_draft.dart';
 import '../../../domain/repeat_rule.dart';
+import '../../../domain/shedding_season.dart';
 
 /// Edits one reminder draft. Returns the edited draft, or null if dismissed.
 ///
@@ -19,23 +22,30 @@ Future<ReminderDraft?> showReminderDraftSheet(
   builder: (context) => _ReminderDraftSheet(draft: draft),
 );
 
-class _ReminderDraftSheet extends StatefulWidget {
+class _ReminderDraftSheet extends ConsumerStatefulWidget {
   const _ReminderDraftSheet({this.draft});
 
   final ReminderDraft? draft;
 
   @override
-  State<_ReminderDraftSheet> createState() => _ReminderDraftSheetState();
+  ConsumerState<_ReminderDraftSheet> createState() =>
+      _ReminderDraftSheetState();
 }
 
-class _ReminderDraftSheetState extends State<_ReminderDraftSheet> {
+class _ReminderDraftSheetState extends ConsumerState<_ReminderDraftSheet> {
   late final TextEditingController _title;
   late final TextEditingController _interval;
   late ReminderCategory _category;
   late RepeatUnit _unit;
   late DateTime _firstDue;
   late int _timeOfDayMinutes;
+  late bool _seasonal;
   bool _showTitleError = false;
+
+  /// Shedding only means anything for a short interval. On a monthly or
+  /// yearly rule there is nothing to halve, so the switch is not offered.
+  bool get _canBeSeasonal =>
+      _unit == RepeatUnit.days || _unit == RepeatUnit.weeks;
 
   @override
   void initState() {
@@ -53,6 +63,7 @@ class _ReminderDraftSheetState extends State<_ReminderDraftSheet> {
         draft?.firstDue ?? DateTime.utc(today.year, today.month, today.day);
     _timeOfDayMinutes =
         draft?.timeOfDayMinutes ?? AppConstants.defaultReminderTimeMinutes;
+    _seasonal = draft?.repeat.seasonal ?? false;
   }
 
   @override
@@ -105,6 +116,9 @@ class _ReminderDraftSheetState extends State<_ReminderDraftSheet> {
         repeat: RepeatRule(
           unit: _unit,
           interval: interval < 1 ? 1 : interval,
+          // Never stored on a rule it cannot apply to: a monthly reminder
+          // carrying a dormant flag would read as a promise it does not keep.
+          seasonal: _seasonal && _canBeSeasonal,
         ),
         firstDue: _firstDue,
         timeOfDayMinutes: _timeOfDayMinutes,
@@ -235,6 +249,13 @@ class _ReminderDraftSheetState extends State<_ReminderDraftSheet> {
                 ),
               ],
             ),
+            if (_canBeSeasonal) ...[
+              const SizedBox(height: 8),
+              _SheddingSwitch(
+                value: _seasonal,
+                onChanged: (value) => setState(() => _seasonal = value),
+              ),
+            ],
             const SizedBox(height: 24),
             FilledButton(onPressed: _save, child: const Text('Save')),
             const SizedBox(height: 8),
@@ -245,6 +266,80 @@ class _ReminderDraftSheetState extends State<_ReminderDraftSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Turns the shedding-season halving on, and says what that means.
+class _SheddingSwitch extends ConsumerWidget {
+  const _SheddingSwitch({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final stored = ref.watch(hemisphereProvider);
+    final hemisphere = stored.hasValue
+        ? stored.requireValue
+        : Hemisphere.northern;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: value,
+          onChanged: onChanged,
+          title: const Text('Shedding season'),
+          subtitle: const Text(
+            'Comes round twice as often from March to May and September to '
+            'November, when cats shed most.',
+          ),
+          isThreeLine: true,
+        ),
+        if (value) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Where you are',
+            style: theme.textTheme.labelLarge,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            // Worth saying plainly, because the obvious expectation is that
+            // the southern setting moves the months.
+            'Cats shed in the same two months either way \u2014 it turns with '
+            'the equinox. This only changes what each spell is called.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final option in Hemisphere.values)
+                ChoiceChip(
+                  label: Text('${option.label} hemisphere'),
+                  selected: hemisphere == option,
+                  onSelected: (_) => ref
+                      .read(settingsRepositoryProvider)
+                      .setHemisphere(option),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Right now: '
+            '${sheddingWindowLabel(DateTime.now(), hemisphere) ?? 'not shedding'}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

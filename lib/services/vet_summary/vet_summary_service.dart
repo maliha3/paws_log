@@ -1,4 +1,5 @@
 import '../../data/repositories/medicine_repository.dart';
+import '../../data/repositories/pet_health_repository.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/vet_visit_repository.dart';
@@ -14,6 +15,7 @@ class VetSummaryService {
     required this.weights,
     required this.visits,
     required this.settings,
+    required this.health,
   });
 
   final VaccinationRepository vaccinations;
@@ -21,6 +23,7 @@ class VetSummaryService {
   final WeightRepository weights;
   final VetVisitRepository visits;
   final SettingsRepository settings;
+  final PetHealthRepository health;
 
   Future<VetSummary> gather(Pet pet, {DateTime? now}) async {
     final allMedicines = await medicines.watchForPet(pet.id).first;
@@ -35,6 +38,8 @@ class VetSummaryService {
         for (final medicine in allMedicines)
           if (medicine.isActive) medicine,
       ],
+      conditions: await health.watchConditions(pet.id).first,
+      allergies: await health.watchAllergies(pet.id).first,
       weights: await weights.watchForPet(pet.id).first,
       visits: allVisits.take(VetSummary.visitCount).toList(),
       unit: await settings.weightUnit(),

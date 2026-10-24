@@ -1,5 +1,6 @@
 import 'medicine.dart';
 import 'pet.dart';
+import 'pet_condition.dart';
 import 'vaccination_record.dart';
 import 'vet_visit.dart';
 import 'weight_entry.dart';
@@ -17,9 +18,18 @@ class VetSummary {
     required this.visits,
     required this.unit,
     required this.generatedAt,
+    this.conditions = const [],
+    this.allergies = const [],
   });
 
   final Pet pet;
+
+  /// Diagnosed conditions, ongoing first.
+  final List<PetCondition> conditions;
+
+  /// Allergies, which go near the top of the page: the point of printing
+  /// them is that a vet who has not met this cat sees them without looking.
+  final List<PetAllergy> allergies;
 
   /// Most recent first.
   final List<VaccinationRecord> vaccinations;
@@ -39,6 +49,17 @@ class VetSummary {
 
   /// How many visits the summary carries.
   static const int visitCount = 3;
+
+  /// Conditions the cat has now, which is what a vet reads first.
+  List<PetCondition> get ongoingConditions => [
+    for (final condition in conditions)
+      if (condition.isOngoing) condition,
+  ];
+
+  List<PetCondition> get pastConditions => [
+    for (final condition in conditions)
+      if (!condition.isOngoing) condition,
+  ];
 
   WeightEntry? get latestWeight => weights.isEmpty ? null : weights.last;
 

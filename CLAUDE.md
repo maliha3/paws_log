@@ -408,10 +408,15 @@ import that put medicines back first would fail on the key.
 
 ## Vet summary
 
-One PDF page per pet: profile, vaccinations with dates, the medicines they
-are on *now*, the weight trend, and the last three visits. It carries the
-same standing note the app does — a record of what the owner entered, not a
-clinical document.
+One PDF page per pet: profile, allergies, conditions, vaccinations with
+dates, the medicines they are on *now*, the weight trend, and the last three
+visits. It carries the same standing note the app does — a record of what the
+owner entered, not a clinical document.
+
+**Allergies print above the vaccination table**, in a box rather than a row of
+a table: a vet who has not met this cat needs them before anything else on
+the page, and a warning should not look like a record. Conditions follow as a
+table, ongoing before past.
 
 `VetSummaryPdf` is a pure function of a `VetSummary`: no repositories, no
 plugins, no clock. `VetSummaryService` gathers the data and

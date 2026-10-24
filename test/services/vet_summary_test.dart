@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
+import 'package:paws_log/data/repositories/pet_health_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/reminder_event_repository.dart';
 import 'package:paws_log/data/repositories/reminder_repository.dart';
@@ -12,6 +13,7 @@ import 'package:paws_log/data/repositories/vet_visit_repository.dart';
 import 'package:paws_log/data/repositories/weight_repository.dart';
 import 'package:paws_log/domain/models/medicine.dart';
 import 'package:paws_log/domain/models/pet.dart';
+import 'package:paws_log/domain/models/pet_condition.dart';
 import 'package:paws_log/domain/models/reminder.dart';
 import 'package:paws_log/domain/models/weight_entry.dart';
 import 'package:paws_log/domain/repeat_rule.dart';
@@ -40,6 +42,7 @@ void main() {
       weights: WeightRepository(db),
       visits: VetVisitRepository(db),
       settings: SettingsRepository(db),
+      health: PetHealthRepository(db),
     );
     mochi = await pets.create(
       name: 'Mochi',
@@ -174,6 +177,84 @@ void main() {
     });
   });
 
+  group('conditions and allergies', () {
+    Future<void> addHealth() async {
+      final health = PetHealthRepository(db);
+      await health.addCondition(
+        petId: mochi.id,
+        name: 'CKD',
+        date: DateTime.utc(2026, 1, 10),
+        notes: 'Stage 2',
+        now: now,
+      );
+      await health.addCondition(
+        petId: mochi.id,
+        name: 'Cat flu',
+        status: ConditionStatus.past,
+        now: now,
+      );
+      await health.addAllergy(
+        petId: mochi.id,
+        allergen: 'Chicken',
+        reaction: 'Itching round the ears',
+        now: now,
+      );
+    }
+
+    test('both are gathered, ongoing conditions kept apart from past', () async {
+      await addHealth();
+
+      final summary = await service.gather(mochi, now: now);
+
+      expect(summary.conditions, hasLength(2));
+      expect(summary.ongoingConditions.map((c) => c.name), ['CKD']);
+      expect(summary.pastConditions.map((c) => c.name), ['Cat flu']);
+      expect(summary.allergies.single.allergen, 'Chicken');
+    });
+
+    test('a cat with none of either still gathers cleanly', () async {
+      final summary = await service.gather(mochi, now: now);
+
+      expect(summary.conditions, isEmpty);
+      expect(summary.allergies, isEmpty);
+      expect(summary.ongoingConditions, isEmpty);
+    });
+
+    test('another pet\u2019s health record does not leak in', () async {
+      final luna = await pets.create(name: 'Luna', now: now);
+      await PetHealthRepository(db).addCondition(
+        petId: luna.id,
+        name: 'FIV',
+        now: now,
+      );
+      await addHealth();
+
+      final summary = await service.gather(mochi, now: now);
+
+      expect(summary.conditions.map((c) => c.name), isNot(contains('FIV')));
+    });
+
+    test('they reach the page', () async {
+      await addHealth();
+      final summary = await service.gather(mochi, now: now);
+
+      final bytes = await const VetSummaryPdf().build(summary);
+      final bare = await const VetSummaryPdf().build(
+        await service.gather(
+          await pets.create(name: 'Bare', now: now),
+          now: now,
+        ),
+      );
+
+      expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+      expect(
+        bytes.length,
+        greaterThan(bare.length),
+        reason: 'the allergy box and the conditions table are on the page',
+      );
+    });
+  });
+
   group('the PDF', () {
     Future<List<int>> buildPdf() async {
       final summary = await service.gather(mochi, now: now);
@@ -185,6 +266,18 @@ void main() {
       await addMedicine(active: true);
       await addVisits(4);
       await addWeights([4200, 4300, 4450]);
+      await PetHealthRepository(db).addCondition(
+        petId: mochi.id,
+        name: 'CKD',
+        date: DateTime.utc(2026, 1, 10),
+        now: now,
+      );
+      await PetHealthRepository(db).addAllergy(
+        petId: mochi.id,
+        allergen: 'Chicken',
+        reaction: 'Itching round the ears',
+        now: now,
+      );
 
       final bytes = await buildPdf();
 

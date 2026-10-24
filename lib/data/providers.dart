@@ -277,6 +277,7 @@ final vetSummaryServiceProvider = Provider<VetSummaryService>(
     weights: ref.watch(weightRepositoryProvider),
     visits: ref.watch(vetVisitRepositoryProvider),
     settings: ref.watch(settingsRepositoryProvider),
+    health: ref.watch(petHealthRepositoryProvider),
   ),
 );
 

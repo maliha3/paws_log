@@ -37,7 +37,15 @@ class VetSummaryPdf {
           _header(summary),
           pw.SizedBox(height: 18),
           _profile(summary.pet),
+          // Allergies first, before the vaccination table, because a vet who
+          // has not met this cat needs them before anything else on the page.
+          if (summary.allergies.isNotEmpty) ...[
+            pw.SizedBox(height: 16),
+            _allergies(summary),
+          ],
           pw.SizedBox(height: 20),
+          _section('Conditions', _conditions(summary)),
+          pw.SizedBox(height: 18),
           _section('Vaccinations', _vaccinations(summary)),
           pw.SizedBox(height: 18),
           _section('Current medicines', _medicines(summary)),
@@ -133,6 +141,58 @@ class VetSummaryPdf {
 
   pw.Widget _empty(String message) =>
       pw.Text(message, style: const pw.TextStyle(fontSize: 11, color: _muted));
+
+  /// Boxed rather than tabled: this is a warning, not a list of records.
+  pw.Widget _allergies(VetSummary summary) => pw.Container(
+    width: double.infinity,
+    padding: const pw.EdgeInsets.all(10),
+    decoration: pw.BoxDecoration(
+      border: pw.Border.all(color: _ink, width: 0.8),
+      borderRadius: pw.BorderRadius.circular(4),
+    ),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          summary.allergies.length == 1 ? 'ALLERGY' : 'ALLERGIES',
+          style: pw.TextStyle(
+            fontSize: 9,
+            fontWeight: pw.FontWeight.bold,
+            color: _ink,
+          ),
+        ),
+        pw.SizedBox(height: 4),
+        for (final allergy in summary.allergies)
+          pw.Text(
+            allergy.reaction == null
+                ? allergy.allergen
+                : '${allergy.allergen} \u2014 ${allergy.reaction}',
+            style: const pw.TextStyle(fontSize: 11, color: _ink),
+          ),
+      ],
+    ),
+  );
+
+  pw.Widget _conditions(VetSummary summary) {
+    if (summary.conditions.isEmpty) {
+      return _empty('None recorded.');
+    }
+    return _table(
+      ['Condition', 'Status', 'Diagnosed', 'Notes'],
+      [
+        for (final condition in [
+          ...summary.ongoingConditions,
+          ...summary.pastConditions,
+        ])
+          [
+            condition.name,
+            condition.status.label,
+            condition.date == null ? '\u2014' : _date.format(condition.date!),
+            condition.notes ?? '\u2014',
+          ],
+      ],
+    );
+  }
 
   pw.Widget _vaccinations(VetSummary summary) {
     if (summary.vaccinations.isEmpty) {

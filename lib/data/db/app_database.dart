@@ -10,10 +10,12 @@ import '../../domain/models/reminder_event.dart';
 import '../../domain/models/dose_log.dart';
 import '../../domain/repeat_rule.dart';
 import 'converters/minutes_list_converter.dart';
+import 'converters/string_list_converter.dart';
 import 'tables/app_settings.dart';
 import 'tables/dose_logs.dart';
 import 'tables/medicines.dart';
 import 'tables/pets.dart';
+import 'tables/prescriptions.dart';
 import 'tables/vaccination_records.dart';
 import 'tables/vet_visits.dart';
 import 'tables/weight_entries.dart';
@@ -37,6 +39,7 @@ part 'app_database.g.dart';
     VaccinationRecords,
     WeightEntries,
     AppSettings,
+    Prescriptions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -46,7 +49,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -63,6 +66,19 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(vaccinationRecords);
         await m.createTable(weightEntries);
         await m.createTable(appSettings);
+      }
+      if (from < 3) {
+        // Phase 5: prescriptions, and the link from a medicine back to the
+        // one it came from.
+        await m.createTable(prescriptions);
+
+        // Only when `medicines` already existed. `createTable` builds from
+        // *today's* definition, not the historical one, so a database coming
+        // from v1 had the column created with the table in the step above —
+        // and adding it again is an error, not a no-op.
+        if (from >= 2) {
+          await m.addColumn(medicines, medicines.prescriptionId);
+        }
       }
     },
     beforeOpen: (details) async {

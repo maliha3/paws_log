@@ -68,7 +68,8 @@ void main() {
     return database;
   }
 
-  test('a v1 database upgrades to v2 with its data intact', () async {
+  test('a v1 database upgrades to the current schema with its data '
+      'intact', () async {
     final db = AppDatabase.forTesting(v1WithData());
     addTearDown(db.close);
 
@@ -91,7 +92,7 @@ void main() {
     final version = await db
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.data['user_version'], 2);
+    expect(version.data['user_version'], 3);
   });
 
   test('every Phase 2 table exists after the upgrade', () async {
@@ -156,12 +157,12 @@ void main() {
     );
   });
 
-  test('a fresh database is created at v2 directly', () async {
+  test('a fresh database is created at the current schema directly', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data['user_version'], 2);
+    expect(version.data['user_version'], 3);
     expect(await db.select(db.medicines).get(), isEmpty);
   });
 

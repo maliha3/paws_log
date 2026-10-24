@@ -147,6 +147,39 @@ dose being *missed*.
 - Today shows the whole day's course, including doses whose time has not come
   — unlike reminders, where only what is due shows up.
 
+## The Medical section
+
+Per pet, in four segments: **Prescriptions · Medicines (active/past) ·
+Vaccines · Vet visits**.
+
+A `Prescription` holds its page images in order, the raw OCR text, and the
+vet details. `Medicine.prescriptionId` links each medicine back to the
+prescription it came from, so a course always has its source.
+
+### Prescriptions are never trusted automatically
+
+This is the rule the whole flow is built around. OCR misreads things, and
+handwriting most of all. A misread dose is not a cosmetic bug.
+
+- **Nothing becomes a `Medicine` or a dose until the owner taps Confirm.**
+  Scanning, saving pages and running OCR change no schedule.
+- The review screen shows the **page images above the fields**, so the owner
+  is reading the prescription while they check what was extracted.
+- A field the parser is unsure of is **marked low-confidence**, and a field
+  it cannot read is left **blank** rather than guessed.
+- Every review screen carries *"Check every dose against the original
+  prescription."*
+- **Save photos only** is always available. An owner who just wants the page
+  kept never has to go near the extracted fields.
+
+### Times per day
+
+The parser and the review screen work in *times per day*, which is how a
+prescription is written. `Medicine` stores **actual dose times**, because
+that is what generates doses. The review screen converts on Confirm: 1/day →
+09:00, 2 → 08:00 and 20:00, 3 → 08:00, 14:00 and 20:00, 4 → 08:00, 12:00,
+16:00 and 20:00. The owner can edit the times afterwards like any medicine.
+
 ## Vaccination history
 
 Marking a `vaccine`-category reminder **done** also writes a
@@ -163,7 +196,13 @@ history standing. Deleting the *pet* does cascade.
 ## Notifications
 
 iOS silently drops pending local notifications past **64**. The scheduler
-therefore never schedules the whole future — it maintains a rolling window:
+therefore never schedules the whole future — it maintains a rolling window.
+
+Scheduling only the *next* occurrence of each reminder would also stay inside
+the cap and is simpler, but it was weighed and rejected: it leaves the app
+with nothing queued beyond the next due date, so a yearly vaccine has one
+notification and no cover at all if the owner does not open the app. The
+window is the design:
 
 - **56** earliest pending items scheduled at any time, drawn from *both*
   sources: reminder occurrences and medicine doses.
@@ -347,6 +386,39 @@ print. Dark mode is its own scheme, not an inverted light one.
 
 The app icon is a placeholder, not a design: it exists so the app does not
 ship with the Flutter logo. `tool/make_icon.py` regenerates it.
+
+## Not built yet
+
+Named in the spec, deliberately absent from the code. Not oversights:
+
+- `VetVisit.cost`.
+- `Pet.species`, `microchip`, `vetName`, `vetPhone`. A prescription carries
+  its own vet name and clinic; the pet does not yet.
+- Premium gating for **full weight history**. Weights are currently
+  ungated — the gate covers a second pet, photos on a visit, and the vet
+  summary.
+
+## Migrations
+
+`createTable` builds from **today's** table definition, not the historical
+one. So a database arriving from v1 gets `medicines` *including* the column
+v3 adds — and `addColumn` then fails with "duplicate column name".
+
+An `addColumn` must therefore be guarded by the version that already had the
+table:
+
+```dart
+if (from < 3) {
+  await m.createTable(prescriptions);
+  if (from >= 2) {
+    await m.addColumn(medicines, medicines.prescriptionId);
+  }
+}
+```
+
+The migration tests build a real database at each old version from the DDL
+drift emitted at the time, so a jump like v1 to v3 is exercised and not
+assumed.
 
 ## Working agreements
 

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../converters/minutes_list_converter.dart';
 import 'pets.dart';
+import 'prescriptions.dart';
 
 /// Courses of medication.
 @DataClassName('MedicineRow')
@@ -24,6 +25,14 @@ class Medicines extends Table {
   /// Date-only, held at UTC midnight, inclusive. Null for an open-ended
   /// course.
   DateTimeColumn get endDate => dateTime().nullable()();
+
+  /// The prescription this course came from, when it came from one.
+  ///
+  /// `setNull` rather than `cascade`: deleting a prescription must not delete
+  /// the medicine the owner is still giving their cat.
+  TextColumn get prescriptionId => text()
+      .nullable()
+      .references(Prescriptions, #id, onDelete: KeyAction.setNull)();
 
   TextColumn get notes => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();

@@ -318,6 +318,31 @@ the scheduler. The scheduler builds its own read-only repositories. Tests
 wire it the same way; getting that wrong makes a write silently fail to
 rebuild the window.
 
+## The photo vault
+
+One album per pet, free — it is the cat's memory book, not a pro feature, and
+the paywall already has three triggers. A `Photos` card on the profile opens a
+three-column grid, newest first by `takenAt`, because an album reads by when
+things happened rather than by import order.
+
+**There is no thumbnail column.** `Image.file(path, cacheWidth: ...)` decodes
+at grid size, which costs one decode instead of a second file to write, keep
+in sync, back up and clean up. `cacheWidth` asserts on a non-positive value,
+so a surface that has no width yet gets no hint rather than zero.
+
+**Set as profile photo copies the file** into `pet_photos/` instead of
+pointing `Pet.photoPath` at the album path. Deleting the photo from the album
+afterwards must not leave the portrait pointing at nothing. Replacing a
+portrait deletes the one it replaced, so changing your mind does not
+accumulate files.
+
+**Deleting a pet deletes their files.** Foreign keys cascade the rows and
+nothing cascades the files, so `PetRepository.delete` collects every path the
+pet owns — portrait, album, prescription pages, visit attachments — and
+removes them after the row. It is the one repository that reads across tables,
+because it is the only place that knows what "everything belonging to this
+pet" means. Archiving keeps everything.
+
 ## Backup
 
 A backup is a zip: `backup.json` plus `photos/`. Not bare JSON — attachments
@@ -340,6 +365,12 @@ worse than none, because the owner only finds out when they restore.
 - `BackupService` touches no plugins, which is what lets the round trip be
   tested. `BackupSharing` is the thin layer over the share sheet and file
   picker.
+
+**Include photo vault** is a toggle on the export screen, defaulting on, with
+the album's size measured off disk beside it. Turning it off leaves the album
+out *entirely* — rows as well as files. Keeping the rows without the files
+would restore an album full of entries pointing at nothing, which is worse
+than an empty one.
 
 A prescription's pages are a *list* of paths in one column, so the archive
 packs them with `_packFileLists`. A page whose file has gone is dropped from

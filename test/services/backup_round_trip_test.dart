@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
+import 'package:paws_log/data/repositories/pet_photo_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/prescription_repository.dart';
 import 'package:paws_log/data/repositories/reminder_event_repository.dart';
@@ -90,9 +91,9 @@ void main() {
     );
 
     // A completed vaccine, which also writes vaccination history.
-    final event = await (db.select(db.reminderEvents)
-          ..where((e) => e.reminderId.isNotNull()))
-        .get();
+    final event = await (db.select(
+      db.reminderEvents,
+    )..where((e) => e.reminderId.isNotNull())).get();
     await events.markDone(event.first.id, now: now);
 
     // A scanned prescription, and the course that came off it.
@@ -134,6 +135,21 @@ void main() {
         writePhoto('visit_attachments/xray.jpg', [9, 8, 7]),
         writePhoto('visit_attachments/note.jpg', [6, 5]),
       ],
+      now: now,
+    );
+
+    final album = PetPhotoRepository(db);
+    await album.add(
+      petId: mochi.id,
+      path: writePhoto('pet_vault/sink.jpg', [21, 22, 23, 24]),
+      takenAt: DateTime.utc(2026, 3, 2),
+      caption: 'Asleep in the sink',
+      now: now,
+    );
+    await album.add(
+      petId: mochi.id,
+      path: writePhoto('pet_vault/window.jpg', [25, 26]),
+      takenAt: DateTime.utc(2026, 3, 20),
       now: now,
     );
 
@@ -186,6 +202,9 @@ void main() {
     'weightEntries': [
       for (final r in await db.select(db.weightEntries).get()) r.toJson(),
     ],
+    'petPhotos': [
+      for (final r in await db.select(db.petPhotos).get()) r.toJson(),
+    ],
     'appSettings': [
       for (final r in await db.select(db.appSettings).get()) r.toJson(),
     ],
@@ -219,7 +238,12 @@ void main() {
     );
 
     expect(summary.pets, 2);
-    expect(summary.photos, 5, reason: 'a pet photo, two x-rays, two pages');
+    expect(
+      summary.photos,
+      7,
+      reason: 'a portrait, two x-rays, two pages, two album photos',
+    );
+    expect(summary.albumPhotos, 2);
     await restored.close();
   });
 
@@ -241,9 +265,9 @@ void main() {
     final restored = memoryDatabase();
     await serviceFor(restored).importArchive(bytes);
 
-    final pet = await (restored.select(restored.pets)
-          ..where((p) => p.name.equals('Mochi')))
-        .getSingle();
+    final pet = await (restored.select(
+      restored.pets,
+    )..where((p) => p.name.equals('Mochi'))).getSingle();
     expect(pet.photoPath, isNotNull);
     expect(File(pet.photoPath!).existsSync(), isTrue);
     expect(File(pet.photoPath!).readAsBytesSync(), originals['Mochi']);
@@ -251,7 +275,11 @@ void main() {
     final attachments = await restored.select(restored.visitAttachments).get();
     expect(attachments, hasLength(2));
     for (final attachment in attachments) {
-      expect(File(attachment.filePath).existsSync(), isTrue, reason: attachment.filePath);
+      expect(
+        File(attachment.filePath).existsSync(),
+        isTrue,
+        reason: attachment.filePath,
+      );
     }
     await restored.close();
   });
@@ -288,52 +316,201 @@ void main() {
     await restored.close();
   });
 
-  test('a restored course still points at the prescription it came from', () async {
-    final source = memoryDatabase();
-    await populate(source);
-    final bytes = await serviceFor(source).exportArchive(now: now);
-    await source.close();
+  test(
+    'a restored course still points at the prescription it came from',
+    () async {
+      final source = memoryDatabase();
+      await populate(source);
+      final bytes = await serviceFor(source).exportArchive(now: now);
+      await source.close();
 
-    final restored = memoryDatabase();
-    await serviceFor(restored).importArchive(bytes);
+      final restored = memoryDatabase();
+      await serviceFor(restored).importArchive(bytes);
 
-    final prescription = await restored
-        .select(restored.prescriptions)
-        .getSingle();
-    final medicine = await (restored.select(restored.medicines)
-          ..where((m) => m.name.equals('Amoxicillin')))
-        .getSingle();
-    expect(medicine.prescriptionId, prescription.id);
-    await restored.close();
-  });
+      final prescription = await restored
+          .select(restored.prescriptions)
+          .getSingle();
+      final medicine = await (restored.select(
+        restored.medicines,
+      )..where((m) => m.name.equals('Amoxicillin'))).getSingle();
+      expect(medicine.prescriptionId, prescription.id);
+      await restored.close();
+    },
+  );
 
-  test('a prescription whose page has vanished keeps the pages it has', () async {
-    final source = memoryDatabase();
-    final pet = await PetRepository(source).create(name: 'Mochi', now: now);
-    final kept = writePhoto('prescriptions/kept.jpg', [1, 2, 3]);
-    final gone = writePhoto('prescriptions/gone.jpg', [4, 5, 6]);
-    await PrescriptionRepository(source).create(
-      petId: pet.id,
-      date: DateTime.utc(2026, 5, 4),
-      imagePaths: [kept, gone],
-      now: now,
+  test(
+    'a prescription whose page has vanished keeps the pages it has',
+    () async {
+      final source = memoryDatabase();
+      final pet = await PetRepository(source).create(name: 'Mochi', now: now);
+      final kept = writePhoto('prescriptions/kept.jpg', [1, 2, 3]);
+      final gone = writePhoto('prescriptions/gone.jpg', [4, 5, 6]);
+      await PrescriptionRepository(source).create(
+        petId: pet.id,
+        date: DateTime.utc(2026, 5, 4),
+        imagePaths: [kept, gone],
+        now: now,
+      );
+      File(gone).deleteSync();
+
+      final bytes = await serviceFor(source).exportArchive(now: now);
+      await source.close();
+
+      final restored = memoryDatabase();
+      await serviceFor(restored).importArchive(bytes);
+
+      final after = await restored.select(restored.prescriptions).getSingle();
+      expect(
+        after.imagePaths,
+        hasLength(1),
+        reason: 'the missing page is dropped rather than left as a hole',
+      );
+      expect(File(after.imagePaths.single).readAsBytesSync(), [1, 2, 3]);
+      await restored.close();
+    },
+  );
+
+  group('the photo album', () {
+    test('comes back with its captions, dates and files', () async {
+      final source = memoryDatabase();
+      await populate(source);
+      final before = await source.select(source.petPhotos).get();
+      final originals = {
+        for (final photo in before)
+          photo.id: File(photo.path).readAsBytesSync(),
+      };
+      final bytes = await serviceFor(source).exportArchive(now: now);
+      await source.close();
+
+      // Wipe the photo directory, as a new device would have.
+      photos.deleteSync(recursive: true);
+      photos.createSync(recursive: true);
+
+      final restored = memoryDatabase();
+      await serviceFor(restored).importArchive(bytes);
+
+      final after = await restored.select(restored.petPhotos).get();
+      expect(after, hasLength(2));
+      for (final photo in after) {
+        expect(File(photo.path).existsSync(), isTrue, reason: photo.path);
+        expect(File(photo.path).readAsBytesSync(), originals[photo.id]);
+      }
+      expect(
+        after.map((photo) => photo.caption),
+        containsAll(<String?>['Asleep in the sink', null]),
+      );
+      expect(
+        after.map((photo) => photo.takenAt),
+        containsAll([DateTime.utc(2026, 3, 2), DateTime.utc(2026, 3, 20)]),
+      );
+      await restored.close();
+    });
+
+    test('is left out entirely when the owner says so', () async {
+      final source = memoryDatabase();
+      await populate(source);
+      final bytes = await serviceFor(
+        source,
+      ).exportArchive(now: now, includeAlbum: false);
+      await source.close();
+
+      final restored = memoryDatabase();
+      final summary = await serviceFor(restored).importArchive(bytes);
+
+      expect(
+        await restored.select(restored.petPhotos).get(),
+        isEmpty,
+        reason:
+            'rows as well as files \u2014 an album of entries pointing at '
+            'nothing is worse than an empty one',
+      );
+      expect(summary.albumPhotos, 0);
+      expect(
+        await restored.select(restored.pets).get(),
+        hasLength(2),
+        reason: 'every record still travels',
+      );
+      expect(
+        (await restored.select(restored.pets).get()).where(
+          (pet) => pet.photoPath != null,
+        ),
+        hasLength(1),
+        reason: 'the portrait is a record, not an album photo',
+      );
+      await restored.close();
+    });
+
+    test(
+      'a backup made without it still restores into a new install',
+      () async {
+        final source = memoryDatabase();
+        await populate(source);
+        final bytes = await serviceFor(
+          source,
+        ).exportArchive(now: now, includeAlbum: false);
+        await source.close();
+
+        final restored = memoryDatabase();
+        await serviceFor(restored).importArchive(bytes);
+
+        expect(await restored.select(restored.medicines).get(), hasLength(1));
+        expect(
+          await restored.select(restored.visitAttachments).get(),
+          hasLength(2),
+        );
+        await restored.close();
+      },
     );
-    File(gone).deleteSync();
 
-    final bytes = await serviceFor(source).exportArchive(now: now);
-    await source.close();
+    test(
+      'an import replaces an existing album rather than adding to it',
+      () async {
+        final source = memoryDatabase();
+        await populate(source);
+        final bytes = await serviceFor(source).exportArchive(now: now);
+        await source.close();
 
-    final restored = memoryDatabase();
-    await serviceFor(restored).importArchive(bytes);
+        final target = memoryDatabase();
+        final pet = await PetRepository(
+          target,
+        ).create(name: 'Someone else', now: now);
+        await PetPhotoRepository(target).add(
+          petId: pet.id,
+          path: writePhoto('pet_vault/stale.jpg', [99]),
+          now: now,
+        );
 
-    final after = await restored.select(restored.prescriptions).getSingle();
-    expect(
-      after.imagePaths,
-      hasLength(1),
-      reason: 'the missing page is dropped rather than left as a hole',
+        await serviceFor(target).importArchive(bytes);
+
+        final after = await target.select(target.petPhotos).get();
+        expect(after, hasLength(2));
+        expect(after.map((photo) => photo.petId), everyElement(isNot(pet.id)));
+        await target.close();
+      },
     );
-    expect(File(after.imagePaths.single).readAsBytesSync(), [1, 2, 3]);
-    await restored.close();
+
+    test('the estimate separates the album from the records', () async {
+      final source = memoryDatabase();
+      await populate(source);
+
+      final sizes = await serviceFor(source).estimateSize();
+
+      expect(sizes.album, 6, reason: 'four bytes plus two');
+      expect(
+        sizes.records,
+        5 + 3 + 2 + 3 + 2,
+        reason: 'a portrait, two x-rays, two prescription pages',
+      );
+      expect(sizes.total, sizes.album + sizes.records);
+      await source.close();
+    });
+
+    test('a size reads as a size', () {
+      expect(BackupSizes.describeBytes(512), '512 B');
+      expect(BackupSizes.describeBytes(2048), '2 KB');
+      expect(BackupSizes.describeBytes(1024 * 1024 * 3 + 100000), '3.1 MB');
+      expect(BackupSizes.describeBytes(1024 * 1024 * 24), '24 MB');
+    });
   });
 
   test('timestamps keep their instant and their UTC flag', () async {
@@ -386,10 +563,7 @@ void main() {
     final restored = memoryDatabase();
     await serviceFor(restored).importArchive(bytes);
 
-    expect(
-      await SettingsRepository(restored).weightUnit(),
-      WeightUnit.pounds,
-    );
+    expect(await SettingsRepository(restored).weightUnit(), WeightUnit.pounds);
     await restored.close();
   });
 
@@ -454,8 +628,9 @@ void main() {
       final rebuilt = Archive();
       for (final file in archive.files) {
         if (file.name == 'backup.json') {
-          final text = String.fromCharCodes(file.readBytes()!)
-              .replaceFirst('"formatVersion":1', '"formatVersion":99');
+          final text = String.fromCharCodes(
+            file.readBytes()!,
+          ).replaceFirst('"formatVersion":1', '"formatVersion":99');
           rebuilt.addFile(
             ArchiveFile('backup.json', text.length, text.codeUnits),
           );
@@ -466,9 +641,9 @@ void main() {
 
       final db = memoryDatabase();
       await expectLater(
-        serviceFor(db).importArchive(
-          Uint8List.fromList(ZipEncoder().encodeBytes(rebuilt)),
-        ),
+        serviceFor(
+          db,
+        ).importArchive(Uint8List.fromList(ZipEncoder().encodeBytes(rebuilt))),
         throwsA(isA<BackupFormatException>()),
       );
       await db.close();
@@ -478,8 +653,7 @@ void main() {
       final db = memoryDatabase();
       await PetRepository(db).create(name: 'Mochi', now: now);
 
-      final archive = Archive()
-        ..addFile(ArchiveFile('notes.txt', 1, [1]));
+      final archive = Archive()..addFile(ArchiveFile('notes.txt', 1, [1]));
       await expectLater(
         serviceFor(db).importArchive(ZipEncoder().encodeBytes(archive)),
         throwsA(isA<BackupFormatException>()),
@@ -503,7 +677,8 @@ Map<String, List<Map<String, dynamic>>> _withoutPaths(
           for (final column in row.entries)
             if (column.key != 'photoPath' &&
                 column.key != 'filePath' &&
-                column.key != 'imagePaths')
+                column.key != 'imagePaths' &&
+                column.key != 'path')
               column.key: column.value,
         },
     ],

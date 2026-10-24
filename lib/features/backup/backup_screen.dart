@@ -14,6 +14,22 @@ class BackupScreen extends ConsumerStatefulWidget {
 
 class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _busy = false;
+  bool _includeAlbum = true;
+  BackupSizes? _sizes;
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  /// Reads the sizes off disk so the toggle can say what it costs.
+  Future<void> _measure() async {
+    final sizes = await ref.read(backupSharingProvider).estimateSize();
+    if (mounted) {
+      setState(() => _sizes = sizes);
+    }
+  }
 
   Future<void> _run(Future<String?> Function() action) async {
     setState(() => _busy = true);
@@ -37,7 +53,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<void> _export() => _run(() async {
-    await ref.read(backupSharingProvider).exportAndShare();
+    await ref
+        .read(backupSharingProvider)
+        .exportAndShare(includeAlbum: _includeAlbum);
     return null;
   });
 
@@ -73,6 +91,31 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     });
   }
 
+  /// What leaving the album out would save.
+  String get _albumNote {
+    final sizes = _sizes;
+    if (sizes == null) {
+      return 'Album photos make a backup much larger.';
+    }
+    if (sizes.album == 0) {
+      return 'There are no album photos yet.';
+    }
+    return 'The albums add about '
+        '${BackupSizes.describeBytes(sizes.album)}. Leave this off for a '
+        'small file that still holds every record.';
+  }
+
+  /// Roughly how big the file will be with the current choice.
+  String get _sizeNote {
+    final sizes = _sizes;
+    if (sizes == null) {
+      return 'Working out the size\u2026';
+    }
+    final bytes = _includeAlbum ? sizes.total : sizes.records;
+    return 'About ${BackupSizes.describeBytes(bytes)} of photos, plus the '
+        'records themselves.';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -96,7 +139,27 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            Card(
+              margin: EdgeInsets.zero,
+              child: SwitchListTile(
+                value: _includeAlbum,
+                onChanged: _busy
+                    ? null
+                    : (value) => setState(() => _includeAlbum = value),
+                title: const Text('Include photo vault'),
+                subtitle: Text(_albumNote),
+                isThreeLine: true,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _sizeNote,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _busy ? null : _export,
               icon: const Icon(Icons.ios_share),

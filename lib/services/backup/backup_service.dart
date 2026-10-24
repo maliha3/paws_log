@@ -30,13 +30,53 @@ class BackupService {
 
   static const ValueSerializer _serializer = _BackupSerializer();
 
+  /// Rough size of an export, so the owner can decide about the album.
+  ///
+  /// The files only: the manifest is small next to any photo, and a number
+  /// that has to be exact is a number that has to read every row twice.
+  Future<BackupSizes> estimateSize() async {
+    final records = [
+      for (final pet in await _db.select(_db.pets).get())
+        if (pet.photoPath != null) pet.photoPath!,
+      for (final attachment in await _db.select(_db.visitAttachments).get())
+        attachment.filePath,
+      for (final prescription in await _db.select(_db.prescriptions).get())
+        ...prescription.imagePaths,
+    ];
+    final album = [
+      for (final photo in await _db.select(_db.petPhotos).get()) photo.path,
+    ];
+    return BackupSizes(records: _bytesOf(records), album: _bytesOf(album));
+  }
+
+  int _bytesOf(Iterable<String> paths) {
+    var total = 0;
+    for (final path in paths) {
+      final file = File(path);
+      if (file.existsSync()) {
+        total += file.lengthSync();
+      }
+    }
+    return total;
+  }
+
   /// The whole database and its photos, as a zip.
-  Future<Uint8List> exportArchive({DateTime? now}) async {
+  ///
+  /// [includeAlbum] leaves the photo album out entirely — rows as well as
+  /// files. Keeping the rows without the files would restore an album full of
+  /// entries pointing at nothing, which is worse than an empty one.
+  Future<Uint8List> exportArchive({
+    DateTime? now,
+    bool includeAlbum = true,
+  }) async {
     final tables = <String, List<Map<String, dynamic>>>{
       'pets': _json(await _db.select(_db.pets).get()),
       'reminders': _json(await _db.select(_db.reminders).get()),
       'reminderEvents': _json(await _db.select(_db.reminderEvents).get()),
       'prescriptions': _json(await _db.select(_db.prescriptions).get()),
+      'petPhotos': _json(
+        includeAlbum ? await _db.select(_db.petPhotos).get() : const [],
+      ),
       'medicines': _json(await _db.select(_db.medicines).get()),
       'doseLogs': _json(await _db.select(_db.doseLogs).get()),
       'vetVisits': _json(await _db.select(_db.vetVisits).get()),
@@ -54,6 +94,7 @@ class BackupService {
     _packFiles(archive, tables['pets']!, 'photoPath');
     _packFiles(archive, tables['visitAttachments']!, 'filePath');
     _packFileLists(archive, tables['prescriptions']!, 'imagePaths');
+    _packFiles(archive, tables['petPhotos']!, 'path');
 
     final manifest = jsonEncode({
       'formatVersion': formatVersion,
@@ -111,6 +152,7 @@ class BackupService {
       tables['prescriptions'] ?? [],
       'imagePaths',
     );
+    await _unpackFiles(archive, tables['petPhotos'] ?? [], 'path');
 
     await _db.transaction(() async {
       // Reverse dependency order, so no foreign key is ever left dangling.
@@ -119,6 +161,7 @@ class BackupService {
       await _db.delete(_db.vaccinationRecords).go();
       await _db.delete(_db.visitAttachments).go();
       await _db.delete(_db.vetVisits).go();
+      await _db.delete(_db.petPhotos).go();
       await _db.delete(_db.doseLogs).go();
       await _db.delete(_db.medicines).go();
       await _db.delete(_db.prescriptions).go();
@@ -170,6 +213,10 @@ class BackupService {
             _rows(tables['weightEntries'], WeightEntryRow.fromJson),
           )
           ..insertAll(
+            _db.petPhotos,
+            _rows(tables['petPhotos'], PetPhotoRow.fromJson),
+          )
+          ..insertAll(
             _db.appSettings,
             _rows(tables['appSettings'], AppSettingRow.fromJson),
           );
@@ -182,6 +229,7 @@ class BackupService {
       medicines: tables['medicines']?.length ?? 0,
       visits: tables['vetVisits']?.length ?? 0,
       weighings: tables['weightEntries']?.length ?? 0,
+      albumPhotos: tables['petPhotos']?.length ?? 0,
       photos: archive.files
           .where((file) => file.name.startsWith(_photoPrefix))
           .length,
@@ -360,6 +408,33 @@ class _BackupSerializer extends ValueSerializer {
   dynamic toJson<T>(T value) => _inner.toJson<T>(value);
 }
 
+/// How big an export would be, split so the album can be weighed on its own.
+class BackupSizes {
+  const BackupSizes({required this.records, required this.album});
+
+  /// Pet portraits, visit attachments and prescription pages.
+  final int records;
+
+  /// The photo albums.
+  final int album;
+
+  int get total => records + album;
+
+  /// Rounded for reading, not for accounting: "24 MB".
+  static String describeBytes(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    }
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).round()} KB';
+    }
+    final megabytes = bytes / (1024 * 1024);
+    return megabytes < 10
+        ? '${megabytes.toStringAsFixed(1)} MB'
+        : '${megabytes.round()} MB';
+  }
+}
+
 /// What an import brought in, for telling the owner afterwards.
 class BackupSummary {
   const BackupSummary({
@@ -369,6 +444,7 @@ class BackupSummary {
     required this.visits,
     required this.weighings,
     required this.photos,
+    this.albumPhotos = 0,
   });
 
   final int pets;
@@ -376,7 +452,12 @@ class BackupSummary {
   final int medicines;
   final int visits;
   final int weighings;
+
+  /// Photo files found in the archive, of every kind.
   final int photos;
+
+  /// Album rows restored. Zero when the backup was made without the album.
+  final int albumPhotos;
 
   String describe() => [
     '$pets ${pets == 1 ? 'pet' : 'pets'}',

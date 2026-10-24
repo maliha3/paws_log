@@ -21,8 +21,11 @@ class BackupSharing {
   ///
   /// Returns false if the owner dismissed the sheet without choosing
   /// anything.
-  Future<bool> exportAndShare({DateTime? now}) async {
-    final bytes = await _service.exportArchive(now: now);
+  Future<bool> exportAndShare({DateTime? now, bool includeAlbum = true}) async {
+    final bytes = await _service.exportArchive(
+      now: now,
+      includeAlbum: includeAlbum,
+    );
     final stamp = DateFormat(
       'yyyy-MM-dd',
     ).format(now ?? DateTime.now());
@@ -43,6 +46,9 @@ class BackupSharing {
     );
     return result.status != ShareResultStatus.dismissed;
   }
+
+  /// How big an export would be, split so the album can be weighed alone.
+  Future<BackupSizes> estimateSize() => _service.estimateSize();
 
   /// Asks for a backup file and restores it.
   ///

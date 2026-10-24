@@ -5846,6 +5846,420 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingRow> {
   }
 }
 
+class $PetPhotosTable extends PetPhotos
+    with TableInfo<$PetPhotosTable, PetPhotoRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PetPhotosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _petIdMeta = const VerificationMeta('petId');
+  @override
+  late final GeneratedColumn<String> petId = GeneratedColumn<String>(
+    'pet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pets (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _takenAtMeta = const VerificationMeta(
+    'takenAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> takenAt = GeneratedColumn<DateTime>(
+    'taken_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _captionMeta = const VerificationMeta(
+    'caption',
+  );
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+    'caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    petId,
+    path,
+    takenAt,
+    caption,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pet_photos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PetPhotoRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('pet_id')) {
+      context.handle(
+        _petIdMeta,
+        petId.isAcceptableOrUnknown(data['pet_id']!, _petIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_petIdMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('taken_at')) {
+      context.handle(
+        _takenAtMeta,
+        takenAt.isAcceptableOrUnknown(data['taken_at']!, _takenAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_takenAtMeta);
+    }
+    if (data.containsKey('caption')) {
+      context.handle(
+        _captionMeta,
+        caption.isAcceptableOrUnknown(data['caption']!, _captionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PetPhotoRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PetPhotoRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      petId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pet_id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      takenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}taken_at'],
+      )!,
+      caption: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}caption'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PetPhotosTable createAlias(String alias) {
+    return $PetPhotosTable(attachedDatabase, alias);
+  }
+}
+
+class PetPhotoRow extends DataClass implements Insertable<PetPhotoRow> {
+  final String id;
+  final String petId;
+
+  /// Absolute path to the stored copy, inside the app's documents directory.
+  final String path;
+
+  /// When the photo was taken, as far as the app can tell. Falls back to when
+  /// it was added, because an owner sorts an album by when things happened.
+  final DateTime takenAt;
+  final String? caption;
+  final DateTime createdAt;
+  const PetPhotoRow({
+    required this.id,
+    required this.petId,
+    required this.path,
+    required this.takenAt,
+    this.caption,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['pet_id'] = Variable<String>(petId);
+    map['path'] = Variable<String>(path);
+    map['taken_at'] = Variable<DateTime>(takenAt);
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PetPhotosCompanion toCompanion(bool nullToAbsent) {
+    return PetPhotosCompanion(
+      id: Value(id),
+      petId: Value(petId),
+      path: Value(path),
+      takenAt: Value(takenAt),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PetPhotoRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PetPhotoRow(
+      id: serializer.fromJson<String>(json['id']),
+      petId: serializer.fromJson<String>(json['petId']),
+      path: serializer.fromJson<String>(json['path']),
+      takenAt: serializer.fromJson<DateTime>(json['takenAt']),
+      caption: serializer.fromJson<String?>(json['caption']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'petId': serializer.toJson<String>(petId),
+      'path': serializer.toJson<String>(path),
+      'takenAt': serializer.toJson<DateTime>(takenAt),
+      'caption': serializer.toJson<String?>(caption),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PetPhotoRow copyWith({
+    String? id,
+    String? petId,
+    String? path,
+    DateTime? takenAt,
+    Value<String?> caption = const Value.absent(),
+    DateTime? createdAt,
+  }) => PetPhotoRow(
+    id: id ?? this.id,
+    petId: petId ?? this.petId,
+    path: path ?? this.path,
+    takenAt: takenAt ?? this.takenAt,
+    caption: caption.present ? caption.value : this.caption,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PetPhotoRow copyWithCompanion(PetPhotosCompanion data) {
+    return PetPhotoRow(
+      id: data.id.present ? data.id.value : this.id,
+      petId: data.petId.present ? data.petId.value : this.petId,
+      path: data.path.present ? data.path.value : this.path,
+      takenAt: data.takenAt.present ? data.takenAt.value : this.takenAt,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetPhotoRow(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('path: $path, ')
+          ..write('takenAt: $takenAt, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, petId, path, takenAt, caption, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PetPhotoRow &&
+          other.id == this.id &&
+          other.petId == this.petId &&
+          other.path == this.path &&
+          other.takenAt == this.takenAt &&
+          other.caption == this.caption &&
+          other.createdAt == this.createdAt);
+}
+
+class PetPhotosCompanion extends UpdateCompanion<PetPhotoRow> {
+  final Value<String> id;
+  final Value<String> petId;
+  final Value<String> path;
+  final Value<DateTime> takenAt;
+  final Value<String?> caption;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PetPhotosCompanion({
+    this.id = const Value.absent(),
+    this.petId = const Value.absent(),
+    this.path = const Value.absent(),
+    this.takenAt = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PetPhotosCompanion.insert({
+    required String id,
+    required String petId,
+    required String path,
+    required DateTime takenAt,
+    this.caption = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       petId = Value(petId),
+       path = Value(path),
+       takenAt = Value(takenAt),
+       createdAt = Value(createdAt);
+  static Insertable<PetPhotoRow> custom({
+    Expression<String>? id,
+    Expression<String>? petId,
+    Expression<String>? path,
+    Expression<DateTime>? takenAt,
+    Expression<String>? caption,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (petId != null) 'pet_id': petId,
+      if (path != null) 'path': path,
+      if (takenAt != null) 'taken_at': takenAt,
+      if (caption != null) 'caption': caption,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PetPhotosCompanion copyWith({
+    Value<String>? id,
+    Value<String>? petId,
+    Value<String>? path,
+    Value<DateTime>? takenAt,
+    Value<String?>? caption,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PetPhotosCompanion(
+      id: id ?? this.id,
+      petId: petId ?? this.petId,
+      path: path ?? this.path,
+      takenAt: takenAt ?? this.takenAt,
+      caption: caption ?? this.caption,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (petId.present) {
+      map['pet_id'] = Variable<String>(petId.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (takenAt.present) {
+      map['taken_at'] = Variable<DateTime>(takenAt.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetPhotosCompanion(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('path: $path, ')
+          ..write('takenAt: $takenAt, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5863,6 +6277,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $VaccinationRecordsTable(this);
   late final $WeightEntriesTable weightEntries = $WeightEntriesTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $PetPhotosTable petPhotos = $PetPhotosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5879,6 +6294,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     vaccinationRecords,
     weightEntries,
     appSettings,
+    petPhotos,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5958,6 +6374,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('weight_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pets',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pet_photos', kind: UpdateKind.delete)],
     ),
   ]);
   @override
@@ -6107,6 +6530,24 @@ final class $$PetsTableReferences
     ).filter((f) => f.petId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_weightEntriesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PetPhotosTable, List<PetPhotoRow>>
+  _petPhotosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.petPhotos,
+    aliasName: 'pets__id__pet_photos__pet_id',
+  );
+
+  $$PetPhotosTableProcessedTableManager get petPhotosRefs {
+    final manager = $$PetPhotosTableTableManager(
+      $_db,
+      $_db.petPhotos,
+    ).filter((f) => f.petId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_petPhotosRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6313,6 +6754,31 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
           }) => $$WeightEntriesTableFilterComposer(
             $db: $db,
             $table: $db.weightEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> petPhotosRefs(
+    Expression<bool> Function($$PetPhotosTableFilterComposer f) f,
+  ) {
+    final $$PetPhotosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petPhotos,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetPhotosTableFilterComposer(
+            $db: $db,
+            $table: $db.petPhotos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6573,6 +7039,31 @@ class $$PetsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> petPhotosRefs<T extends Object>(
+    Expression<T> Function($$PetPhotosTableAnnotationComposer a) f,
+  ) {
+    final $$PetPhotosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petPhotos,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetPhotosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.petPhotos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PetsTableTableManager
@@ -6595,6 +7086,7 @@ class $$PetsTableTableManager
             bool medicinesRefs,
             bool vaccinationRecordsRefs,
             bool weightEntriesRefs,
+            bool petPhotosRefs,
           })
         > {
   $$PetsTableTableManager(_$AppDatabase db, $PetsTable table)
@@ -6676,6 +7168,7 @@ class $$PetsTableTableManager
                 medicinesRefs = false,
                 vaccinationRecordsRefs = false,
                 weightEntriesRefs = false,
+                petPhotosRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6686,6 +7179,7 @@ class $$PetsTableTableManager
                     if (medicinesRefs) db.medicines,
                     if (vaccinationRecordsRefs) db.vaccinationRecords,
                     if (weightEntriesRefs) db.weightEntries,
+                    if (petPhotosRefs) db.petPhotos,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6810,6 +7304,26 @@ class $$PetsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (petPhotosRefs)
+                        await $_getPrefetchedData<
+                          PetRow,
+                          $PetsTable,
+                          PetPhotoRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PetsTableReferences
+                              ._petPhotosRefsTable(db),
+                          managerFromTypedResult: (p0) => $$PetsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).petPhotosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.petId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6837,6 +7351,7 @@ typedef $$PetsTableProcessedTableManager =
         bool medicinesRefs,
         bool vaccinationRecordsRefs,
         bool weightEntriesRefs,
+        bool petPhotosRefs,
       })
     >;
 typedef $$RemindersTableCreateCompanionBuilder =
@@ -11199,6 +11714,342 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSettingRow,
       PrefetchHooks Function()
     >;
+typedef $$PetPhotosTableCreateCompanionBuilder =
+    PetPhotosCompanion Function({
+      required String id,
+      required String petId,
+      required String path,
+      required DateTime takenAt,
+      Value<String?> caption,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PetPhotosTableUpdateCompanionBuilder =
+    PetPhotosCompanion Function({
+      Value<String> id,
+      Value<String> petId,
+      Value<String> path,
+      Value<DateTime> takenAt,
+      Value<String?> caption,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$PetPhotosTableReferences
+    extends BaseReferences<_$AppDatabase, $PetPhotosTable, PetPhotoRow> {
+  $$PetPhotosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PetsTable _petIdTable(_$AppDatabase db) =>
+      db.pets.createAlias('pet_photos__pet_id__pets__id');
+
+  $$PetsTableProcessedTableManager get petId {
+    final $_column = $_itemColumn<String>('pet_id')!;
+
+    final manager = $$PetsTableTableManager(
+      $_db,
+      $_db.pets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_petIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PetPhotosTableFilterComposer
+    extends Composer<_$AppDatabase, $PetPhotosTable> {
+  $$PetPhotosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get takenAt => $composableBuilder(
+    column: $table.takenAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PetsTableFilterComposer get petId {
+    final $$PetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableFilterComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetPhotosTableOrderingComposer
+    extends Composer<_$AppDatabase, $PetPhotosTable> {
+  $$PetPhotosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get takenAt => $composableBuilder(
+    column: $table.takenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PetsTableOrderingComposer get petId {
+    final $$PetsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetPhotosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PetPhotosTable> {
+  $$PetPhotosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get takenAt =>
+      $composableBuilder(column: $table.takenAt, builder: (column) => column);
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PetsTableAnnotationComposer get petId {
+    final $$PetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetPhotosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PetPhotosTable,
+          PetPhotoRow,
+          $$PetPhotosTableFilterComposer,
+          $$PetPhotosTableOrderingComposer,
+          $$PetPhotosTableAnnotationComposer,
+          $$PetPhotosTableCreateCompanionBuilder,
+          $$PetPhotosTableUpdateCompanionBuilder,
+          (PetPhotoRow, $$PetPhotosTableReferences),
+          PetPhotoRow,
+          PrefetchHooks Function({bool petId})
+        > {
+  $$PetPhotosTableTableManager(_$AppDatabase db, $PetPhotosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PetPhotosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PetPhotosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PetPhotosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> petId = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<DateTime> takenAt = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PetPhotosCompanion(
+                id: id,
+                petId: petId,
+                path: path,
+                takenAt: takenAt,
+                caption: caption,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String petId,
+                required String path,
+                required DateTime takenAt,
+                Value<String?> caption = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PetPhotosCompanion.insert(
+                id: id,
+                petId: petId,
+                path: path,
+                takenAt: takenAt,
+                caption: caption,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PetPhotosTable, PetPhotoRow>(table),
+                  $$PetPhotosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({petId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (petId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.petId,
+                                referencedTable: $$PetPhotosTableReferences
+                                    ._petIdTable(db),
+                                referencedColumn: $$PetPhotosTableReferences
+                                    ._petIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PetPhotosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PetPhotosTable,
+      PetPhotoRow,
+      $$PetPhotosTableFilterComposer,
+      $$PetPhotosTableOrderingComposer,
+      $$PetPhotosTableAnnotationComposer,
+      $$PetPhotosTableCreateCompanionBuilder,
+      $$PetPhotosTableUpdateCompanionBuilder,
+      (PetPhotoRow, $$PetPhotosTableReferences),
+      PetPhotoRow,
+      PrefetchHooks Function({bool petId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11224,4 +12075,6 @@ class $AppDatabaseManager {
       $$WeightEntriesTableTableManager(_db, _db.weightEntries);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$PetPhotosTableTableManager get petPhotos =>
+      $$PetPhotosTableTableManager(_db, _db.petPhotos);
 }

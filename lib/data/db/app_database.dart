@@ -14,6 +14,7 @@ import 'converters/string_list_converter.dart';
 import 'tables/app_settings.dart';
 import 'tables/dose_logs.dart';
 import 'tables/medicines.dart';
+import 'tables/pet_photos.dart';
 import 'tables/pets.dart';
 import 'tables/prescriptions.dart';
 import 'tables/vaccination_records.dart';
@@ -40,6 +41,7 @@ part 'app_database.g.dart';
     WeightEntries,
     AppSettings,
     Prescriptions,
+    PetPhotos,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -49,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -79,6 +81,11 @@ class AppDatabase extends _$AppDatabase {
         if (from >= 2) {
           await m.addColumn(medicines, medicines.prescriptionId);
         }
+      }
+      if (from < 4) {
+        // The photo vault. Additive: a new table and nothing else, so every
+        // existing pet simply starts with an empty album.
+        await m.createTable(petPhotos);
       }
     },
     beforeOpen: (details) async {

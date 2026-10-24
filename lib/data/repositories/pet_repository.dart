@@ -2,14 +2,17 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/models/pet.dart';
+import '../../services/photo_store.dart';
 import '../db/app_database.dart';
 import '../db/mappers.dart';
 
 /// Reads and writes pets.
 class PetRepository {
-  PetRepository(this._db, {this.uuid = const Uuid()});
+  PetRepository(this._db, {PhotoStore? photoStore, this.uuid = const Uuid()})
+    : _photos = photoStore;
 
   final AppDatabase _db;
+  final PhotoStore? _photos;
   final Uuid uuid;
 
   /// Active pets, oldest first, as a live stream.
@@ -81,9 +84,54 @@ class PetRepository {
     );
   }
 
-  /// Deletes a pet and, by cascade, its reminders and their events.
+  /// Deletes a pet, everything recorded about them, and their photo files.
+  ///
+  /// Foreign keys cascade the rows. Nothing cascades the *files*, so they are
+  /// collected first — which is why this one repository reads across tables:
+  /// it is the only place that knows what "everything belonging to this pet"
+  /// means. Without it a deleted cat left their whole album on disk, and an
+  /// owner who deletes a pet to reclaim space would have reclaimed none.
   Future<void> delete(String id) async {
+    final files = await _filesOf(id);
     await (_db.delete(_db.pets)..where((pet) => pet.id.equals(id))).go();
+    for (final path in files) {
+      await _photos?.delete(path);
+    }
+  }
+
+  /// Every file on disk that belongs to [petId].
+  Future<List<String>> _filesOf(String petId) async {
+    final paths = <String>[];
+
+    final pet = await findById(petId);
+    if (pet?.photoPath != null) {
+      paths.add(pet!.photoPath!);
+    }
+
+    for (final photo in await (_db.select(_db.petPhotos)
+          ..where((row) => row.petId.equals(petId)))
+        .get()) {
+      paths.add(photo.path);
+    }
+
+    for (final prescription in await (_db.select(_db.prescriptions)
+          ..where((row) => row.petId.equals(petId)))
+        .get()) {
+      paths.addAll(prescription.imagePaths);
+    }
+
+    // Attachments hang off visits, which hang off the pet.
+    final attachments = _db.select(_db.visitAttachments).join([
+      innerJoin(
+        _db.vetVisits,
+        _db.vetVisits.id.equalsExp(_db.visitAttachments.visitId),
+      ),
+    ])..where(_db.vetVisits.petId.equals(petId));
+    for (final row in await attachments.get()) {
+      paths.add(row.readTable(_db.visitAttachments).filePath);
+    }
+
+    return paths;
   }
 }
 

@@ -25,6 +25,9 @@ class PhotoStore {
   /// Where photos attached to a vet visit live.
   static const String visitAttachments = 'visit_attachments';
 
+  /// Where a pet's photo album lives.
+  static const String petVault = 'pet_vault';
+
   /// Asks the owner for an image and returns the stored copy's path, or null
   /// if they backed out.
   Future<String?> pick(

@@ -7,6 +7,7 @@ library;
 import '../../domain/models/dose_log.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/pet_photo.dart';
 import '../../domain/models/prescription.dart';
 import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/vet_visit.dart';
@@ -77,6 +78,17 @@ extension MedicineRowMapper on MedicineRow {
     isActive: isActive,
     createdAt: createdAt,
     updatedAt: updatedAt,
+  );
+}
+
+extension PetPhotoRowMapper on PetPhotoRow {
+  PetPhoto toDomain() => PetPhoto(
+    id: id,
+    petId: petId,
+    path: path,
+    takenAt: takenAt,
+    caption: caption,
+    createdAt: createdAt,
   );
 }
 

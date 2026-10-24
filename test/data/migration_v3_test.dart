@@ -110,7 +110,7 @@ void main() {
     );
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data['user_version'], 3);
+    expect(version.data['user_version'], db.schemaVersion);
   });
 
   test('the prescriptions table exists after the upgrade', () async {
@@ -201,12 +201,12 @@ void main() {
     expect(await db.select(db.prescriptions).get(), isEmpty);
   });
 
-  test('a fresh database is created at v3 directly', () async {
+  test('a fresh database is created at the current schema directly', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data['user_version'], 3);
+    expect(version.data['user_version'], db.schemaVersion);
   });
 
   test('an empty page list round-trips as empty, not as null', () async {

@@ -92,7 +92,7 @@ void main() {
     final version = await db
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.data['user_version'], 3);
+    expect(version.data['user_version'], db.schemaVersion);
   });
 
   test('every Phase 2 table exists after the upgrade', () async {
@@ -162,7 +162,7 @@ void main() {
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data['user_version'], 3);
+    expect(version.data['user_version'], db.schemaVersion);
     expect(await db.select(db.medicines).get(), isEmpty);
   });
 

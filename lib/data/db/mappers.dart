@@ -7,6 +7,7 @@ library;
 import '../../domain/models/dose_log.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/prescription.dart';
 import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/vet_visit.dart';
 import '../../domain/models/weight_entry.dart';
@@ -133,6 +134,21 @@ extension WeightEntryRowMapper on WeightEntryRow {
     measuredOn: measuredOn,
     grams: grams,
     note: note,
+    createdAt: createdAt,
+  );
+}
+
+extension PrescriptionRowMapper on PrescriptionRow {
+  Prescription toDomain() => Prescription(
+    id: id,
+    petId: petId,
+    vetVisitId: vetVisitId,
+    date: date,
+    vetName: vetName,
+    clinic: clinic,
+    imagePaths: imagePaths,
+    extractedText: extractedText,
+    notes: notes,
     createdAt: createdAt,
   );
 }

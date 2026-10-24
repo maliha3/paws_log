@@ -53,12 +53,18 @@ class PhotoStore {
     return [for (final file in picked) await _store(file, folder)];
   }
 
-  Future<String> _store(XFile picked, String folderName) async {
+  /// The app's folder for [folderName], created if it is not there yet.
+  Future<Directory> directory(String folderName) async {
     final documents = await getApplicationDocumentsDirectory();
     final folder = Directory(p.join(documents.path, folderName));
     if (!folder.existsSync()) {
       await folder.create(recursive: true);
     }
+    return folder;
+  }
+
+  Future<String> _store(XFile picked, String folderName) async {
+    final folder = await directory(folderName);
     final extension = p.extension(picked.path).isEmpty
         ? '.jpg'
         : p.extension(picked.path);

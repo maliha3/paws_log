@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
+import '../domain/models/prescription.dart';
 import '../domain/models/vaccination_record.dart';
 import '../domain/models/vet_visit.dart';
 import '../services/backup/backup_service.dart';
@@ -15,6 +16,8 @@ import '../services/entitlements/entitlement_source.dart';
 import '../services/entitlements/revenuecat_entitlements.dart';
 import '../services/entitlements/stub_entitlements.dart';
 import '../services/photo_store.dart';
+import '../services/prescriptions/ocr_service.dart';
+import '../services/prescriptions/scan_service.dart';
 import '../services/vet_summary/vet_summary_service.dart';
 import '../services/vet_summary/vet_summary_sharing.dart';
 import '../domain/models/weight_entry.dart';
@@ -23,6 +26,7 @@ import 'db/app_database.dart';
 import 'repositories/dose_log_repository.dart';
 import 'repositories/medicine_repository.dart';
 import 'repositories/pet_repository.dart';
+import 'repositories/prescription_repository.dart';
 import 'repositories/reminder_event_repository.dart';
 import 'repositories/reminder_repository.dart';
 import 'repositories/settings_repository.dart';
@@ -140,6 +144,30 @@ final weightsForPetProvider =
     StreamProvider.family<List<WeightEntry>, String>(
       (ref, petId) => ref.watch(weightRepositoryProvider).watchForPet(petId),
     );
+
+final prescriptionRepositoryProvider = Provider<PrescriptionRepository>(
+  (ref) => PrescriptionRepository(
+    ref.watch(appDatabaseProvider),
+    photoStore: ref.watch(photoStoreProvider),
+  ),
+);
+
+/// One pet's prescriptions, live.
+final prescriptionsForPetProvider =
+    StreamProvider.family<List<Prescription>, String>(
+      (ref, petId) =>
+          ref.watch(prescriptionRepositoryProvider).watchForPet(petId),
+    );
+
+/// Gets pages onto the device, from the camera or from Photos.
+final scanServiceProvider = Provider<ScanService>(
+  (ref) => DeviceScanService(photoStore: ref.watch(photoStoreProvider)),
+);
+
+/// Reads text off a page. Apple Vision on iOS; nothing elsewhere yet.
+final ocrServiceProvider = Provider<OcrService>(
+  (ref) => const VisionOcrService(),
+);
 
 final vetVisitRepositoryProvider = Provider<VetVisitRepository>(
   (ref) => VetVisitRepository(

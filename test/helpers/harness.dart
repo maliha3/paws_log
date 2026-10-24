@@ -75,6 +75,15 @@ Future<void> scrollIntoView(WidgetTester tester, Finder finder) async {
   await settle(tester);
 }
 
+/// From a pet's profile, opens their medical record on the named segment.
+///
+/// Prescriptions, medicines, vaccines and visits each live behind their own
+/// chip, so a test that wants one has to say which.
+Future<void> openMedicalSegment(WidgetTester tester, String segment) async {
+  await scrollAndTap(tester, find.text('Medical record'));
+  await tapAndSettle(tester, find.text(segment));
+}
+
 /// Scrolls [finder] into view if needed, then taps it.
 Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);

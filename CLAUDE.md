@@ -159,6 +159,18 @@ A `Prescription` holds its page images in order, the raw OCR text, and the
 vet details. `Medicine.prescriptionId` links each medicine back to the
 prescription it came from, so a course always has its source.
 
+The record is its own screen, reached from one card on the pet's profile. The
+profile answers "who is this cat" — facts, photo, weight trend — and the four
+segments sit behind it, because stacking them meant scrolling past every
+medicine to reach the vaccines. The segments are chips in a row that scrolls
+sideways rather than squeezing, so the labels survive the largest text sizes.
+
+Medicines split into **Active** and **Past**. A course is past once it has been
+stopped by hand *or* its end date has gone by — a course that has simply run
+out is over, whether or not anyone pressed stop. Vaccines have no Add button:
+they are recorded by marking a vaccine reminder done, which is the point of
+them being automatic.
+
 ### The OCR engine is Apple Vision, not ML Kit
 
 The spec named `google_mlkit_text_recognition`. It was added, and removed

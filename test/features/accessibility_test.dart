@@ -144,6 +144,7 @@ void main() {
     forEachAppearance('the pet profile', (tester) async {
       await tapAndSettle(tester, find.text('Pets'));
       await tapAndSettle(tester, find.text('Mochi'));
+      await scrollIntoView(tester, find.text('Weight'));
       expect(find.text('Weight'), findsOneWidget);
     });
 
@@ -160,9 +161,22 @@ void main() {
       expect(find.text('Export a backup'), findsOneWidget);
     });
 
+    forEachAppearance('the medical record', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await openMedicalSegment(tester, 'Medicines');
+      expect(find.text('Amoxicillin clavulanate'), findsOneWidget);
+
+      // Every segment, because each lays out differently.
+      for (final segment in ['Vaccines', 'Vet visits', 'Prescriptions']) {
+        await tapAndSettle(tester, find.text(segment));
+      }
+    });
+
     forEachAppearance('a vet visit', (tester) async {
       await tapAndSettle(tester, find.text('Pets'));
       await tapAndSettle(tester, find.text('Mochi'));
+      await openMedicalSegment(tester, 'Vet visits');
       await scrollAndTap(
         tester,
         find.text('Limping on the back left leg after a fall'),
@@ -173,7 +187,8 @@ void main() {
     forEachAppearance('the medicine editor', (tester) async {
       await tapAndSettle(tester, find.text('Pets'));
       await tapAndSettle(tester, find.text('Mochi'));
-      await scrollAndTap(tester, find.byTooltip('Add a medicine'));
+      await openMedicalSegment(tester, 'Medicines');
+      await tapAndSettle(tester, find.byTooltip('Add a medicine'));
       expect(find.text('Add a medicine'), findsWidgets);
     });
   });

@@ -124,6 +124,7 @@ void main() {
       );
       await openPets(tester);
       await tapAndSettle(tester, find.text('Mochi'));
+      await openMedicalSegment(tester, 'Vet visits');
       await tapAndSettle(tester, find.text('Annual checkup'));
     }
 
@@ -150,6 +151,7 @@ void main() {
       );
       await openPets(tester);
       await tapAndSettle(tester, find.text('Mochi'));
+      await openMedicalSegment(tester, 'Vet visits');
       await tapAndSettle(tester, find.text('Annual checkup'));
 
       expect(

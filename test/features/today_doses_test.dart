@@ -187,6 +187,7 @@ void main() {
 
     await tapAndSettle(tester, find.text('Pets'));
     await tapAndSettle(tester, find.text('Mochi'));
+    await openMedicalSegment(tester, 'Medicines');
     expect(find.textContaining('No medicines'), findsOneWidget);
 
     await tapAndSettle(tester, find.byTooltip('Add a medicine'));
@@ -214,6 +215,7 @@ void main() {
 
     await tapAndSettle(tester, find.text('Pets'));
     await tapAndSettle(tester, find.text('Mochi'));
+    await openMedicalSegment(tester, 'Medicines');
     await tapAndSettle(tester, find.byTooltip('Medicine options'));
     await tapAndSettle(tester, find.text('Stop course'));
 

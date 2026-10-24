@@ -67,21 +67,19 @@ void main() {
     expect(find.textContaining('Female'), findsOneWidget);
     expect(find.textContaining('3 yrs'), findsOneWidget);
 
-    // Every section is on the page. Scrolled to, because the list is lazy
-    // and the lower sections are below the fold.
-    for (final section in [
-      'Weight',
-      'Medicines',
-      'Vaccinations',
-      'Vet visits',
-    ]) {
+    // The profile holds who the cat is and the weight trend; the four kinds
+    // of medical record sit one tap behind it.
+    for (final section in ['Medical record', 'Weight']) {
       await scrollIntoView(tester, find.text(section));
       expect(find.text(section), findsOneWidget, reason: section);
     }
     await scrollIntoView(tester, find.text('4.20'));
     expect(find.text('4.20'), findsOneWidget);
-    await scrollIntoView(tester, find.text('Amoxicillin'));
+
+    await openMedicalSegment(tester, 'Medicines');
     expect(find.text('Amoxicillin'), findsOneWidget);
+    // The course ran for two days in May 2026, so it is over.
+    expect(find.text('Past'), findsOneWidget);
 
     await disposeTree(tester);
   });

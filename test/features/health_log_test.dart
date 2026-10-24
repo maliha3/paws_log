@@ -42,23 +42,30 @@ void main() {
     await tapAndSettle(tester, find.text('Mochi'));
   }
 
-  testWidgets('an empty profile explains each section', (tester) async {
+  testWidgets('an empty record explains each segment', (tester) async {
     await openPet(tester);
+    await openMedicalSegment(tester, 'Medicines');
 
-    expect(find.text('Medicines'), findsOneWidget);
-    expect(find.text('Vaccinations'), findsOneWidget);
-    expect(find.text('Vet visits'), findsOneWidget);
-    expect(find.textContaining('No visits yet'), findsOneWidget);
+    expect(find.textContaining('No medicines'), findsOneWidget);
+
+    await tapAndSettle(tester, find.text('Vaccines'));
     expect(
       find.textContaining('Marking a vaccine reminder done'),
       findsOneWidget,
     );
+
+    await tapAndSettle(tester, find.text('Vet visits'));
+    expect(find.textContaining('No visits yet'), findsOneWidget);
+
+    await tapAndSettle(tester, find.text('Prescriptions'));
+    expect(find.textContaining('No prescriptions yet'), findsOneWidget);
 
     await disposeTree(tester);
   });
 
   testWidgets('a visit can be recorded and reopened', (tester) async {
     await openPet(tester);
+    await openMedicalSegment(tester, 'Vet visits');
 
     await tapAndSettle(tester, find.byTooltip('Add a vet visit'));
 
@@ -89,6 +96,7 @@ void main() {
 
   testWidgets('a reason is required', (tester) async {
     await openPet(tester);
+    await openMedicalSegment(tester, 'Vet visits');
     await tapAndSettle(tester, find.byTooltip('Add a vet visit'));
 
     await tapAndSettle(tester, find.text('Add visit'));
@@ -106,6 +114,7 @@ void main() {
       reason: 'Annual checkup',
     );
     await openPet(tester);
+    await openMedicalSegment(tester, 'Vet visits');
     expect(find.text('Annual checkup'), findsOneWidget);
 
     await tapAndSettle(tester, find.text('Annual checkup'));
@@ -117,7 +126,7 @@ void main() {
     await disposeTree(tester);
   });
 
-  testWidgets('a completed vaccine turns up in the profile', (tester) async {
+  testWidgets('a completed vaccine turns up in the record', (tester) async {
     final reminders = ReminderRepository(db);
     final events = ReminderEventRepository(db);
     await reminders.create(
@@ -132,6 +141,7 @@ void main() {
     await events.markDone(event);
 
     await openPet(tester);
+    await openMedicalSegment(tester, 'Vaccines');
 
     expect(find.text('Yearly vaccine'), findsOneWidget);
     expect(find.textContaining('Given'), findsOneWidget);

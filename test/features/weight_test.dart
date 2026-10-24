@@ -148,7 +148,15 @@ void main() {
 
     await tapAndSettle(tester, find.text('All 2 weighings'));
 
-    final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
+    // Scoped to the sheet: the profile behind it has tiles of its own.
+    final tiles = tester
+        .widgetList<ListTile>(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.byType(ListTile),
+          ),
+        )
+        .toList();
     expect((tiles.first.title! as Text).data, '4.45 kg');
     expect((tiles.last.title! as Text).data, '4.20 kg');
 

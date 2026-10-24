@@ -67,8 +67,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PawsLog needs access to your photos so you can add a picture of your cat.</string>
+	<string>Choose a photo of your cat, or a prescription you have already photographed, to keep with their records.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>PawsLog needs access to your camera so you can take a picture of your cat.</string>
+	<string>Take a photo of your cat, or scan a prescription so Paws Log can keep it and read the doses off it. Everything stays on this phone.</string>
 </dict>
 </plist>

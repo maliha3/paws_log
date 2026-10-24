@@ -17,6 +17,9 @@ show "Confirm the schedule with your vet."
   pass on every provider edit is not worth it.
 - **flutter_local_notifications** + **timezone** + **flutter_timezone** for
   scheduled local notifications.
+- **cunning_document_scanner** for multi-page scanning (Apple VisionKit).
+- OCR is **Apple Vision** through a method channel, not a package — see the
+  Medical section for why.
 - **image_picker** + **path_provider** for pet photos.
 - `uuid` for ids, `intl` for date formatting.
 - dev: `drift_dev`, `build_runner`, `mocktail`.
@@ -155,6 +158,26 @@ Vaccines · Vet visits**.
 A `Prescription` holds its page images in order, the raw OCR text, and the
 vet details. `Medicine.prescriptionId` links each medicine back to the
 prescription it came from, so a course always has its source.
+
+### The OCR engine is Apple Vision, not ML Kit
+
+The spec named `google_mlkit_text_recognition`. It was added, and removed
+again: **ML Kit's frameworks ship without an arm64-simulator slice**, so with
+it in the project the app cannot build for the Simulator at all — not the
+prescription screens, the whole app. That would have cost every integration
+test and every screenshot in exchange for one feature.
+
+Apple's Vision framework does the same job, is part of iOS so it adds nothing
+to the download, and builds for the simulator. `ios/Runner/TextRecognition.swift`
+is the channel; `OcrService` is the interface above it.
+
+Vision is iOS-only. When Android arrives, ML Kit goes behind that same
+interface and nothing above it changes — which is the reason the interface
+exists.
+
+Images are read off the main thread, and a `UIImage`'s orientation is passed
+through: Vision works on raw pixels, so a photo taken in portrait is read
+sideways without it.
 
 ### Prescriptions are never trusted automatically
 

@@ -5,6 +5,7 @@ import '../../core/constants.dart';
 // The generated part file resolves the textEnum column types through this
 // library's imports, so the domain enums have to be in scope here.
 import '../../domain/models/pet.dart';
+import '../../domain/models/pet_condition.dart';
 import '../../domain/models/reminder.dart';
 import '../../domain/models/reminder_event.dart';
 import '../../domain/models/dose_log.dart';
@@ -14,6 +15,7 @@ import 'converters/string_list_converter.dart';
 import 'tables/app_settings.dart';
 import 'tables/dose_logs.dart';
 import 'tables/medicines.dart';
+import 'tables/pet_conditions.dart';
 import 'tables/pet_photos.dart';
 import 'tables/pets.dart';
 import 'tables/prescriptions.dart';
@@ -42,6 +44,8 @@ part 'app_database.g.dart';
     AppSettings,
     Prescriptions,
     PetPhotos,
+    PetConditions,
+    PetAllergies,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -51,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -86,6 +90,23 @@ class AppDatabase extends _$AppDatabase {
         // The photo vault. Additive: a new table and nothing else, so every
         // existing pet simply starts with an empty album.
         await m.createTable(petPhotos);
+      }
+      if (from < 5) {
+        // Profile details: diagnosed conditions, allergies, and the
+        // background and feeding fields on the pet itself. Every new pet
+        // column is nullable, so an existing pet reads as "not recorded"
+        // rather than as a guess.
+        await m.createTable(petConditions);
+        await m.createTable(petAllergies);
+        await m.addColumn(pets, pets.coatLength);
+        await m.addColumn(pets, pets.origin);
+        await m.addColumn(pets, pets.originDate);
+        await m.addColumn(pets, pets.originNotes);
+        await m.addColumn(pets, pets.motherInfo);
+        await m.addColumn(pets, pets.fatherInfo);
+        await m.addColumn(pets, pets.dietType);
+        await m.addColumn(pets, pets.foodBrand);
+        await m.addColumn(pets, pets.feedingNotes);
       }
     },
     beforeOpen: (details) async {

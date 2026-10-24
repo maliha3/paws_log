@@ -84,6 +84,99 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
       'CHECK ("neutered" IN (0, 1))',
     ),
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<CoatLength?, String> coatLength =
+      GeneratedColumn<String>(
+        'coat_length',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<CoatLength?>($PetsTable.$convertercoatLengthn);
+  @override
+  late final GeneratedColumnWithTypeConverter<PetOrigin?, String> origin =
+      GeneratedColumn<String>(
+        'origin',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<PetOrigin?>($PetsTable.$converteroriginn);
+  static const VerificationMeta _originDateMeta = const VerificationMeta(
+    'originDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> originDate = GeneratedColumn<DateTime>(
+    'origin_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _originNotesMeta = const VerificationMeta(
+    'originNotes',
+  );
+  @override
+  late final GeneratedColumn<String> originNotes = GeneratedColumn<String>(
+    'origin_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _motherInfoMeta = const VerificationMeta(
+    'motherInfo',
+  );
+  @override
+  late final GeneratedColumn<String> motherInfo = GeneratedColumn<String>(
+    'mother_info',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fatherInfoMeta = const VerificationMeta(
+    'fatherInfo',
+  );
+  @override
+  late final GeneratedColumn<String> fatherInfo = GeneratedColumn<String>(
+    'father_info',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<DietType?, String> dietType =
+      GeneratedColumn<String>(
+        'diet_type',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<DietType?>($PetsTable.$converterdietTypen);
+  static const VerificationMeta _foodBrandMeta = const VerificationMeta(
+    'foodBrand',
+  );
+  @override
+  late final GeneratedColumn<String> foodBrand = GeneratedColumn<String>(
+    'food_brand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _feedingNotesMeta = const VerificationMeta(
+    'feedingNotes',
+  );
+  @override
+  late final GeneratedColumn<String> feedingNotes = GeneratedColumn<String>(
+    'feeding_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -126,6 +219,15 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
     breed,
     sex,
     neutered,
+    coatLength,
+    origin,
+    originDate,
+    originNotes,
+    motherInfo,
+    fatherInfo,
+    dietType,
+    foodBrand,
+    feedingNotes,
     createdAt,
     updatedAt,
     archivedAt,
@@ -177,6 +279,48 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
       context.handle(
         _neuteredMeta,
         neutered.isAcceptableOrUnknown(data['neutered']!, _neuteredMeta),
+      );
+    }
+    if (data.containsKey('origin_date')) {
+      context.handle(
+        _originDateMeta,
+        originDate.isAcceptableOrUnknown(data['origin_date']!, _originDateMeta),
+      );
+    }
+    if (data.containsKey('origin_notes')) {
+      context.handle(
+        _originNotesMeta,
+        originNotes.isAcceptableOrUnknown(
+          data['origin_notes']!,
+          _originNotesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mother_info')) {
+      context.handle(
+        _motherInfoMeta,
+        motherInfo.isAcceptableOrUnknown(data['mother_info']!, _motherInfoMeta),
+      );
+    }
+    if (data.containsKey('father_info')) {
+      context.handle(
+        _fatherInfoMeta,
+        fatherInfo.isAcceptableOrUnknown(data['father_info']!, _fatherInfoMeta),
+      );
+    }
+    if (data.containsKey('food_brand')) {
+      context.handle(
+        _foodBrandMeta,
+        foodBrand.isAcceptableOrUnknown(data['food_brand']!, _foodBrandMeta),
+      );
+    }
+    if (data.containsKey('feeding_notes')) {
+      context.handle(
+        _feedingNotesMeta,
+        feedingNotes.isAcceptableOrUnknown(
+          data['feeding_notes']!,
+          _feedingNotesMeta,
+        ),
       );
     }
     if (data.containsKey('created_at')) {
@@ -240,6 +384,48 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}neutered'],
       ),
+      coatLength: $PetsTable.$convertercoatLengthn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}coat_length'],
+        ),
+      ),
+      origin: $PetsTable.$converteroriginn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}origin'],
+        ),
+      ),
+      originDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}origin_date'],
+      ),
+      originNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin_notes'],
+      ),
+      motherInfo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mother_info'],
+      ),
+      fatherInfo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}father_info'],
+      ),
+      dietType: $PetsTable.$converterdietTypen.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}diet_type'],
+        ),
+      ),
+      foodBrand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}food_brand'],
+      ),
+      feedingNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}feeding_notes'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -262,6 +448,18 @@ class $PetsTable extends Pets with TableInfo<$PetsTable, PetRow> {
 
   static JsonTypeConverter2<PetSex, String, String> $convertersex =
       const EnumNameConverter<PetSex>(PetSex.values);
+  static JsonTypeConverter2<CoatLength, String, String> $convertercoatLength =
+      const EnumNameConverter<CoatLength>(CoatLength.values);
+  static JsonTypeConverter2<CoatLength?, String?, String?>
+  $convertercoatLengthn = JsonTypeConverter2.asNullable($convertercoatLength);
+  static JsonTypeConverter2<PetOrigin, String, String> $converterorigin =
+      const EnumNameConverter<PetOrigin>(PetOrigin.values);
+  static JsonTypeConverter2<PetOrigin?, String?, String?> $converteroriginn =
+      JsonTypeConverter2.asNullable($converterorigin);
+  static JsonTypeConverter2<DietType, String, String> $converterdietType =
+      const EnumNameConverter<DietType>(DietType.values);
+  static JsonTypeConverter2<DietType?, String?, String?> $converterdietTypen =
+      JsonTypeConverter2.asNullable($converterdietType);
 }
 
 class PetRow extends DataClass implements Insertable<PetRow> {
@@ -276,6 +474,19 @@ class PetRow extends DataClass implements Insertable<PetRow> {
 
   /// Null means "not recorded".
   final bool? neutered;
+
+  /// What grooming intervals hang off. Null until the owner says.
+  final CoatLength? coatLength;
+  final PetOrigin? origin;
+
+  /// Date-only, held at UTC midnight.
+  final DateTime? originDate;
+  final String? originNotes;
+  final String? motherInfo;
+  final String? fatherInfo;
+  final DietType? dietType;
+  final String? foodBrand;
+  final String? feedingNotes;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? archivedAt;
@@ -287,6 +498,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     this.breed,
     required this.sex,
     this.neutered,
+    this.coatLength,
+    this.origin,
+    this.originDate,
+    this.originNotes,
+    this.motherInfo,
+    this.fatherInfo,
+    this.dietType,
+    this.foodBrand,
+    this.feedingNotes,
     required this.createdAt,
     required this.updatedAt,
     this.archivedAt,
@@ -310,6 +530,39 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     }
     if (!nullToAbsent || neutered != null) {
       map['neutered'] = Variable<bool>(neutered);
+    }
+    if (!nullToAbsent || coatLength != null) {
+      map['coat_length'] = Variable<String>(
+        $PetsTable.$convertercoatLengthn.toSql(coatLength),
+      );
+    }
+    if (!nullToAbsent || origin != null) {
+      map['origin'] = Variable<String>(
+        $PetsTable.$converteroriginn.toSql(origin),
+      );
+    }
+    if (!nullToAbsent || originDate != null) {
+      map['origin_date'] = Variable<DateTime>(originDate);
+    }
+    if (!nullToAbsent || originNotes != null) {
+      map['origin_notes'] = Variable<String>(originNotes);
+    }
+    if (!nullToAbsent || motherInfo != null) {
+      map['mother_info'] = Variable<String>(motherInfo);
+    }
+    if (!nullToAbsent || fatherInfo != null) {
+      map['father_info'] = Variable<String>(fatherInfo);
+    }
+    if (!nullToAbsent || dietType != null) {
+      map['diet_type'] = Variable<String>(
+        $PetsTable.$converterdietTypen.toSql(dietType),
+      );
+    }
+    if (!nullToAbsent || foodBrand != null) {
+      map['food_brand'] = Variable<String>(foodBrand);
+    }
+    if (!nullToAbsent || feedingNotes != null) {
+      map['feeding_notes'] = Variable<String>(feedingNotes);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -336,6 +589,33 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       neutered: neutered == null && nullToAbsent
           ? const Value.absent()
           : Value(neutered),
+      coatLength: coatLength == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coatLength),
+      origin: origin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(origin),
+      originDate: originDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originDate),
+      originNotes: originNotes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originNotes),
+      motherInfo: motherInfo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(motherInfo),
+      fatherInfo: fatherInfo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fatherInfo),
+      dietType: dietType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dietType),
+      foodBrand: foodBrand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(foodBrand),
+      feedingNotes: feedingNotes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(feedingNotes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       archivedAt: archivedAt == null && nullToAbsent
@@ -359,6 +639,21 @@ class PetRow extends DataClass implements Insertable<PetRow> {
         serializer.fromJson<String>(json['sex']),
       ),
       neutered: serializer.fromJson<bool?>(json['neutered']),
+      coatLength: $PetsTable.$convertercoatLengthn.fromJson(
+        serializer.fromJson<String?>(json['coatLength']),
+      ),
+      origin: $PetsTable.$converteroriginn.fromJson(
+        serializer.fromJson<String?>(json['origin']),
+      ),
+      originDate: serializer.fromJson<DateTime?>(json['originDate']),
+      originNotes: serializer.fromJson<String?>(json['originNotes']),
+      motherInfo: serializer.fromJson<String?>(json['motherInfo']),
+      fatherInfo: serializer.fromJson<String?>(json['fatherInfo']),
+      dietType: $PetsTable.$converterdietTypen.fromJson(
+        serializer.fromJson<String?>(json['dietType']),
+      ),
+      foodBrand: serializer.fromJson<String?>(json['foodBrand']),
+      feedingNotes: serializer.fromJson<String?>(json['feedingNotes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
@@ -375,6 +670,21 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       'breed': serializer.toJson<String?>(breed),
       'sex': serializer.toJson<String>($PetsTable.$convertersex.toJson(sex)),
       'neutered': serializer.toJson<bool?>(neutered),
+      'coatLength': serializer.toJson<String?>(
+        $PetsTable.$convertercoatLengthn.toJson(coatLength),
+      ),
+      'origin': serializer.toJson<String?>(
+        $PetsTable.$converteroriginn.toJson(origin),
+      ),
+      'originDate': serializer.toJson<DateTime?>(originDate),
+      'originNotes': serializer.toJson<String?>(originNotes),
+      'motherInfo': serializer.toJson<String?>(motherInfo),
+      'fatherInfo': serializer.toJson<String?>(fatherInfo),
+      'dietType': serializer.toJson<String?>(
+        $PetsTable.$converterdietTypen.toJson(dietType),
+      ),
+      'foodBrand': serializer.toJson<String?>(foodBrand),
+      'feedingNotes': serializer.toJson<String?>(feedingNotes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'archivedAt': serializer.toJson<DateTime?>(archivedAt),
@@ -389,6 +699,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     Value<String?> breed = const Value.absent(),
     PetSex? sex,
     Value<bool?> neutered = const Value.absent(),
+    Value<CoatLength?> coatLength = const Value.absent(),
+    Value<PetOrigin?> origin = const Value.absent(),
+    Value<DateTime?> originDate = const Value.absent(),
+    Value<String?> originNotes = const Value.absent(),
+    Value<String?> motherInfo = const Value.absent(),
+    Value<String?> fatherInfo = const Value.absent(),
+    Value<DietType?> dietType = const Value.absent(),
+    Value<String?> foodBrand = const Value.absent(),
+    Value<String?> feedingNotes = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> archivedAt = const Value.absent(),
@@ -400,6 +719,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     breed: breed.present ? breed.value : this.breed,
     sex: sex ?? this.sex,
     neutered: neutered.present ? neutered.value : this.neutered,
+    coatLength: coatLength.present ? coatLength.value : this.coatLength,
+    origin: origin.present ? origin.value : this.origin,
+    originDate: originDate.present ? originDate.value : this.originDate,
+    originNotes: originNotes.present ? originNotes.value : this.originNotes,
+    motherInfo: motherInfo.present ? motherInfo.value : this.motherInfo,
+    fatherInfo: fatherInfo.present ? fatherInfo.value : this.fatherInfo,
+    dietType: dietType.present ? dietType.value : this.dietType,
+    foodBrand: foodBrand.present ? foodBrand.value : this.foodBrand,
+    feedingNotes: feedingNotes.present ? feedingNotes.value : this.feedingNotes,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
@@ -413,6 +741,27 @@ class PetRow extends DataClass implements Insertable<PetRow> {
       breed: data.breed.present ? data.breed.value : this.breed,
       sex: data.sex.present ? data.sex.value : this.sex,
       neutered: data.neutered.present ? data.neutered.value : this.neutered,
+      coatLength: data.coatLength.present
+          ? data.coatLength.value
+          : this.coatLength,
+      origin: data.origin.present ? data.origin.value : this.origin,
+      originDate: data.originDate.present
+          ? data.originDate.value
+          : this.originDate,
+      originNotes: data.originNotes.present
+          ? data.originNotes.value
+          : this.originNotes,
+      motherInfo: data.motherInfo.present
+          ? data.motherInfo.value
+          : this.motherInfo,
+      fatherInfo: data.fatherInfo.present
+          ? data.fatherInfo.value
+          : this.fatherInfo,
+      dietType: data.dietType.present ? data.dietType.value : this.dietType,
+      foodBrand: data.foodBrand.present ? data.foodBrand.value : this.foodBrand,
+      feedingNotes: data.feedingNotes.present
+          ? data.feedingNotes.value
+          : this.feedingNotes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       archivedAt: data.archivedAt.present
@@ -431,6 +780,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           ..write('breed: $breed, ')
           ..write('sex: $sex, ')
           ..write('neutered: $neutered, ')
+          ..write('coatLength: $coatLength, ')
+          ..write('origin: $origin, ')
+          ..write('originDate: $originDate, ')
+          ..write('originNotes: $originNotes, ')
+          ..write('motherInfo: $motherInfo, ')
+          ..write('fatherInfo: $fatherInfo, ')
+          ..write('dietType: $dietType, ')
+          ..write('foodBrand: $foodBrand, ')
+          ..write('feedingNotes: $feedingNotes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('archivedAt: $archivedAt')
@@ -447,6 +805,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
     breed,
     sex,
     neutered,
+    coatLength,
+    origin,
+    originDate,
+    originNotes,
+    motherInfo,
+    fatherInfo,
+    dietType,
+    foodBrand,
+    feedingNotes,
     createdAt,
     updatedAt,
     archivedAt,
@@ -462,6 +829,15 @@ class PetRow extends DataClass implements Insertable<PetRow> {
           other.breed == this.breed &&
           other.sex == this.sex &&
           other.neutered == this.neutered &&
+          other.coatLength == this.coatLength &&
+          other.origin == this.origin &&
+          other.originDate == this.originDate &&
+          other.originNotes == this.originNotes &&
+          other.motherInfo == this.motherInfo &&
+          other.fatherInfo == this.fatherInfo &&
+          other.dietType == this.dietType &&
+          other.foodBrand == this.foodBrand &&
+          other.feedingNotes == this.feedingNotes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.archivedAt == this.archivedAt);
@@ -475,6 +851,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
   final Value<String?> breed;
   final Value<PetSex> sex;
   final Value<bool?> neutered;
+  final Value<CoatLength?> coatLength;
+  final Value<PetOrigin?> origin;
+  final Value<DateTime?> originDate;
+  final Value<String?> originNotes;
+  final Value<String?> motherInfo;
+  final Value<String?> fatherInfo;
+  final Value<DietType?> dietType;
+  final Value<String?> foodBrand;
+  final Value<String?> feedingNotes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> archivedAt;
@@ -487,6 +872,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.breed = const Value.absent(),
     this.sex = const Value.absent(),
     this.neutered = const Value.absent(),
+    this.coatLength = const Value.absent(),
+    this.origin = const Value.absent(),
+    this.originDate = const Value.absent(),
+    this.originNotes = const Value.absent(),
+    this.motherInfo = const Value.absent(),
+    this.fatherInfo = const Value.absent(),
+    this.dietType = const Value.absent(),
+    this.foodBrand = const Value.absent(),
+    this.feedingNotes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.archivedAt = const Value.absent(),
@@ -500,6 +894,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     this.breed = const Value.absent(),
     required PetSex sex,
     this.neutered = const Value.absent(),
+    this.coatLength = const Value.absent(),
+    this.origin = const Value.absent(),
+    this.originDate = const Value.absent(),
+    this.originNotes = const Value.absent(),
+    this.motherInfo = const Value.absent(),
+    this.fatherInfo = const Value.absent(),
+    this.dietType = const Value.absent(),
+    this.foodBrand = const Value.absent(),
+    this.feedingNotes = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.archivedAt = const Value.absent(),
@@ -517,6 +920,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Expression<String>? breed,
     Expression<String>? sex,
     Expression<bool>? neutered,
+    Expression<String>? coatLength,
+    Expression<String>? origin,
+    Expression<DateTime>? originDate,
+    Expression<String>? originNotes,
+    Expression<String>? motherInfo,
+    Expression<String>? fatherInfo,
+    Expression<String>? dietType,
+    Expression<String>? foodBrand,
+    Expression<String>? feedingNotes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? archivedAt,
@@ -530,6 +942,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       if (breed != null) 'breed': breed,
       if (sex != null) 'sex': sex,
       if (neutered != null) 'neutered': neutered,
+      if (coatLength != null) 'coat_length': coatLength,
+      if (origin != null) 'origin': origin,
+      if (originDate != null) 'origin_date': originDate,
+      if (originNotes != null) 'origin_notes': originNotes,
+      if (motherInfo != null) 'mother_info': motherInfo,
+      if (fatherInfo != null) 'father_info': fatherInfo,
+      if (dietType != null) 'diet_type': dietType,
+      if (foodBrand != null) 'food_brand': foodBrand,
+      if (feedingNotes != null) 'feeding_notes': feedingNotes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (archivedAt != null) 'archived_at': archivedAt,
@@ -545,6 +966,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     Value<String?>? breed,
     Value<PetSex>? sex,
     Value<bool?>? neutered,
+    Value<CoatLength?>? coatLength,
+    Value<PetOrigin?>? origin,
+    Value<DateTime?>? originDate,
+    Value<String?>? originNotes,
+    Value<String?>? motherInfo,
+    Value<String?>? fatherInfo,
+    Value<DietType?>? dietType,
+    Value<String?>? foodBrand,
+    Value<String?>? feedingNotes,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? archivedAt,
@@ -558,6 +988,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
       breed: breed ?? this.breed,
       sex: sex ?? this.sex,
       neutered: neutered ?? this.neutered,
+      coatLength: coatLength ?? this.coatLength,
+      origin: origin ?? this.origin,
+      originDate: originDate ?? this.originDate,
+      originNotes: originNotes ?? this.originNotes,
+      motherInfo: motherInfo ?? this.motherInfo,
+      fatherInfo: fatherInfo ?? this.fatherInfo,
+      dietType: dietType ?? this.dietType,
+      foodBrand: foodBrand ?? this.foodBrand,
+      feedingNotes: feedingNotes ?? this.feedingNotes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt ?? this.archivedAt,
@@ -589,6 +1028,39 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
     if (neutered.present) {
       map['neutered'] = Variable<bool>(neutered.value);
     }
+    if (coatLength.present) {
+      map['coat_length'] = Variable<String>(
+        $PetsTable.$convertercoatLengthn.toSql(coatLength.value),
+      );
+    }
+    if (origin.present) {
+      map['origin'] = Variable<String>(
+        $PetsTable.$converteroriginn.toSql(origin.value),
+      );
+    }
+    if (originDate.present) {
+      map['origin_date'] = Variable<DateTime>(originDate.value);
+    }
+    if (originNotes.present) {
+      map['origin_notes'] = Variable<String>(originNotes.value);
+    }
+    if (motherInfo.present) {
+      map['mother_info'] = Variable<String>(motherInfo.value);
+    }
+    if (fatherInfo.present) {
+      map['father_info'] = Variable<String>(fatherInfo.value);
+    }
+    if (dietType.present) {
+      map['diet_type'] = Variable<String>(
+        $PetsTable.$converterdietTypen.toSql(dietType.value),
+      );
+    }
+    if (foodBrand.present) {
+      map['food_brand'] = Variable<String>(foodBrand.value);
+    }
+    if (feedingNotes.present) {
+      map['feeding_notes'] = Variable<String>(feedingNotes.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -614,6 +1086,15 @@ class PetsCompanion extends UpdateCompanion<PetRow> {
           ..write('breed: $breed, ')
           ..write('sex: $sex, ')
           ..write('neutered: $neutered, ')
+          ..write('coatLength: $coatLength, ')
+          ..write('origin: $origin, ')
+          ..write('originDate: $originDate, ')
+          ..write('originNotes: $originNotes, ')
+          ..write('motherInfo: $motherInfo, ')
+          ..write('fatherInfo: $fatherInfo, ')
+          ..write('dietType: $dietType, ')
+          ..write('foodBrand: $foodBrand, ')
+          ..write('feedingNotes: $feedingNotes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('archivedAt: $archivedAt, ')
@@ -6260,6 +6741,889 @@ class PetPhotosCompanion extends UpdateCompanion<PetPhotoRow> {
   }
 }
 
+class $PetConditionsTable extends PetConditions
+    with TableInfo<$PetConditionsTable, PetConditionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PetConditionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _petIdMeta = const VerificationMeta('petId');
+  @override
+  late final GeneratedColumn<String> petId = GeneratedColumn<String>(
+    'pet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pets (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ConditionStatus, String> status =
+      GeneratedColumn<String>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ConditionStatus>($PetConditionsTable.$converterstatus);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    petId,
+    name,
+    status,
+    date,
+    notes,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pet_conditions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PetConditionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('pet_id')) {
+      context.handle(
+        _petIdMeta,
+        petId.isAcceptableOrUnknown(data['pet_id']!, _petIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_petIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PetConditionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PetConditionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      petId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pet_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      status: $PetConditionsTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PetConditionsTable createAlias(String alias) {
+    return $PetConditionsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<ConditionStatus, String, String> $converterstatus =
+      const EnumNameConverter<ConditionStatus>(ConditionStatus.values);
+}
+
+class PetConditionRow extends DataClass implements Insertable<PetConditionRow> {
+  final String id;
+  final String petId;
+  final String name;
+  final ConditionStatus status;
+
+  /// When it was diagnosed. Date-only, held at UTC midnight. Null when the
+  /// owner does not know, which is common for a cat they took on.
+  final DateTime? date;
+  final String? notes;
+
+  /// Not in the original spec, but ordering needs a tiebreak: two ongoing
+  /// conditions with no diagnosis date would otherwise come back in whatever
+  /// order sqlite felt like.
+  final DateTime createdAt;
+  const PetConditionRow({
+    required this.id,
+    required this.petId,
+    required this.name,
+    required this.status,
+    this.date,
+    this.notes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['pet_id'] = Variable<String>(petId);
+    map['name'] = Variable<String>(name);
+    {
+      map['status'] = Variable<String>(
+        $PetConditionsTable.$converterstatus.toSql(status),
+      );
+    }
+    if (!nullToAbsent || date != null) {
+      map['date'] = Variable<DateTime>(date);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PetConditionsCompanion toCompanion(bool nullToAbsent) {
+    return PetConditionsCompanion(
+      id: Value(id),
+      petId: Value(petId),
+      name: Value(name),
+      status: Value(status),
+      date: date == null && nullToAbsent ? const Value.absent() : Value(date),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PetConditionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PetConditionRow(
+      id: serializer.fromJson<String>(json['id']),
+      petId: serializer.fromJson<String>(json['petId']),
+      name: serializer.fromJson<String>(json['name']),
+      status: $PetConditionsTable.$converterstatus.fromJson(
+        serializer.fromJson<String>(json['status']),
+      ),
+      date: serializer.fromJson<DateTime?>(json['date']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'petId': serializer.toJson<String>(petId),
+      'name': serializer.toJson<String>(name),
+      'status': serializer.toJson<String>(
+        $PetConditionsTable.$converterstatus.toJson(status),
+      ),
+      'date': serializer.toJson<DateTime?>(date),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PetConditionRow copyWith({
+    String? id,
+    String? petId,
+    String? name,
+    ConditionStatus? status,
+    Value<DateTime?> date = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    DateTime? createdAt,
+  }) => PetConditionRow(
+    id: id ?? this.id,
+    petId: petId ?? this.petId,
+    name: name ?? this.name,
+    status: status ?? this.status,
+    date: date.present ? date.value : this.date,
+    notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PetConditionRow copyWithCompanion(PetConditionsCompanion data) {
+    return PetConditionRow(
+      id: data.id.present ? data.id.value : this.id,
+      petId: data.petId.present ? data.petId.value : this.petId,
+      name: data.name.present ? data.name.value : this.name,
+      status: data.status.present ? data.status.value : this.status,
+      date: data.date.present ? data.date.value : this.date,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetConditionRow(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('name: $name, ')
+          ..write('status: $status, ')
+          ..write('date: $date, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, petId, name, status, date, notes, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PetConditionRow &&
+          other.id == this.id &&
+          other.petId == this.petId &&
+          other.name == this.name &&
+          other.status == this.status &&
+          other.date == this.date &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class PetConditionsCompanion extends UpdateCompanion<PetConditionRow> {
+  final Value<String> id;
+  final Value<String> petId;
+  final Value<String> name;
+  final Value<ConditionStatus> status;
+  final Value<DateTime?> date;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PetConditionsCompanion({
+    this.id = const Value.absent(),
+    this.petId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.status = const Value.absent(),
+    this.date = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PetConditionsCompanion.insert({
+    required String id,
+    required String petId,
+    required String name,
+    required ConditionStatus status,
+    this.date = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       petId = Value(petId),
+       name = Value(name),
+       status = Value(status),
+       createdAt = Value(createdAt);
+  static Insertable<PetConditionRow> custom({
+    Expression<String>? id,
+    Expression<String>? petId,
+    Expression<String>? name,
+    Expression<String>? status,
+    Expression<DateTime>? date,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (petId != null) 'pet_id': petId,
+      if (name != null) 'name': name,
+      if (status != null) 'status': status,
+      if (date != null) 'date': date,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PetConditionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? petId,
+    Value<String>? name,
+    Value<ConditionStatus>? status,
+    Value<DateTime?>? date,
+    Value<String?>? notes,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PetConditionsCompanion(
+      id: id ?? this.id,
+      petId: petId ?? this.petId,
+      name: name ?? this.name,
+      status: status ?? this.status,
+      date: date ?? this.date,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (petId.present) {
+      map['pet_id'] = Variable<String>(petId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+        $PetConditionsTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetConditionsCompanion(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('name: $name, ')
+          ..write('status: $status, ')
+          ..write('date: $date, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PetAllergiesTable extends PetAllergies
+    with TableInfo<$PetAllergiesTable, PetAllergyRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PetAllergiesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _petIdMeta = const VerificationMeta('petId');
+  @override
+  late final GeneratedColumn<String> petId = GeneratedColumn<String>(
+    'pet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pets (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _allergenMeta = const VerificationMeta(
+    'allergen',
+  );
+  @override
+  late final GeneratedColumn<String> allergen = GeneratedColumn<String>(
+    'allergen',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reactionMeta = const VerificationMeta(
+    'reaction',
+  );
+  @override
+  late final GeneratedColumn<String> reaction = GeneratedColumn<String>(
+    'reaction',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    petId,
+    allergen,
+    reaction,
+    notes,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pet_allergies';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PetAllergyRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('pet_id')) {
+      context.handle(
+        _petIdMeta,
+        petId.isAcceptableOrUnknown(data['pet_id']!, _petIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_petIdMeta);
+    }
+    if (data.containsKey('allergen')) {
+      context.handle(
+        _allergenMeta,
+        allergen.isAcceptableOrUnknown(data['allergen']!, _allergenMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_allergenMeta);
+    }
+    if (data.containsKey('reaction')) {
+      context.handle(
+        _reactionMeta,
+        reaction.isAcceptableOrUnknown(data['reaction']!, _reactionMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PetAllergyRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PetAllergyRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      petId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pet_id'],
+      )!,
+      allergen: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allergen'],
+      )!,
+      reaction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reaction'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PetAllergiesTable createAlias(String alias) {
+    return $PetAllergiesTable(attachedDatabase, alias);
+  }
+}
+
+class PetAllergyRow extends DataClass implements Insertable<PetAllergyRow> {
+  final String id;
+  final String petId;
+  final String allergen;
+  final String? reaction;
+  final String? notes;
+  final DateTime createdAt;
+  const PetAllergyRow({
+    required this.id,
+    required this.petId,
+    required this.allergen,
+    this.reaction,
+    this.notes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['pet_id'] = Variable<String>(petId);
+    map['allergen'] = Variable<String>(allergen);
+    if (!nullToAbsent || reaction != null) {
+      map['reaction'] = Variable<String>(reaction);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PetAllergiesCompanion toCompanion(bool nullToAbsent) {
+    return PetAllergiesCompanion(
+      id: Value(id),
+      petId: Value(petId),
+      allergen: Value(allergen),
+      reaction: reaction == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reaction),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PetAllergyRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PetAllergyRow(
+      id: serializer.fromJson<String>(json['id']),
+      petId: serializer.fromJson<String>(json['petId']),
+      allergen: serializer.fromJson<String>(json['allergen']),
+      reaction: serializer.fromJson<String?>(json['reaction']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'petId': serializer.toJson<String>(petId),
+      'allergen': serializer.toJson<String>(allergen),
+      'reaction': serializer.toJson<String?>(reaction),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PetAllergyRow copyWith({
+    String? id,
+    String? petId,
+    String? allergen,
+    Value<String?> reaction = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    DateTime? createdAt,
+  }) => PetAllergyRow(
+    id: id ?? this.id,
+    petId: petId ?? this.petId,
+    allergen: allergen ?? this.allergen,
+    reaction: reaction.present ? reaction.value : this.reaction,
+    notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PetAllergyRow copyWithCompanion(PetAllergiesCompanion data) {
+    return PetAllergyRow(
+      id: data.id.present ? data.id.value : this.id,
+      petId: data.petId.present ? data.petId.value : this.petId,
+      allergen: data.allergen.present ? data.allergen.value : this.allergen,
+      reaction: data.reaction.present ? data.reaction.value : this.reaction,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetAllergyRow(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('allergen: $allergen, ')
+          ..write('reaction: $reaction, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, petId, allergen, reaction, notes, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PetAllergyRow &&
+          other.id == this.id &&
+          other.petId == this.petId &&
+          other.allergen == this.allergen &&
+          other.reaction == this.reaction &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class PetAllergiesCompanion extends UpdateCompanion<PetAllergyRow> {
+  final Value<String> id;
+  final Value<String> petId;
+  final Value<String> allergen;
+  final Value<String?> reaction;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PetAllergiesCompanion({
+    this.id = const Value.absent(),
+    this.petId = const Value.absent(),
+    this.allergen = const Value.absent(),
+    this.reaction = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PetAllergiesCompanion.insert({
+    required String id,
+    required String petId,
+    required String allergen,
+    this.reaction = const Value.absent(),
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       petId = Value(petId),
+       allergen = Value(allergen),
+       createdAt = Value(createdAt);
+  static Insertable<PetAllergyRow> custom({
+    Expression<String>? id,
+    Expression<String>? petId,
+    Expression<String>? allergen,
+    Expression<String>? reaction,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (petId != null) 'pet_id': petId,
+      if (allergen != null) 'allergen': allergen,
+      if (reaction != null) 'reaction': reaction,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PetAllergiesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? petId,
+    Value<String>? allergen,
+    Value<String?>? reaction,
+    Value<String?>? notes,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PetAllergiesCompanion(
+      id: id ?? this.id,
+      petId: petId ?? this.petId,
+      allergen: allergen ?? this.allergen,
+      reaction: reaction ?? this.reaction,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (petId.present) {
+      map['pet_id'] = Variable<String>(petId.value);
+    }
+    if (allergen.present) {
+      map['allergen'] = Variable<String>(allergen.value);
+    }
+    if (reaction.present) {
+      map['reaction'] = Variable<String>(reaction.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetAllergiesCompanion(')
+          ..write('id: $id, ')
+          ..write('petId: $petId, ')
+          ..write('allergen: $allergen, ')
+          ..write('reaction: $reaction, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6278,6 +7642,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WeightEntriesTable weightEntries = $WeightEntriesTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $PetPhotosTable petPhotos = $PetPhotosTable(this);
+  late final $PetConditionsTable petConditions = $PetConditionsTable(this);
+  late final $PetAllergiesTable petAllergies = $PetAllergiesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6295,6 +7661,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     weightEntries,
     appSettings,
     petPhotos,
+    petConditions,
+    petAllergies,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6382,6 +7750,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('pet_photos', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pets',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pet_conditions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pets',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pet_allergies', kind: UpdateKind.delete)],
+    ),
   ]);
   @override
   DriftDatabaseOptions get options =>
@@ -6397,6 +7779,15 @@ typedef $$PetsTableCreateCompanionBuilder =
       Value<String?> breed,
       required PetSex sex,
       Value<bool?> neutered,
+      Value<CoatLength?> coatLength,
+      Value<PetOrigin?> origin,
+      Value<DateTime?> originDate,
+      Value<String?> originNotes,
+      Value<String?> motherInfo,
+      Value<String?> fatherInfo,
+      Value<DietType?> dietType,
+      Value<String?> foodBrand,
+      Value<String?> feedingNotes,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> archivedAt,
@@ -6411,6 +7802,15 @@ typedef $$PetsTableUpdateCompanionBuilder =
       Value<String?> breed,
       Value<PetSex> sex,
       Value<bool?> neutered,
+      Value<CoatLength?> coatLength,
+      Value<PetOrigin?> origin,
+      Value<DateTime?> originDate,
+      Value<String?> originNotes,
+      Value<String?> motherInfo,
+      Value<String?> fatherInfo,
+      Value<DietType?> dietType,
+      Value<String?> foodBrand,
+      Value<String?> feedingNotes,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> archivedAt,
@@ -6552,6 +7952,42 @@ final class $$PetsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$PetConditionsTable, List<PetConditionRow>>
+  _petConditionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.petConditions,
+    aliasName: 'pets__id__pet_conditions__pet_id',
+  );
+
+  $$PetConditionsTableProcessedTableManager get petConditionsRefs {
+    final manager = $$PetConditionsTableTableManager(
+      $_db,
+      $_db.petConditions,
+    ).filter((f) => f.petId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_petConditionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PetAllergiesTable, List<PetAllergyRow>>
+  _petAllergiesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.petAllergies,
+    aliasName: 'pets__id__pet_allergies__pet_id',
+  );
+
+  $$PetAllergiesTableProcessedTableManager get petAllergiesRefs {
+    final manager = $$PetAllergiesTableTableManager(
+      $_db,
+      $_db.petAllergies,
+    ).filter((f) => f.petId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_petAllergiesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
@@ -6595,6 +8031,54 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
 
   ColumnFilters<bool> get neutered => $composableBuilder(
     column: $table.neutered,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<CoatLength?, CoatLength, String>
+  get coatLength => $composableBuilder(
+    column: $table.coatLength,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PetOrigin?, PetOrigin, String> get origin =>
+      $composableBuilder(
+        column: $table.origin,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<DateTime> get originDate => $composableBuilder(
+    column: $table.originDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originNotes => $composableBuilder(
+    column: $table.originNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get motherInfo => $composableBuilder(
+    column: $table.motherInfo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fatherInfo => $composableBuilder(
+    column: $table.fatherInfo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<DietType?, DietType, String> get dietType =>
+      $composableBuilder(
+        column: $table.dietType,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get foodBrand => $composableBuilder(
+    column: $table.foodBrand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get feedingNotes => $composableBuilder(
+    column: $table.feedingNotes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6787,6 +8271,56 @@ class $$PetsTableFilterComposer extends Composer<_$AppDatabase, $PetsTable> {
     );
     return f(composer);
   }
+
+  Expression<bool> petConditionsRefs(
+    Expression<bool> Function($$PetConditionsTableFilterComposer f) f,
+  ) {
+    final $$PetConditionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petConditions,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetConditionsTableFilterComposer(
+            $db: $db,
+            $table: $db.petConditions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> petAllergiesRefs(
+    Expression<bool> Function($$PetAllergiesTableFilterComposer f) f,
+  ) {
+    final $$PetAllergiesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petAllergies,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetAllergiesTableFilterComposer(
+            $db: $db,
+            $table: $db.petAllergies,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PetsTableOrderingComposer extends Composer<_$AppDatabase, $PetsTable> {
@@ -6829,6 +8363,51 @@ class $$PetsTableOrderingComposer extends Composer<_$AppDatabase, $PetsTable> {
 
   ColumnOrderings<bool> get neutered => $composableBuilder(
     column: $table.neutered,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coatLength => $composableBuilder(
+    column: $table.coatLength,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get originDate => $composableBuilder(
+    column: $table.originDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originNotes => $composableBuilder(
+    column: $table.originNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get motherInfo => $composableBuilder(
+    column: $table.motherInfo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fatherInfo => $composableBuilder(
+    column: $table.fatherInfo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dietType => $composableBuilder(
+    column: $table.dietType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get foodBrand => $composableBuilder(
+    column: $table.foodBrand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get feedingNotes => $composableBuilder(
+    column: $table.feedingNotes,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6877,6 +8456,46 @@ class $$PetsTableAnnotationComposer
 
   GeneratedColumn<bool> get neutered =>
       $composableBuilder(column: $table.neutered, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<CoatLength?, String> get coatLength =>
+      $composableBuilder(
+        column: $table.coatLength,
+        builder: (column) => column,
+      );
+
+  GeneratedColumnWithTypeConverter<PetOrigin?, String> get origin =>
+      $composableBuilder(column: $table.origin, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get originDate => $composableBuilder(
+    column: $table.originDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get originNotes => $composableBuilder(
+    column: $table.originNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get motherInfo => $composableBuilder(
+    column: $table.motherInfo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get fatherInfo => $composableBuilder(
+    column: $table.fatherInfo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<DietType?, String> get dietType =>
+      $composableBuilder(column: $table.dietType, builder: (column) => column);
+
+  GeneratedColumn<String> get foodBrand =>
+      $composableBuilder(column: $table.foodBrand, builder: (column) => column);
+
+  GeneratedColumn<String> get feedingNotes => $composableBuilder(
+    column: $table.feedingNotes,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -7064,6 +8683,56 @@ class $$PetsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> petConditionsRefs<T extends Object>(
+    Expression<T> Function($$PetConditionsTableAnnotationComposer a) f,
+  ) {
+    final $$PetConditionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petConditions,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetConditionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.petConditions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> petAllergiesRefs<T extends Object>(
+    Expression<T> Function($$PetAllergiesTableAnnotationComposer a) f,
+  ) {
+    final $$PetAllergiesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.petAllergies,
+      getReferencedColumn: (t) => t.petId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetAllergiesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.petAllergies,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PetsTableTableManager
@@ -7087,6 +8756,8 @@ class $$PetsTableTableManager
             bool vaccinationRecordsRefs,
             bool weightEntriesRefs,
             bool petPhotosRefs,
+            bool petConditionsRefs,
+            bool petAllergiesRefs,
           })
         > {
   $$PetsTableTableManager(_$AppDatabase db, $PetsTable table)
@@ -7109,6 +8780,15 @@ class $$PetsTableTableManager
                 Value<String?> breed = const Value.absent(),
                 Value<PetSex> sex = const Value.absent(),
                 Value<bool?> neutered = const Value.absent(),
+                Value<CoatLength?> coatLength = const Value.absent(),
+                Value<PetOrigin?> origin = const Value.absent(),
+                Value<DateTime?> originDate = const Value.absent(),
+                Value<String?> originNotes = const Value.absent(),
+                Value<String?> motherInfo = const Value.absent(),
+                Value<String?> fatherInfo = const Value.absent(),
+                Value<DietType?> dietType = const Value.absent(),
+                Value<String?> foodBrand = const Value.absent(),
+                Value<String?> feedingNotes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -7121,6 +8801,15 @@ class $$PetsTableTableManager
                 breed: breed,
                 sex: sex,
                 neutered: neutered,
+                coatLength: coatLength,
+                origin: origin,
+                originDate: originDate,
+                originNotes: originNotes,
+                motherInfo: motherInfo,
+                fatherInfo: fatherInfo,
+                dietType: dietType,
+                foodBrand: foodBrand,
+                feedingNotes: feedingNotes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 archivedAt: archivedAt,
@@ -7135,6 +8824,15 @@ class $$PetsTableTableManager
                 Value<String?> breed = const Value.absent(),
                 required PetSex sex,
                 Value<bool?> neutered = const Value.absent(),
+                Value<CoatLength?> coatLength = const Value.absent(),
+                Value<PetOrigin?> origin = const Value.absent(),
+                Value<DateTime?> originDate = const Value.absent(),
+                Value<String?> originNotes = const Value.absent(),
+                Value<String?> motherInfo = const Value.absent(),
+                Value<String?> fatherInfo = const Value.absent(),
+                Value<DietType?> dietType = const Value.absent(),
+                Value<String?> foodBrand = const Value.absent(),
+                Value<String?> feedingNotes = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -7147,6 +8845,15 @@ class $$PetsTableTableManager
                 breed: breed,
                 sex: sex,
                 neutered: neutered,
+                coatLength: coatLength,
+                origin: origin,
+                originDate: originDate,
+                originNotes: originNotes,
+                motherInfo: motherInfo,
+                fatherInfo: fatherInfo,
+                dietType: dietType,
+                foodBrand: foodBrand,
+                feedingNotes: feedingNotes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 archivedAt: archivedAt,
@@ -7169,6 +8876,8 @@ class $$PetsTableTableManager
                 vaccinationRecordsRefs = false,
                 weightEntriesRefs = false,
                 petPhotosRefs = false,
+                petConditionsRefs = false,
+                petAllergiesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -7180,6 +8889,8 @@ class $$PetsTableTableManager
                     if (vaccinationRecordsRefs) db.vaccinationRecords,
                     if (weightEntriesRefs) db.weightEntries,
                     if (petPhotosRefs) db.petPhotos,
+                    if (petConditionsRefs) db.petConditions,
+                    if (petAllergiesRefs) db.petAllergies,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -7324,6 +9035,46 @@ class $$PetsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (petConditionsRefs)
+                        await $_getPrefetchedData<
+                          PetRow,
+                          $PetsTable,
+                          PetConditionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PetsTableReferences
+                              ._petConditionsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$PetsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).petConditionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.petId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (petAllergiesRefs)
+                        await $_getPrefetchedData<
+                          PetRow,
+                          $PetsTable,
+                          PetAllergyRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PetsTableReferences
+                              ._petAllergiesRefsTable(db),
+                          managerFromTypedResult: (p0) => $$PetsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).petAllergiesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.petId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7352,6 +9103,8 @@ typedef $$PetsTableProcessedTableManager =
         bool vaccinationRecordsRefs,
         bool weightEntriesRefs,
         bool petPhotosRefs,
+        bool petConditionsRefs,
+        bool petAllergiesRefs,
       })
     >;
 typedef $$RemindersTableCreateCompanionBuilder =
@@ -12050,6 +13803,703 @@ typedef $$PetPhotosTableProcessedTableManager =
       PetPhotoRow,
       PrefetchHooks Function({bool petId})
     >;
+typedef $$PetConditionsTableCreateCompanionBuilder =
+    PetConditionsCompanion Function({
+      required String id,
+      required String petId,
+      required String name,
+      required ConditionStatus status,
+      Value<DateTime?> date,
+      Value<String?> notes,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PetConditionsTableUpdateCompanionBuilder =
+    PetConditionsCompanion Function({
+      Value<String> id,
+      Value<String> petId,
+      Value<String> name,
+      Value<ConditionStatus> status,
+      Value<DateTime?> date,
+      Value<String?> notes,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$PetConditionsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $PetConditionsTable, PetConditionRow> {
+  $$PetConditionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PetsTable _petIdTable(_$AppDatabase db) =>
+      db.pets.createAlias('pet_conditions__pet_id__pets__id');
+
+  $$PetsTableProcessedTableManager get petId {
+    final $_column = $_itemColumn<String>('pet_id')!;
+
+    final manager = $$PetsTableTableManager(
+      $_db,
+      $_db.pets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_petIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PetConditionsTableFilterComposer
+    extends Composer<_$AppDatabase, $PetConditionsTable> {
+  $$PetConditionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<ConditionStatus, ConditionStatus, String>
+  get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PetsTableFilterComposer get petId {
+    final $$PetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableFilterComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetConditionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PetConditionsTable> {
+  $$PetConditionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PetsTableOrderingComposer get petId {
+    final $$PetsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetConditionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PetConditionsTable> {
+  $$PetConditionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ConditionStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PetsTableAnnotationComposer get petId {
+    final $$PetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetConditionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PetConditionsTable,
+          PetConditionRow,
+          $$PetConditionsTableFilterComposer,
+          $$PetConditionsTableOrderingComposer,
+          $$PetConditionsTableAnnotationComposer,
+          $$PetConditionsTableCreateCompanionBuilder,
+          $$PetConditionsTableUpdateCompanionBuilder,
+          (PetConditionRow, $$PetConditionsTableReferences),
+          PetConditionRow,
+          PrefetchHooks Function({bool petId})
+        > {
+  $$PetConditionsTableTableManager(_$AppDatabase db, $PetConditionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PetConditionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PetConditionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PetConditionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> petId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<ConditionStatus> status = const Value.absent(),
+                Value<DateTime?> date = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PetConditionsCompanion(
+                id: id,
+                petId: petId,
+                name: name,
+                status: status,
+                date: date,
+                notes: notes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String petId,
+                required String name,
+                required ConditionStatus status,
+                Value<DateTime?> date = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PetConditionsCompanion.insert(
+                id: id,
+                petId: petId,
+                name: name,
+                status: status,
+                date: date,
+                notes: notes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PetConditionsTable, PetConditionRow>(table),
+                  $$PetConditionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({petId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (petId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.petId,
+                                referencedTable: $$PetConditionsTableReferences
+                                    ._petIdTable(db),
+                                referencedColumn: $$PetConditionsTableReferences
+                                    ._petIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PetConditionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PetConditionsTable,
+      PetConditionRow,
+      $$PetConditionsTableFilterComposer,
+      $$PetConditionsTableOrderingComposer,
+      $$PetConditionsTableAnnotationComposer,
+      $$PetConditionsTableCreateCompanionBuilder,
+      $$PetConditionsTableUpdateCompanionBuilder,
+      (PetConditionRow, $$PetConditionsTableReferences),
+      PetConditionRow,
+      PrefetchHooks Function({bool petId})
+    >;
+typedef $$PetAllergiesTableCreateCompanionBuilder =
+    PetAllergiesCompanion Function({
+      required String id,
+      required String petId,
+      required String allergen,
+      Value<String?> reaction,
+      Value<String?> notes,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PetAllergiesTableUpdateCompanionBuilder =
+    PetAllergiesCompanion Function({
+      Value<String> id,
+      Value<String> petId,
+      Value<String> allergen,
+      Value<String?> reaction,
+      Value<String?> notes,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$PetAllergiesTableReferences
+    extends BaseReferences<_$AppDatabase, $PetAllergiesTable, PetAllergyRow> {
+  $$PetAllergiesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PetsTable _petIdTable(_$AppDatabase db) =>
+      db.pets.createAlias('pet_allergies__pet_id__pets__id');
+
+  $$PetsTableProcessedTableManager get petId {
+    final $_column = $_itemColumn<String>('pet_id')!;
+
+    final manager = $$PetsTableTableManager(
+      $_db,
+      $_db.pets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_petIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PetAllergiesTableFilterComposer
+    extends Composer<_$AppDatabase, $PetAllergiesTable> {
+  $$PetAllergiesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allergen => $composableBuilder(
+    column: $table.allergen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reaction => $composableBuilder(
+    column: $table.reaction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PetsTableFilterComposer get petId {
+    final $$PetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableFilterComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetAllergiesTableOrderingComposer
+    extends Composer<_$AppDatabase, $PetAllergiesTable> {
+  $$PetAllergiesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allergen => $composableBuilder(
+    column: $table.allergen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reaction => $composableBuilder(
+    column: $table.reaction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PetsTableOrderingComposer get petId {
+    final $$PetsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetAllergiesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PetAllergiesTable> {
+  $$PetAllergiesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get allergen =>
+      $composableBuilder(column: $table.allergen, builder: (column) => column);
+
+  GeneratedColumn<String> get reaction =>
+      $composableBuilder(column: $table.reaction, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PetsTableAnnotationComposer get petId {
+    final $$PetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.petId,
+      referencedTable: $db.pets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PetAllergiesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PetAllergiesTable,
+          PetAllergyRow,
+          $$PetAllergiesTableFilterComposer,
+          $$PetAllergiesTableOrderingComposer,
+          $$PetAllergiesTableAnnotationComposer,
+          $$PetAllergiesTableCreateCompanionBuilder,
+          $$PetAllergiesTableUpdateCompanionBuilder,
+          (PetAllergyRow, $$PetAllergiesTableReferences),
+          PetAllergyRow,
+          PrefetchHooks Function({bool petId})
+        > {
+  $$PetAllergiesTableTableManager(_$AppDatabase db, $PetAllergiesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PetAllergiesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PetAllergiesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PetAllergiesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> petId = const Value.absent(),
+                Value<String> allergen = const Value.absent(),
+                Value<String?> reaction = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PetAllergiesCompanion(
+                id: id,
+                petId: petId,
+                allergen: allergen,
+                reaction: reaction,
+                notes: notes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String petId,
+                required String allergen,
+                Value<String?> reaction = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PetAllergiesCompanion.insert(
+                id: id,
+                petId: petId,
+                allergen: allergen,
+                reaction: reaction,
+                notes: notes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PetAllergiesTable, PetAllergyRow>(table),
+                  $$PetAllergiesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({petId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (petId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.petId,
+                                referencedTable: $$PetAllergiesTableReferences
+                                    ._petIdTable(db),
+                                referencedColumn: $$PetAllergiesTableReferences
+                                    ._petIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PetAllergiesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PetAllergiesTable,
+      PetAllergyRow,
+      $$PetAllergiesTableFilterComposer,
+      $$PetAllergiesTableOrderingComposer,
+      $$PetAllergiesTableAnnotationComposer,
+      $$PetAllergiesTableCreateCompanionBuilder,
+      $$PetAllergiesTableUpdateCompanionBuilder,
+      (PetAllergyRow, $$PetAllergiesTableReferences),
+      PetAllergyRow,
+      PrefetchHooks Function({bool petId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12077,4 +14527,8 @@ class $AppDatabaseManager {
       $$AppSettingsTableTableManager(_db, _db.appSettings);
   $$PetPhotosTableTableManager get petPhotos =>
       $$PetPhotosTableTableManager(_db, _db.petPhotos);
+  $$PetConditionsTableTableManager get petConditions =>
+      $$PetConditionsTableTableManager(_db, _db.petConditions);
+  $$PetAllergiesTableTableManager get petAllergies =>
+      $$PetAllergiesTableTableManager(_db, _db.petAllergies);
 }

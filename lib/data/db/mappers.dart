@@ -7,6 +7,7 @@ library;
 import '../../domain/models/dose_log.dart';
 import '../../domain/models/medicine.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/pet_condition.dart';
 import '../../domain/models/pet_photo.dart';
 import '../../domain/models/prescription.dart';
 import '../../domain/models/vaccination_record.dart';
@@ -26,6 +27,15 @@ extension PetRowMapper on PetRow {
     breed: breed,
     sex: sex,
     neutered: neutered,
+    coatLength: coatLength,
+    origin: origin,
+    originDate: originDate,
+    originNotes: originNotes,
+    motherInfo: motherInfo,
+    fatherInfo: fatherInfo,
+    dietType: dietType,
+    foodBrand: foodBrand,
+    feedingNotes: feedingNotes,
     createdAt: createdAt,
     updatedAt: updatedAt,
     archivedAt: archivedAt,
@@ -78,6 +88,29 @@ extension MedicineRowMapper on MedicineRow {
     isActive: isActive,
     createdAt: createdAt,
     updatedAt: updatedAt,
+  );
+}
+
+extension PetConditionRowMapper on PetConditionRow {
+  PetCondition toDomain() => PetCondition(
+    id: id,
+    petId: petId,
+    name: name,
+    status: status,
+    date: date,
+    notes: notes,
+    createdAt: createdAt,
+  );
+}
+
+extension PetAllergyRowMapper on PetAllergyRow {
+  PetAllergy toDomain() => PetAllergy(
+    id: id,
+    petId: petId,
+    allergen: allergen,
+    reaction: reaction,
+    notes: notes,
+    createdAt: createdAt,
   );
 }
 

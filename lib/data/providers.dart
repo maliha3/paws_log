@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
+import '../domain/models/pet_condition.dart';
 import '../domain/models/pet_photo.dart';
 import '../domain/models/prescription.dart';
 import '../domain/models/vaccination_record.dart';
@@ -26,6 +27,7 @@ import '../domain/schedule_sync.dart';
 import 'db/app_database.dart';
 import 'repositories/dose_log_repository.dart';
 import 'repositories/medicine_repository.dart';
+import 'repositories/pet_health_repository.dart';
 import 'repositories/pet_photo_repository.dart';
 import 'repositories/pet_repository.dart';
 import 'repositories/prescription_repository.dart';
@@ -64,6 +66,24 @@ final petPhotoRepositoryProvider = Provider<PetPhotoRepository>(
     photoStore: ref.watch(photoStoreProvider),
   ),
 );
+
+final petHealthRepositoryProvider = Provider<PetHealthRepository>(
+  (ref) => PetHealthRepository(ref.watch(appDatabaseProvider)),
+);
+
+/// One pet's diagnosed conditions: ongoing first.
+final conditionsForPetProvider =
+    StreamProvider.family<List<PetCondition>, String>(
+      (ref, petId) =>
+          ref.watch(petHealthRepositoryProvider).watchConditions(petId),
+    );
+
+/// One pet's allergies, oldest first.
+final allergiesForPetProvider =
+    StreamProvider.family<List<PetAllergy>, String>(
+      (ref, petId) =>
+          ref.watch(petHealthRepositoryProvider).watchAllergies(petId),
+    );
 
 /// One pet's album, live, newest first.
 final photosForPetProvider = StreamProvider.family<List<PetPhoto>, String>(

@@ -1,6 +1,42 @@
 /// Whether a pet is male, female, or not recorded.
 enum PetSex { unknown, male, female }
 
+/// How the pet came to be with their owner.
+enum PetOrigin {
+  rescued('Rescued'),
+  homeBorn('Born at home'),
+  adopted('Adopted'),
+  bought('Bought'),
+  other('Other');
+
+  const PetOrigin(this.label);
+
+  final String label;
+}
+
+/// What the pet eats. Recorded, never advised on.
+enum DietType {
+  dry('Dry food'),
+  wet('Wet food'),
+  mixed('Dry and wet'),
+  raw('Raw'),
+  other('Other');
+
+  const DietType(this.label);
+
+  final String label;
+}
+
+/// Coat length, which is what grooming intervals hang off.
+enum CoatLength {
+  short('Short'),
+  long('Long');
+
+  const CoatLength(this.label);
+
+  final String label;
+}
+
 /// A cat (or other pet) the owner is tracking care for.
 class Pet {
   const Pet({
@@ -13,6 +49,15 @@ class Pet {
     this.breed,
     this.sex = PetSex.unknown,
     this.neutered,
+    this.coatLength,
+    this.origin,
+    this.originDate,
+    this.originNotes,
+    this.motherInfo,
+    this.fatherInfo,
+    this.dietType,
+    this.foodBrand,
+    this.feedingNotes,
     this.archivedAt,
   });
 
@@ -32,6 +77,25 @@ class Pet {
   /// Null means "not recorded" — a real state before the first vet visit.
   final bool? neutered;
 
+  /// Null until the owner says. Grooming suggestions read it, and a guess
+  /// would put a long-haired cat on a short-haired brushing schedule.
+  final CoatLength? coatLength;
+
+  final PetOrigin? origin;
+
+  /// When they arrived, or were born. Date-only, held at UTC midnight.
+  final DateTime? originDate;
+
+  final String? originNotes;
+
+  /// Free text about the parents: a breeder's note, a litter, a name.
+  final String? motherInfo;
+  final String? fatherInfo;
+
+  final DietType? dietType;
+  final String? foodBrand;
+  final String? feedingNotes;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -40,6 +104,20 @@ class Pet {
 
   bool get isArchived => archivedAt != null;
 
+  /// Whether anything beyond the basics has been filled in.
+  bool get hasBackground =>
+      origin != null ||
+      originDate != null ||
+      originNotes != null ||
+      motherInfo != null ||
+      fatherInfo != null;
+
+  bool get hasDiet =>
+      dietType != null || foodBrand != null || feedingNotes != null;
+
+  /// Copies with changes. Like the rest of the app's models it cannot *clear*
+  /// a field — a null argument means "leave it" — so a screen that lets the
+  /// owner empty something builds a new [Pet] instead.
   Pet copyWith({
     String? name,
     String? photoPath,
@@ -47,6 +125,15 @@ class Pet {
     String? breed,
     PetSex? sex,
     bool? neutered,
+    CoatLength? coatLength,
+    PetOrigin? origin,
+    DateTime? originDate,
+    String? originNotes,
+    String? motherInfo,
+    String? fatherInfo,
+    DietType? dietType,
+    String? foodBrand,
+    String? feedingNotes,
     DateTime? updatedAt,
     DateTime? archivedAt,
   }) => Pet(
@@ -57,6 +144,15 @@ class Pet {
     breed: breed ?? this.breed,
     sex: sex ?? this.sex,
     neutered: neutered ?? this.neutered,
+    coatLength: coatLength ?? this.coatLength,
+    origin: origin ?? this.origin,
+    originDate: originDate ?? this.originDate,
+    originNotes: originNotes ?? this.originNotes,
+    motherInfo: motherInfo ?? this.motherInfo,
+    fatherInfo: fatherInfo ?? this.fatherInfo,
+    dietType: dietType ?? this.dietType,
+    foodBrand: foodBrand ?? this.foodBrand,
+    feedingNotes: feedingNotes ?? this.feedingNotes,
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     archivedAt: archivedAt ?? this.archivedAt,

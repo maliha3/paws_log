@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
+import 'package:paws_log/data/repositories/pet_health_repository.dart';
 import 'package:paws_log/data/repositories/pet_photo_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/prescription_repository.dart';
@@ -15,6 +16,7 @@ import 'package:paws_log/data/repositories/vet_visit_repository.dart';
 import 'package:paws_log/data/repositories/weight_repository.dart';
 import 'package:paws_log/domain/models/medicine.dart';
 import 'package:paws_log/domain/models/pet.dart';
+import 'package:paws_log/domain/models/pet_condition.dart';
 import 'package:paws_log/domain/models/reminder.dart';
 import 'package:paws_log/domain/models/weight_entry.dart';
 import 'package:paws_log/domain/repeat_rule.dart';
@@ -67,6 +69,40 @@ void main() {
       neutered: true,
       birthday: DateTime.utc(2022, 6, 1),
       photoPath: writePhoto('pet_photos/mochi.jpg', [1, 2, 3, 4, 5]),
+      coatLength: CoatLength.long,
+      now: now,
+    );
+    await pets.update(
+      (await pets.findById(mochi.id))!.copyWith(
+        origin: PetOrigin.rescued,
+        originDate: DateTime.utc(2024, 7, 1),
+        originNotes: 'Found behind the bins',
+        motherInfo: 'Unknown',
+        dietType: DietType.mixed,
+        foodBrand: 'Royal Canin',
+        feedingNotes: 'Two small meals, no chicken',
+      ),
+      now: now,
+    );
+
+    final health = PetHealthRepository(db);
+    await health.addCondition(
+      petId: mochi.id,
+      name: 'CKD',
+      date: DateTime.utc(2026, 1, 10),
+      notes: 'Stage 2',
+      now: now,
+    );
+    await health.addCondition(
+      petId: mochi.id,
+      name: 'Cat flu',
+      status: ConditionStatus.past,
+      now: now,
+    );
+    await health.addAllergy(
+      petId: mochi.id,
+      allergen: 'Chicken',
+      reaction: 'Itching round the ears',
       now: now,
     );
     final luna = await pets.create(name: 'Luna', now: now);
@@ -204,6 +240,12 @@ void main() {
     ],
     'petPhotos': [
       for (final r in await db.select(db.petPhotos).get()) r.toJson(),
+    ],
+    'petConditions': [
+      for (final r in await db.select(db.petConditions).get()) r.toJson(),
+    ],
+    'petAllergies': [
+      for (final r in await db.select(db.petAllergies).get()) r.toJson(),
     ],
     'appSettings': [
       for (final r in await db.select(db.appSettings).get()) r.toJson(),
@@ -511,6 +553,39 @@ void main() {
       expect(BackupSizes.describeBytes(1024 * 1024 * 3 + 100000), '3.1 MB');
       expect(BackupSizes.describeBytes(1024 * 1024 * 24), '24 MB');
     });
+  });
+
+  test('profile details and the health record survive the round trip', () async {
+    final source = memoryDatabase();
+    await populate(source);
+    final bytes = await serviceFor(source).exportArchive(now: now);
+    await source.close();
+
+    final restored = memoryDatabase();
+    await serviceFor(restored).importArchive(bytes);
+
+    final pet = await (restored.select(restored.pets)
+          ..where((p) => p.name.equals('Mochi')))
+        .getSingle();
+    expect(pet.coatLength, CoatLength.long);
+    expect(pet.origin, PetOrigin.rescued);
+    expect(pet.originDate, DateTime.utc(2024, 7, 1));
+    expect(pet.originNotes, 'Found behind the bins');
+    expect(pet.dietType, DietType.mixed);
+    expect(pet.foodBrand, 'Royal Canin');
+    expect(pet.feedingNotes, 'Two small meals, no chicken');
+
+    final conditions = await restored.select(restored.petConditions).get();
+    expect(conditions, hasLength(2));
+    expect(
+      conditions.map((c) => c.status),
+      containsAll([ConditionStatus.ongoing, ConditionStatus.past]),
+    );
+    final allergy = (await restored.select(restored.petAllergies).get()).single;
+    expect(allergy.allergen, 'Chicken');
+    expect(allergy.reaction, 'Itching round the ears');
+
+    await restored.close();
   });
 
   test('timestamps keep their instant and their UTC flag', () async {

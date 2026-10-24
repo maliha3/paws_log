@@ -50,6 +50,7 @@ class PetRepository {
     String? breed,
     PetSex sex = PetSex.unknown,
     bool? neutered,
+    CoatLength? coatLength,
     DateTime? now,
   }) async {
     final timestamp = (now ?? DateTime.now()).toUtc();
@@ -61,6 +62,7 @@ class PetRepository {
       breed: breed?.trim().isEmpty ?? true ? null : breed!.trim(),
       sex: sex,
       neutered: neutered,
+      coatLength: coatLength,
       createdAt: timestamp,
       updatedAt: timestamp,
     );
@@ -172,6 +174,15 @@ extension on Pet {
     breed: breed,
     sex: sex,
     neutered: neutered,
+    coatLength: coatLength,
+    origin: origin,
+    originDate: originDate,
+    originNotes: originNotes,
+    motherInfo: motherInfo,
+    fatherInfo: fatherInfo,
+    dietType: dietType,
+    foodBrand: foodBrand,
+    feedingNotes: feedingNotes,
     createdAt: createdAt,
     updatedAt: updatedAt,
     archivedAt: archivedAt,

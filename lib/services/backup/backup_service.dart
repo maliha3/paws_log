@@ -77,6 +77,8 @@ class BackupService {
       'petPhotos': _json(
         includeAlbum ? await _db.select(_db.petPhotos).get() : const [],
       ),
+      'petConditions': _json(await _db.select(_db.petConditions).get()),
+      'petAllergies': _json(await _db.select(_db.petAllergies).get()),
       'medicines': _json(await _db.select(_db.medicines).get()),
       'doseLogs': _json(await _db.select(_db.doseLogs).get()),
       'vetVisits': _json(await _db.select(_db.vetVisits).get()),
@@ -162,6 +164,8 @@ class BackupService {
       await _db.delete(_db.visitAttachments).go();
       await _db.delete(_db.vetVisits).go();
       await _db.delete(_db.petPhotos).go();
+      await _db.delete(_db.petConditions).go();
+      await _db.delete(_db.petAllergies).go();
       await _db.delete(_db.doseLogs).go();
       await _db.delete(_db.medicines).go();
       await _db.delete(_db.prescriptions).go();
@@ -215,6 +219,14 @@ class BackupService {
           ..insertAll(
             _db.petPhotos,
             _rows(tables['petPhotos'], PetPhotoRow.fromJson),
+          )
+          ..insertAll(
+            _db.petConditions,
+            _rows(tables['petConditions'], PetConditionRow.fromJson),
+          )
+          ..insertAll(
+            _db.petAllergies,
+            _rows(tables['petAllergies'], PetAllergyRow.fromJson),
           )
           ..insertAll(
             _db.appSettings,

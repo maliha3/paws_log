@@ -257,6 +257,40 @@ void main() {
       );
     });
 
+    test('changing the portrait from the editor deletes the old file', () async {
+      // The editor sets photoPath and saves, rather than going through
+      // setPortrait, so the cleanup has to live in `update`.
+      final first = writeImage('pet_photos/one.jpg');
+      final second = writeImage('pet_photos/two.jpg');
+      final pet = await pets.findById(petId);
+      await pets.update(pet!.copyWith(photoPath: first), now: now);
+      await pets.update(
+        (await pets.findById(petId))!.copyWith(photoPath: second),
+        now: now,
+      );
+
+      expect(File(second).existsSync(), isTrue);
+      expect(
+        File(first).existsSync(),
+        isFalse,
+        reason: 'five photo changes used to leave five orphans',
+      );
+    });
+
+    test('an edit that does not touch the photo keeps it', () async {
+      final portrait = writeImage('pet_photos/one.jpg');
+      final pet = await pets.findById(petId);
+      await pets.update(pet!.copyWith(photoPath: portrait), now: now);
+
+      await pets.update(
+        (await pets.findById(petId))!.copyWith(name: 'Mochi II'),
+        now: now,
+      );
+
+      expect(File(portrait).existsSync(), isTrue);
+      expect((await pets.findById(petId))!.name, 'Mochi II');
+    });
+
     test('a pet that is gone is left alone', () async {
       final source = writeImage('vault/one.jpg');
       await pets.delete(petId);

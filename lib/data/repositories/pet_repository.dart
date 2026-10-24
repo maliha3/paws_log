@@ -86,9 +86,22 @@ class PetRepository {
     return pet;
   }
 
+  /// Applies edits, deleting a portrait the edit replaced.
+  ///
+  /// Here rather than in each caller, so every path that changes the photo is
+  /// covered: without it an owner who changed the portrait five times left
+  /// five orphaned files behind, which is the leak that deleting a pet used
+  /// to have at a larger scale. Only the portrait folder is ever touched —
+  /// album photos live elsewhere and a promoted one is a copy.
   Future<void> update(Pet pet, {DateTime? now}) async {
+    final existing = await findById(pet.id);
     final updated = pet.copyWith(updatedAt: (now ?? DateTime.now()).toUtc());
     await _db.update(_db.pets).replace(updated.toInsertable());
+
+    final superseded = existing?.photoPath;
+    if (superseded != null && superseded != updated.photoPath) {
+      await _photos?.delete(superseded);
+    }
   }
 
   /// Archives rather than deletes, so completed care history survives.
@@ -127,12 +140,8 @@ class PetRepository {
       return;
     }
     final copy = await store.copyInto(sourcePath, folder: PhotoStore.petPhotos);
+    // `update` deletes the portrait this replaces.
     await update(pet.copyWith(photoPath: copy), now: now);
-
-    final superseded = pet.photoPath;
-    if (superseded != null && superseded != copy) {
-      await store.delete(superseded);
-    }
   }
 
   /// Deletes a pet, everything recorded about them, and their photo files.

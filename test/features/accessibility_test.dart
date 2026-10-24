@@ -269,6 +269,19 @@ void main() {
       expect(find.textContaining('Fast asleep'), findsOneWidget);
     });
 
+    forEachAppearance('a saved prescription', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await scrollAndTap(tester, find.text('Medical record'));
+      await tapAndSettle(tester, find.byTooltip('Add a prescription'));
+      await tapAndSettle(tester, find.text('Scan the pages'));
+      await scrollAndTap(tester, find.text('Save photos only'));
+
+      await tapAndSettle(tester, find.textContaining(','));
+      expect(find.text('Medicines from this page'), findsOneWidget);
+      await scrollIntoView(tester, find.text('What was read off the page'));
+    });
+
     forEachAppearance('the prescription review', (tester) async {
       await tapAndSettle(tester, find.text('Pets'));
       await tapAndSettle(tester, find.text('Mochi'));

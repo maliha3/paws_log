@@ -187,6 +187,10 @@ void main() {
     await scrollAndTap(tester, find.text('Medical record'));
     await tapAndSettle(tester, find.text('May 4, 2026'));
 
+    // The tile opens the detail screen; a page opens the viewer.
+    expect(find.text('Medicines from this page'), findsOneWidget);
+    await tapAndSettle(tester, find.byType(Image).first);
+
     expect(find.text('Page 1 of 2'), findsOneWidget);
 
     await tester.drag(find.byType(PageView), const Offset(-400, 0));
@@ -196,7 +200,7 @@ void main() {
     await disposeTree(tester);
   });
 
-  testWidgets('a prescription saved without pages has nothing to open', (
+  testWidgets('a prescription saved without pages still opens', (
     tester,
   ) async {
     await PrescriptionRepository(db).create(
@@ -209,7 +213,12 @@ void main() {
     await scrollAndTap(tester, find.text('Medical record'));
     await tapAndSettle(tester, find.text('May 4, 2026'));
 
-    expect(find.textContaining('Page'), findsNothing);
+    expect(find.text('0 pages'), findsOneWidget);
+    expect(
+      find.byType(Image),
+      findsNothing,
+      reason: 'no pages, so no strip and nothing to open full screen',
+    );
 
     await disposeTree(tester);
   });

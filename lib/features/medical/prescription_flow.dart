@@ -113,6 +113,55 @@ Future<void> addPrescription(
   );
 }
 
+/// Reads a prescription that is already saved, and opens the review screen.
+///
+/// The way back from "Save photos only": an owner who kept the page and then
+/// changed their mind has no other route to the fields, and re-scanning a
+/// page they already have would be absurd.
+///
+/// Pages that were never read are read now; pages that were are parsed from
+/// the text already stored, so this costs nothing the second time.
+Future<void> reviewAgain(
+  BuildContext context,
+  WidgetRef ref, {
+  required Prescription prescription,
+}) async {
+  var current = prescription;
+
+  if (!current.wasRead && current.imagePaths.isNotEmpty) {
+    final read = await showDialog<Prescription>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _ReadingDialog(
+        work: () async {
+          final text = await _read(ref, current.imagePaths);
+          final updated = current.copyWith(
+            extractedText: text.isEmpty ? null : text,
+          );
+          await ref.read(prescriptionRepositoryProvider).update(updated);
+          return updated;
+        },
+      ),
+    );
+    if (read == null || !context.mounted) {
+      return;
+    }
+    current = read;
+  }
+
+  if (!context.mounted) {
+    return;
+  }
+  await Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) => PrescriptionReviewScreen(
+        prescription: current,
+        parsed: PrescriptionParser.parse(current.extractedText ?? ''),
+      ),
+    ),
+  );
+}
+
 /// Every page's text, in page order, as one document.
 Future<String> _read(WidgetRef ref, List<String> pages) async {
   final ocr = ref.read(ocrServiceProvider);

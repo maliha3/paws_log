@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/category_palette.dart';
 import '../../core/widgets/empty_section.dart';
-import '../../core/widgets/image_viewer_screen.dart';
 import '../../data/providers.dart';
 import '../../domain/dose_schedule.dart';
 import '../../domain/models/medicine.dart';
@@ -12,6 +11,7 @@ import '../../domain/models/pet_condition.dart';
 import '../../domain/models/prescription.dart';
 import '../health/visit_edit_screen.dart';
 import 'condition_edit_screen.dart';
+import 'prescription_detail_screen.dart';
 import 'prescription_flow.dart';
 import '../medicines/medicine_edit_screen.dart';
 
@@ -234,15 +234,16 @@ class _Prescriptions extends ConsumerWidget {
           )
         else
           for (final prescription in prescriptions)
-            _PrescriptionTile(prescription: prescription),
+            _PrescriptionTile(petId: petId, prescription: prescription),
       ],
     ),
   );
 }
 
 class _PrescriptionTile extends ConsumerWidget {
-  const _PrescriptionTile({required this.prescription});
+  const _PrescriptionTile({required this.petId, required this.prescription});
 
+  final String petId;
   final Prescription prescription;
 
   @override
@@ -281,15 +282,15 @@ class _PrescriptionTile extends ConsumerWidget {
               ),
           ],
         ),
-        trailing: pages == 0 ? null : const Icon(Icons.chevron_right),
-        onTap: pages == 0
-            ? null
-            : () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) =>
-                      ImageViewerScreen(paths: prescription.imagePaths),
-                ),
-              ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => PrescriptionDetailScreen(
+              petId: petId,
+              prescriptionId: prescription.id,
+            ),
+          ),
+        ),
       ),
     );
   }

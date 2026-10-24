@@ -298,6 +298,12 @@ handwriting most of all. A misread dose is not a cosmetic bug.
 - Tapping a page opens it full screen, pinch and double-tap to zoom. Reading
   the small print is why the photo exists. Visit attachments use the same
   viewer.
+- **Save photos only is not a one-way door.** A saved prescription opens its
+  own screen — pages, vet details, the text that was read, and the courses it
+  produced — and `reviewAgain` opens the review screen from there. A page
+  that was never read is read *now*; one that was is parsed from the stored
+  text, so nothing is read twice and nobody has to scan a page they already
+  have.
 
 ### Times per day
 

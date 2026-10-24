@@ -249,6 +249,15 @@ void main() {
       await scrollIntoView(tester, find.text('Add condition'));
     });
 
+    forEachAppearance('the reminders screen', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await scrollAndTap(tester, find.text('Reminders'));
+      expect(find.text('Flea and tick treatment'), findsOneWidget);
+      await tapAndSettle(tester, find.byTooltip('Reminder options'));
+      expect(find.text('Pause'), findsOneWidget);
+    });
+
     forEachAppearance('the photo album', (tester) async {
       await tapAndSettle(tester, find.text('Pets'));
       await tapAndSettle(tester, find.text('Mochi'));

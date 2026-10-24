@@ -31,6 +31,34 @@ class ReminderDraft {
 
   final String? notes;
 
+  /// A draft of a reminder that already exists, for editing it.
+  ///
+  /// The anchor becomes [firstDue] because that is what the sheet edits: the
+  /// date the cycle counts from, which for an existing reminder is where its
+  /// series started and where a changed schedule will restart it.
+  factory ReminderDraft.fromReminder(Reminder reminder) => ReminderDraft(
+    title: reminder.title,
+    category: reminder.category,
+    repeat: reminder.repeat,
+    firstDue: reminder.anchorDate,
+    timeOfDayMinutes: reminder.timeOfDayMinutes,
+    enabled: reminder.isActive,
+    notes: reminder.notes,
+  );
+
+  /// Applies this draft's edits to [reminder].
+  ///
+  /// `isActive` is deliberately not taken from [enabled]: pausing is its own
+  /// action on the reminders screen, and the sheet never offers it.
+  Reminder applyTo(Reminder reminder) => reminder.copyWith(
+    title: title,
+    category: category,
+    repeat: repeat,
+    anchorDate: firstDue,
+    timeOfDayMinutes: timeOfDayMinutes,
+    notes: notes,
+  );
+
   ReminderDraft copyWith({
     String? title,
     ReminderCategory? category,

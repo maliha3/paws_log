@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/constants.dart';
 import '../../domain/models/reminder_draft.dart';
 import 'onboarding_controller.dart';
-import 'widgets/reminder_draft_sheet.dart';
+import '../../core/widgets/reminder_draft_sheet.dart';
 
 /// Third screen of onboarding: the starting schedule.
 ///

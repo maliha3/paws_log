@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/medicine.dart';
 import '../domain/models/pet.dart';
+import '../domain/models/reminder.dart';
 import '../domain/models/pet_condition.dart';
 import '../domain/models/pet_photo.dart';
 import '../domain/shedding_season.dart';
@@ -84,6 +85,12 @@ final allergiesForPetProvider =
     StreamProvider.family<List<PetAllergy>, String>(
       (ref, petId) =>
           ref.watch(petHealthRepositoryProvider).watchAllergies(petId),
+    );
+
+/// One pet's reminders, soonest first.
+final remindersForPetProvider =
+    StreamProvider.family<List<Reminder>, String>(
+      (ref, petId) => ref.watch(reminderRepositoryProvider).watchForPet(petId),
     );
 
 /// Which hemisphere the owner says they are in.

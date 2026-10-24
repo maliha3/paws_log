@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/constants.dart';
-import '../../../data/providers.dart';
-import '../../../domain/models/reminder.dart';
-import '../../../domain/models/reminder_draft.dart';
-import '../../../domain/repeat_rule.dart';
-import '../../../domain/shedding_season.dart';
+import '../constants.dart';
+import '../../data/providers.dart';
+import '../../domain/models/reminder.dart';
+import '../../domain/models/reminder_draft.dart';
+import '../../domain/repeat_rule.dart';
+import '../../domain/shedding_season.dart';
 
 /// Edits one reminder draft. Returns the edited draft, or null if dismissed.
 ///
-/// Used for both the pre-filled suggestions and reminders the owner adds, so
-/// the same fields are editable either way.
+/// In `core/` rather than beside either caller: onboarding fills in drafts it
+/// saves all at once, the reminders screen edits reminders that already
+/// exist, and both want the same fields. Shared code goes down a layer rather
+/// than sideways between features.
 Future<ReminderDraft?> showReminderDraftSheet(
   BuildContext context, {
   ReminderDraft? draft,

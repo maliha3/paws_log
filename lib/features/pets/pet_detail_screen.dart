@@ -9,6 +9,7 @@ import '../../domain/models/pet.dart';
 import '../../domain/models/pet_condition.dart';
 import '../medical/medical_screen.dart';
 import '../photos/photos_screen.dart';
+import '../reminders/reminders_screen.dart';
 import '../premium/premium_gate.dart';
 import '../weight/weight_section.dart';
 import 'pet_edit_screen.dart';
@@ -93,6 +94,8 @@ class PetDetailScreen extends ConsumerWidget {
           _Header(pet: pet),
           const SizedBox(height: 16),
           _AllergyBanner(petId: petId),
+          _RemindersCard(petId: petId),
+          const SizedBox(height: 12),
           _MedicalCard(petId: petId),
           const SizedBox(height: 12),
           _PhotosCard(petId: petId),
@@ -307,6 +310,42 @@ class _AllergyBanner extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The way into the pet's recurring care.
+class _RemindersCard extends ConsumerWidget {
+  const _RemindersCard({required this.petId});
+
+  final String petId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reminders = ref.watch(remindersForPetProvider(petId));
+    final all = reminders.hasValue ? reminders.requireValue : const [];
+    final active = all.where((reminder) => reminder.isActive).length;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.notifications_none),
+        title: const Text('Reminders'),
+        subtitle: Text(
+          switch (active) {
+            0 when all.isEmpty => 'Nothing scheduled yet',
+            0 => 'All paused',
+            1 => '1 reminder',
+            _ => '$active reminders',
+          },
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => RemindersScreen(petId: petId),
           ),
         ),
       ),

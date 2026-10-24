@@ -181,6 +181,34 @@ dose being *missed*.
 - Today shows the whole day's course, including doses whose time has not come
   — unlike reminders, where only what is due shows up.
 
+## Reminders after onboarding
+
+A **Reminders** card on the pet's profile opens that pet's recurring care,
+where it can be added to, edited, paused and deleted. Before it existed
+reminders could only be created during onboarding, so a second pet got none at
+all and nobody could change a schedule after the first run.
+
+`showReminderDraftSheet` lives in `core/widgets/` rather than beside either
+caller. Onboarding fills in drafts it saves all at once; this screen edits
+reminders that already exist; both want the same fields, and shared code goes
+down a layer rather than sideways between features. `ReminderDraft.fromReminder`
+and `applyTo` are the two ends of that conversion.
+
+- Editing is the repository's `update`, which **moves the existing pending
+  occurrence** when the schedule changes rather than replacing it, so Today
+  and the notification window cannot disagree with the reminder. Editing only
+  the title leaves the occurrence where it was.
+- **Pausing** keeps the reminder and its history and takes it off Today, which
+  it gets for free: `_dueItemQuery` already filters on `isActive`, and so does
+  the scheduler's source.
+- A paused reminder reads as "paused", not "overdue". Its stored due date is
+  whatever it was when it stopped, and calling that overdue would reproach the
+  owner for something they switched off on purpose.
+- Every write resyncs notifications, because the repository does it. There is
+  a test counting resyncs for exactly the failure CLAUDE.md warns about: a
+  write that forgets one fails silently, and the owner finds out when a
+  notification never arrives.
+
 ## Grooming
 
 `nailTrim` and `brushing` are reminder categories like any other, with their
@@ -561,11 +589,6 @@ ship with the Flutter logo. `tool/make_icon.py` regenerates it.
 
 Named in the spec, deliberately absent from the code. Not oversights:
 
-- **Managing reminders after onboarding.** `showReminderDraftSheet` is the
-  only reminder editor there is, and it only exists on the starter-reminders
-  screen. An owner past onboarding cannot add a reminder, change one's
-  schedule, or reach the shedding-season switch; a second pet gets no
-  reminders at all. This predates grooming and is the largest gap in the app.
 - `VetVisit.cost`.
 - `Pet.species`, `microchip`, `vetName`, `vetPhone`. A prescription carries
   its own vet name and clinic; the pet does not yet.

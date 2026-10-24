@@ -15,10 +15,13 @@ draw assets/app_icon.png 1024
 
 ios=ios/Runner/Assets.xcassets/AppIcon.appiconset
 echo "iOS"
+# The App Store slot is the master, pixel for pixel, so it is copied rather
+# than drawn a second time at the size that costs the most.
+cp assets/app_icon.png "$ios/Icon-App-1024x1024@1x.png"
+
 while read -r name px; do
   draw "$ios/$name" "$px"
 done <<'SIZES'
-Icon-App-1024x1024@1x.png 1024
 Icon-App-20x20@1x.png 20
 Icon-App-20x20@2x.png 40
 Icon-App-20x20@3x.png 60

@@ -604,16 +604,30 @@ Colours come from the `ColorScheme` only — there are no hardcoded `Colors.*`
 outside `app_theme.dart` and the PDF, which uses fixed inks because it is for
 print. Dark mode is its own scheme, not an inverted light one.
 
-The app icon is still a placeholder rather than a design, but it is at least
-*this app's* placeholder: the ink paw on the brand amber, both taken from
-`app_theme.dart`. It was deep green until the colours were checked against the
-app — left over from before the warm palette.
+**The app icon is the Bengal, asleep** — the same cat and the same palette as
+`SleepingCat`, so the home screen and the welcome screen are recognisably one
+thing. A paw is what four other pet apps use; the face is this one's.
+
+It sits on dark ink rather than the brand amber for a plain reason: the
+Bengal's coat *is* amber, so cat-on-amber had almost no contrast. Dark also
+echoes the disc the pill button holds its mark in, and stands out among the
+pale icons it will sit beside.
+
+- The cat fills **1.10×** its drawn size. Past that the ears meet the rounded
+  corner iOS masks the icon with.
+- The **mouth is drawn only at 120px and above**. Two pixels of mouth is not a
+  mouth, it is a smudge on an otherwise clean muzzle — which is the whole
+  reason icons come in separate sizes rather than one image resized.
+- The closed-eye arcs stop short of the ellipse's widest point. Run the full
+  half and the ends turn vertical, which reads as a croquet hoop rather than
+  a lid.
 
 `tool/make_icons.sh` regenerates all twenty: the master, fifteen iOS slots and
 five Android mipmaps. Every one is **drawn at its own resolution** rather than
 resized down from the master, because a 20-pixel icon supersampled from the
 shape beats one squeezed out of a 1024-pixel image — and because nothing in
-that path can pick up the alpha channel iOS rejects.
+that path can pick up the alpha channel iOS rejects. Checked at 20px and 40px
+blown up pixel for pixel, and on a simulator home screen.
 
 ## Money
 

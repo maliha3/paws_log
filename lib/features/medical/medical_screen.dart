@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/money.dart';
 import '../../core/theme/category_palette.dart';
 import '../../core/widgets/empty_section.dart';
 import '../../data/providers.dart';
@@ -511,6 +512,7 @@ class _Visits extends ConsumerWidget {
                   [
                     DateFormat.yMMMd().format(visit.visitedOn),
                     if (visit.clinic != null) visit.clinic!,
+                    if (visit.cost != null) Money.format(visit.cost!),
                   ].join(' · '),
                 ),
                 trailing: const Icon(Icons.chevron_right),

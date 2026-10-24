@@ -25,6 +25,10 @@ class PetEditScreen extends ConsumerStatefulWidget {
 class _PetEditScreenState extends ConsumerState<PetEditScreen> {
   late final TextEditingController _name;
   late final TextEditingController _breed;
+  late final TextEditingController _species;
+  late final TextEditingController _microchip;
+  late final TextEditingController _vetName;
+  late final TextEditingController _vetPhone;
   late final TextEditingController _originNotes;
   late final TextEditingController _motherInfo;
   late final TextEditingController _fatherInfo;
@@ -48,6 +52,10 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
     final pet = widget.pet;
     _name = TextEditingController(text: pet?.name ?? '');
     _breed = TextEditingController(text: pet?.breed ?? '');
+    _species = TextEditingController(text: pet?.species ?? '');
+    _microchip = TextEditingController(text: pet?.microchip ?? '');
+    _vetName = TextEditingController(text: pet?.vetName ?? '');
+    _vetPhone = TextEditingController(text: pet?.vetPhone ?? '');
     _originNotes = TextEditingController(text: pet?.originNotes ?? '');
     _motherInfo = TextEditingController(text: pet?.motherInfo ?? '');
     _fatherInfo = TextEditingController(text: pet?.fatherInfo ?? '');
@@ -67,6 +75,10 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
   void dispose() {
     _name.dispose();
     _breed.dispose();
+    _species.dispose();
+    _microchip.dispose();
+    _vetName.dispose();
+    _vetPhone.dispose();
     _originNotes.dispose();
     _motherInfo.dispose();
     _fatherInfo.dispose();
@@ -140,6 +152,10 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
         birthday: _birthday,
         photoPath: _photoPath,
         coatLength: _coatLength,
+        species: _species.text,
+        microchip: _microchip.text,
+        vetName: _vetName.text,
+        vetPhone: _vetPhone.text,
         origin: _origin,
         originDate: _originDate,
         originNotes: _originNotes.text,
@@ -162,6 +178,10 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
           sex: _sex,
           neutered: _neutered,
           coatLength: _coatLength,
+          species: _blank(_species),
+          microchip: _blank(_microchip),
+          vetName: _blank(_vetName),
+          vetPhone: _blank(_vetPhone),
           origin: _origin,
           originDate: _originDate,
           originNotes: _blank(_originNotes),
@@ -231,6 +251,15 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
               decoration: const InputDecoration(
                 labelText: 'Breed',
                 hintText: 'Optional',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _species,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Species',
+                hintText: 'Cat',
               ),
             ),
             const SizedBox(height: 20),
@@ -378,6 +407,33 @@ class _PetEditScreenState extends ConsumerState<PetEditScreen> {
                   controller: _fatherInfo,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(labelText: 'Father'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _Section(
+              title: 'Microchip and vet',
+              icon: Icons.local_hospital_outlined,
+              children: [
+                TextField(
+                  controller: _microchip,
+                  decoration: const InputDecoration(
+                    labelText: 'Microchip number',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _vetName,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Vet practice',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _vetPhone,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(labelText: 'Phone'),
                 ),
               ],
             ),

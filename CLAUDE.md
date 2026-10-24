@@ -605,16 +605,28 @@ print. Dark mode is its own scheme, not an inverted light one.
 The app icon is a placeholder, not a design: it exists so the app does not
 ship with the Flutter logo. `tool/make_icon.py` regenerates it.
 
+## Money
+
+A visit's cost is an **integer of the smallest currency unit**, never a
+decimal: money in a float is a bug waiting for the day someone sums a column.
+
+No currency is stored beside it. This is one owner's personal log in whatever
+money they spend, so `core/money.dart` formats with the device's locale —
+which also decides how many decimal places there are. A yen has none and a
+dinar has three, so two cannot be hardcoded. Typing accepts a comma as well
+as a point: a field prefixed with a currency symbol is obviously money, and
+refusing "42,50" from a comma keyboard would be pedantry.
+
+Null means **not recorded**, which is not the same as free.
+
 ## Not built yet
 
-Named in the spec, deliberately absent from the code. Not oversights:
-
-- `VetVisit.cost`.
-- `Pet.species`, `microchip`, `vetName`, `vetPhone`. A prescription carries
-  its own vet name and clinic; the pet does not yet.
-- Premium gating for **full weight history**. Weights are currently
-  ungated — the gate covers a second pet, photos on a visit, and the vet
-  summary.
+- Premium gating for **full weight history**. Named in the spec and
+  deliberately not built: it would mean hiding weighings the owner entered,
+  and "gates are on doing, never on seeing" is the rule the rest of the
+  paywall follows. A weight trend is also a health signal rather than a
+  convenience. The gate covers a second pet, photos on a visit, and the vet
+  summary; weights stay free unless that is overruled.
 
 ## Migrations
 

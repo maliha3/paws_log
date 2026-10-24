@@ -111,6 +111,13 @@ void main() {
     await tapAndSettle(tester, find.text('Add a pet'));
     await scrollAndTap(tester, find.text('Add pet'));
 
+    // The error renders on the Name field, which the scroll to the button
+    // has left above the fold.
+    await tester.scrollUntilVisible(
+      find.text('A name is needed'),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('A name is needed'), findsOneWidget);
     expect(await db.select(db.pets).get(), hasLength(1));
 

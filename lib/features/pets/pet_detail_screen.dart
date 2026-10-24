@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/category_palette.dart';
 import '../../core/widgets/pet_avatar.dart';
@@ -101,6 +102,10 @@ class PetDetailScreen extends ConsumerWidget {
           _PhotosCard(petId: petId),
           const SizedBox(height: 24),
           WeightSection(petId: petId),
+          if (pet.vetName != null || pet.vetPhone != null) ...[
+            const SizedBox(height: 24),
+            _VetCard(pet: pet),
+          ],
         ],
       ),
     );
@@ -350,5 +355,46 @@ class _RemindersCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// The practice the owner would ring, with the ringing done for them.
+class _VetCard extends StatelessWidget {
+  const _VetCard({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    final phone = pet.vetPhone;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.local_hospital_outlined),
+        title: Text(pet.vetName ?? 'Vet'),
+        subtitle: phone == null ? null : Text(phone),
+        trailing: phone == null
+            ? null
+            : IconButton(
+                tooltip: 'Call the vet',
+                icon: const Icon(Icons.call_outlined),
+                onPressed: () => _call(context, phone),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _call(BuildContext context, String phone) async {
+    final messenger = ScaffoldMessenger.of(context);
+    // Spaces and brackets are how people write a number down, and `tel:`
+    // does not want them.
+    final digits = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+    final launched = await launchUrl(Uri(scheme: 'tel', path: digits));
+    if (!launched) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not start a call.')),
+      );
+    }
   }
 }

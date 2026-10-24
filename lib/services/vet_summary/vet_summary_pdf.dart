@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../../core/constants.dart';
 import '../../domain/models/medicine.dart';
+import '../../core/money.dart';
 import '../../domain/models/pet.dart';
 import '../../domain/models/vet_summary.dart';
 import '../../domain/models/weight_entry.dart';
@@ -83,6 +84,7 @@ class VetSummaryPdf {
 
   pw.Widget _profile(Pet pet) {
     final facts = <(String, String)>[
+      if (pet.species != null) ('Species', pet.species!),
       if (pet.breed != null) ('Breed', pet.breed!),
       if (pet.sex != PetSex.unknown)
         ('Sex', pet.sex == PetSex.female ? 'Female' : 'Male'),
@@ -95,6 +97,9 @@ class VetSummaryPdf {
         },
       ),
       if (pet.birthday != null) ('Date of birth', _date.format(pet.birthday!)),
+      // The number a vet would scan for, which is exactly the sort of thing
+      // nobody has to hand at the counter.
+      if (pet.microchip != null) ('Microchip', pet.microchip!),
     ];
 
     return pw.Wrap(
@@ -366,11 +371,14 @@ class VetSummaryPdf {
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                    if (visit.clinic != null || visit.vetName != null)
+                    if (visit.clinic != null ||
+                        visit.vetName != null ||
+                        visit.cost != null)
                       pw.Text(
                         [
                           if (visit.clinic != null) visit.clinic!,
                           if (visit.vetName != null) visit.vetName!,
+                          if (visit.cost != null) Money.format(visit.cost!),
                         ].join(' · '),
                         style: const pw.TextStyle(fontSize: 9, color: _muted),
                       ),

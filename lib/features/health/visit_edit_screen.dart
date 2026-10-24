@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/money.dart';
 import '../../core/widgets/empty_section.dart';
 import '../../core/widgets/image_viewer_screen.dart';
 import '../../data/providers.dart';
@@ -27,6 +28,7 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
   late final TextEditingController _clinic;
   late final TextEditingController _vet;
   late final TextEditingController _notes;
+  late final TextEditingController _cost;
   late DateTime _visitedOn;
 
   /// Photos chosen before the visit exists to attach them to.
@@ -45,6 +47,9 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
     _clinic = TextEditingController(text: visit?.clinic ?? '');
     _vet = TextEditingController(text: visit?.vetName ?? '');
     _notes = TextEditingController(text: visit?.notes ?? '');
+    _cost = TextEditingController(
+      text: visit?.cost == null ? '' : Money.edit(visit!.cost!),
+    );
     _visitedOn =
         visit?.visitedOn ?? DateTime.utc(today.year, today.month, today.day);
   }
@@ -55,6 +60,7 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
     _clinic.dispose();
     _vet.dispose();
     _notes.dispose();
+    _cost.dispose();
     super.dispose();
   }
 
@@ -98,6 +104,9 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
     }
   }
 
+  static String? _blank(TextEditingController controller) =>
+      controller.text.trim().isEmpty ? null : controller.text.trim();
+
   Future<void> _save() async {
     if (_reason.text.trim().isEmpty) {
       setState(() => _showReasonError = true);
@@ -105,14 +114,25 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
     }
     final repository = ref.read(vetVisitRepositoryProvider);
 
+    final cost = Money.parse(_cost.text);
+
     if (_isEditing) {
+      final existing = widget.visit!;
+      // Built rather than copied: an amount the owner has just cleared has
+      // to survive the save as cleared, and copyWith reads a null as
+      // "leave it alone".
       await repository.update(
-        widget.visit!.copyWith(
+        VetVisit(
+          id: existing.id,
+          petId: existing.petId,
           visitedOn: _visitedOn,
           reason: _reason.text.trim(),
-          clinic: _clinic.text.trim(),
-          vetName: _vet.text.trim(),
-          notes: _notes.text.trim(),
+          clinic: _blank(_clinic),
+          vetName: _blank(_vet),
+          notes: _blank(_notes),
+          cost: cost,
+          createdAt: existing.createdAt,
+          updatedAt: existing.updatedAt,
         ),
       );
     } else {
@@ -123,6 +143,7 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
         clinic: _clinic.text,
         vetName: _vet.text,
         notes: _notes.text,
+        cost: cost,
         attachmentPaths: _pendingAttachments,
       );
     }
@@ -204,6 +225,18 @@ class _VisitEditScreenState extends ConsumerState<VisitEditScreen> {
               decoration: const InputDecoration(
                 labelText: 'Notes',
                 alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _cost,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Cost',
+                hintText: 'Optional',
+                prefixText: '${Money.symbol()} ',
               ),
             ),
             const SizedBox(height: 24),

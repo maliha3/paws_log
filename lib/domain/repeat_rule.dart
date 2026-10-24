@@ -21,19 +21,36 @@ enum RepeatUnit {
 /// computed from an anchor, so a long-dormant reminder lands on the same days
 /// of the month it always did instead of drifting.
 class RepeatRule {
-  const RepeatRule({required this.unit, required this.interval})
-    : assert(interval >= 1, 'interval must be at least 1');
+  const RepeatRule({
+    required this.unit,
+    required this.interval,
+    this.seasonal = false,
+  }) : assert(interval >= 1, 'interval must be at least 1');
 
   /// A one-off: it happens on the anchor date and never again.
-  const RepeatRule.once() : unit = RepeatUnit.none, interval = 1;
+  const RepeatRule.once()
+    : unit = RepeatUnit.none,
+      interval = 1,
+      seasonal = false;
 
-  const RepeatRule.days(this.interval) : unit = RepeatUnit.days;
-  const RepeatRule.weeks(this.interval) : unit = RepeatUnit.weeks;
-  const RepeatRule.months(this.interval) : unit = RepeatUnit.months;
-  const RepeatRule.years(this.interval) : unit = RepeatUnit.years;
+  const RepeatRule.days(this.interval, {this.seasonal = false})
+    : unit = RepeatUnit.days;
+  const RepeatRule.weeks(this.interval, {this.seasonal = false})
+    : unit = RepeatUnit.weeks;
+  const RepeatRule.months(this.interval) : unit = RepeatUnit.months,
+      seasonal = false;
+  const RepeatRule.years(this.interval) : unit = RepeatUnit.years,
+      seasonal = false;
 
   final RepeatUnit unit;
   final int interval;
+
+  /// Whether the interval halves during shedding season.
+  ///
+  /// Only grooming reminders set it. It is the one thing that makes an
+  /// occurrence depend on *where in the year* the previous one fell, which
+  /// is why it has to be opt-in — see `occurrence`.
+  final bool seasonal;
 
   bool get repeats => unit != RepeatUnit.none;
 

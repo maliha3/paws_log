@@ -26,6 +26,10 @@ class Reminders extends Table {
   /// joining. Kept in step by [ReminderRepository].
   DateTimeColumn get nextDueAt => dateTime().nullable()();
 
+  /// Whether the interval halves during shedding season. Only meaningful for
+  /// a grooming reminder; every other reminder leaves it false.
+  BoolColumn get seasonal => boolean().withDefault(const Constant(false))();
+
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

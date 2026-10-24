@@ -154,6 +154,7 @@ class ReminderEventRepository {
         repeat: RepeatRule(
           unit: reminder.repeatUnit,
           interval: reminder.repeatInterval,
+          seasonal: reminder.seasonal,
         ),
         after: after,
       );

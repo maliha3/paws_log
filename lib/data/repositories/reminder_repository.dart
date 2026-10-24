@@ -222,6 +222,7 @@ extension on Reminder {
     category: category,
     repeatUnit: repeat.unit,
     repeatInterval: repeat.interval,
+    seasonal: repeat.seasonal,
     anchorDate: anchorDate,
     timeOfDayMinutes: timeOfDayMinutes,
     nextDueAt: nextDueAt,

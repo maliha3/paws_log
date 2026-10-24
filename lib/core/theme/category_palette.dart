@@ -13,6 +13,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     required this.vaccine,
     required this.deworming,
     required this.fleaTick,
+    required this.nailTrim,
+    required this.brushing,
     required this.other,
     required this.medicine,
     required this.pastels,
@@ -24,6 +26,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     vaccine: Color(0xFF4F7BC9),
     deworming: Color(0xFF2E9177),
     fleaTick: Color(0xFFE08A2E),
+    nailTrim: Color(0xFFC2607A),
+    brushing: Color(0xFF3F8EA3),
     other: Color(0xFF8A7868),
     medicine: Color(0xFF8A6BC4),
     pastels: [
@@ -40,6 +44,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     vaccine: Color(0xFF8FB2EE),
     deworming: Color(0xFF6DCDAE),
     fleaTick: Color(0xFFF2B263),
+    nailTrim: Color(0xFFE79BB0),
+    brushing: Color(0xFF7FC3D6),
     other: Color(0xFFC2B2A3),
     medicine: Color(0xFFBCA4EA),
     pastels: [
@@ -54,6 +60,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
   final Color vaccine;
   final Color deworming;
   final Color fleaTick;
+  final Color nailTrim;
+  final Color brushing;
   final Color other;
 
   /// Medicines are not a reminder category, but they share the row language.
@@ -70,6 +78,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     ReminderCategory.vaccine => vaccine,
     ReminderCategory.deworming => deworming,
     ReminderCategory.fleaTick => fleaTick,
+    ReminderCategory.nailTrim => nailTrim,
+    ReminderCategory.brushing => brushing,
     ReminderCategory.other => other,
   };
 
@@ -80,6 +90,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     Color? vaccine,
     Color? deworming,
     Color? fleaTick,
+    Color? nailTrim,
+    Color? brushing,
     Color? other,
     Color? medicine,
     List<Color>? pastels,
@@ -88,6 +100,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
     vaccine: vaccine ?? this.vaccine,
     deworming: deworming ?? this.deworming,
     fleaTick: fleaTick ?? this.fleaTick,
+    nailTrim: nailTrim ?? this.nailTrim,
+    brushing: brushing ?? this.brushing,
     other: other ?? this.other,
     medicine: medicine ?? this.medicine,
     pastels: pastels ?? this.pastels,
@@ -103,6 +117,8 @@ class CategoryPalette extends ThemeExtension<CategoryPalette> {
       vaccine: Color.lerp(vaccine, other.vaccine, t)!,
       deworming: Color.lerp(deworming, other.deworming, t)!,
       fleaTick: Color.lerp(fleaTick, other.fleaTick, t)!,
+      nailTrim: Color.lerp(nailTrim, other.nailTrim, t)!,
+      brushing: Color.lerp(brushing, other.brushing, t)!,
       other: Color.lerp(this.other, other.other, t)!,
       medicine: Color.lerp(medicine, other.medicine, t)!,
       pastels: [

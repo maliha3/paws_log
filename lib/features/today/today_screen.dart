@@ -457,6 +457,8 @@ class _DueRow extends ConsumerWidget {
     ReminderCategory.vaccine => Icons.vaccines_outlined,
     ReminderCategory.deworming => Icons.medication_outlined,
     ReminderCategory.fleaTick => Icons.bug_report_outlined,
+    ReminderCategory.nailTrim => Icons.content_cut_outlined,
+    ReminderCategory.brushing => Icons.brush_outlined,
     ReminderCategory.other => Icons.event_note_outlined,
   };
 }

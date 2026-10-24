@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -107,6 +107,12 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(pets, pets.dietType);
         await m.addColumn(pets, pets.foodBrand);
         await m.addColumn(pets, pets.feedingNotes);
+      }
+      if (from < 6) {
+        // Grooming: the shedding-season flag on a reminder. The two new
+        // categories need no migration — `category` is a text column, and a
+        // database that has never seen `brushing` simply has no such row.
+        await m.addColumn(reminders, reminders.seasonal);
       }
     },
     beforeOpen: (details) async {

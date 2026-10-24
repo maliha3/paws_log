@@ -48,7 +48,11 @@ extension ReminderRowMapper on ReminderRow {
     petId: petId,
     title: title,
     category: category,
-    repeat: RepeatRule(unit: repeatUnit, interval: repeatInterval),
+    repeat: RepeatRule(
+      unit: repeatUnit,
+      interval: repeatInterval,
+      seasonal: seasonal,
+    ),
     anchorDate: anchorDate,
     timeOfDayMinutes: timeOfDayMinutes,
     nextDueAt: nextDueAt,

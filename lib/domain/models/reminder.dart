@@ -6,14 +6,23 @@ enum ReminderCategory {
   vaccine,
   deworming,
   fleaTick,
+  nailTrim,
+  brushing,
   other;
 
   String get label => switch (this) {
     ReminderCategory.vaccine => 'Vaccine',
     ReminderCategory.deworming => 'Deworming',
     ReminderCategory.fleaTick => 'Flea & tick',
+    ReminderCategory.nailTrim => 'Nail trim',
+    ReminderCategory.brushing => 'Brushing',
     ReminderCategory.other => 'Other',
   };
+
+  /// Grooming is care the owner does themselves, which is why it can repeat
+  /// every few days where medical care repeats every few months.
+  bool get isGrooming =>
+      this == ReminderCategory.nailTrim || this == ReminderCategory.brushing;
 }
 
 /// A recurring piece of care for one pet.

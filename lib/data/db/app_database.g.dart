@@ -1207,6 +1207,21 @@ class $RemindersTable extends Reminders
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _seasonalMeta = const VerificationMeta(
+    'seasonal',
+  );
+  @override
+  late final GeneratedColumn<bool> seasonal = GeneratedColumn<bool>(
+    'seasonal',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("seasonal" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
   );
@@ -1264,6 +1279,7 @@ class $RemindersTable extends Reminders
     anchorDate,
     timeOfDayMinutes,
     nextDueAt,
+    seasonal,
     isActive,
     notes,
     createdAt,
@@ -1334,6 +1350,12 @@ class $RemindersTable extends Reminders
       context.handle(
         _nextDueAtMeta,
         nextDueAt.isAcceptableOrUnknown(data['next_due_at']!, _nextDueAtMeta),
+      );
+    }
+    if (data.containsKey('seasonal')) {
+      context.handle(
+        _seasonalMeta,
+        seasonal.isAcceptableOrUnknown(data['seasonal']!, _seasonalMeta),
       );
     }
     if (data.containsKey('is_active')) {
@@ -1413,6 +1435,10 @@ class $RemindersTable extends Reminders
         DriftSqlType.dateTime,
         data['${effectivePrefix}next_due_at'],
       ),
+      seasonal: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}seasonal'],
+      )!,
       isActive: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
@@ -1462,6 +1488,10 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
   /// Denormalised from the pending event so reminder lists can sort without
   /// joining. Kept in step by [ReminderRepository].
   final DateTime? nextDueAt;
+
+  /// Whether the interval halves during shedding season. Only meaningful for
+  /// a grooming reminder; every other reminder leaves it false.
+  final bool seasonal;
   final bool isActive;
   final String? notes;
   final DateTime createdAt;
@@ -1476,6 +1506,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
     required this.anchorDate,
     required this.timeOfDayMinutes,
     this.nextDueAt,
+    required this.seasonal,
     required this.isActive,
     this.notes,
     required this.createdAt,
@@ -1503,6 +1534,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
     if (!nullToAbsent || nextDueAt != null) {
       map['next_due_at'] = Variable<DateTime>(nextDueAt);
     }
+    map['seasonal'] = Variable<bool>(seasonal);
     map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -1525,6 +1557,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
       nextDueAt: nextDueAt == null && nullToAbsent
           ? const Value.absent()
           : Value(nextDueAt),
+      seasonal: Value(seasonal),
       isActive: Value(isActive),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
@@ -1553,6 +1586,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
       anchorDate: serializer.fromJson<DateTime>(json['anchorDate']),
       timeOfDayMinutes: serializer.fromJson<int>(json['timeOfDayMinutes']),
       nextDueAt: serializer.fromJson<DateTime?>(json['nextDueAt']),
+      seasonal: serializer.fromJson<bool>(json['seasonal']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       notes: serializer.fromJson<String?>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1576,6 +1610,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
       'anchorDate': serializer.toJson<DateTime>(anchorDate),
       'timeOfDayMinutes': serializer.toJson<int>(timeOfDayMinutes),
       'nextDueAt': serializer.toJson<DateTime?>(nextDueAt),
+      'seasonal': serializer.toJson<bool>(seasonal),
       'isActive': serializer.toJson<bool>(isActive),
       'notes': serializer.toJson<String?>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1593,6 +1628,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
     DateTime? anchorDate,
     int? timeOfDayMinutes,
     Value<DateTime?> nextDueAt = const Value.absent(),
+    bool? seasonal,
     bool? isActive,
     Value<String?> notes = const Value.absent(),
     DateTime? createdAt,
@@ -1607,6 +1643,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
     anchorDate: anchorDate ?? this.anchorDate,
     timeOfDayMinutes: timeOfDayMinutes ?? this.timeOfDayMinutes,
     nextDueAt: nextDueAt.present ? nextDueAt.value : this.nextDueAt,
+    seasonal: seasonal ?? this.seasonal,
     isActive: isActive ?? this.isActive,
     notes: notes.present ? notes.value : this.notes,
     createdAt: createdAt ?? this.createdAt,
@@ -1631,6 +1668,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
           ? data.timeOfDayMinutes.value
           : this.timeOfDayMinutes,
       nextDueAt: data.nextDueAt.present ? data.nextDueAt.value : this.nextDueAt,
+      seasonal: data.seasonal.present ? data.seasonal.value : this.seasonal,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -1650,6 +1688,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
           ..write('anchorDate: $anchorDate, ')
           ..write('timeOfDayMinutes: $timeOfDayMinutes, ')
           ..write('nextDueAt: $nextDueAt, ')
+          ..write('seasonal: $seasonal, ')
           ..write('isActive: $isActive, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
@@ -1669,6 +1708,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
     anchorDate,
     timeOfDayMinutes,
     nextDueAt,
+    seasonal,
     isActive,
     notes,
     createdAt,
@@ -1687,6 +1727,7 @@ class ReminderRow extends DataClass implements Insertable<ReminderRow> {
           other.anchorDate == this.anchorDate &&
           other.timeOfDayMinutes == this.timeOfDayMinutes &&
           other.nextDueAt == this.nextDueAt &&
+          other.seasonal == this.seasonal &&
           other.isActive == this.isActive &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
@@ -1703,6 +1744,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
   final Value<DateTime> anchorDate;
   final Value<int> timeOfDayMinutes;
   final Value<DateTime?> nextDueAt;
+  final Value<bool> seasonal;
   final Value<bool> isActive;
   final Value<String?> notes;
   final Value<DateTime> createdAt;
@@ -1718,6 +1760,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
     this.anchorDate = const Value.absent(),
     this.timeOfDayMinutes = const Value.absent(),
     this.nextDueAt = const Value.absent(),
+    this.seasonal = const Value.absent(),
     this.isActive = const Value.absent(),
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1734,6 +1777,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
     required DateTime anchorDate,
     required int timeOfDayMinutes,
     this.nextDueAt = const Value.absent(),
+    this.seasonal = const Value.absent(),
     this.isActive = const Value.absent(),
     this.notes = const Value.absent(),
     required DateTime createdAt,
@@ -1758,6 +1802,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
     Expression<DateTime>? anchorDate,
     Expression<int>? timeOfDayMinutes,
     Expression<DateTime>? nextDueAt,
+    Expression<bool>? seasonal,
     Expression<bool>? isActive,
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
@@ -1774,6 +1819,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
       if (anchorDate != null) 'anchor_date': anchorDate,
       if (timeOfDayMinutes != null) 'time_of_day_minutes': timeOfDayMinutes,
       if (nextDueAt != null) 'next_due_at': nextDueAt,
+      if (seasonal != null) 'seasonal': seasonal,
       if (isActive != null) 'is_active': isActive,
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
@@ -1792,6 +1838,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
     Value<DateTime>? anchorDate,
     Value<int>? timeOfDayMinutes,
     Value<DateTime?>? nextDueAt,
+    Value<bool>? seasonal,
     Value<bool>? isActive,
     Value<String?>? notes,
     Value<DateTime>? createdAt,
@@ -1808,6 +1855,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
       anchorDate: anchorDate ?? this.anchorDate,
       timeOfDayMinutes: timeOfDayMinutes ?? this.timeOfDayMinutes,
       nextDueAt: nextDueAt ?? this.nextDueAt,
+      seasonal: seasonal ?? this.seasonal,
       isActive: isActive ?? this.isActive,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
@@ -1850,6 +1898,9 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
     if (nextDueAt.present) {
       map['next_due_at'] = Variable<DateTime>(nextDueAt.value);
     }
+    if (seasonal.present) {
+      map['seasonal'] = Variable<bool>(seasonal.value);
+    }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
@@ -1880,6 +1931,7 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
           ..write('anchorDate: $anchorDate, ')
           ..write('timeOfDayMinutes: $timeOfDayMinutes, ')
           ..write('nextDueAt: $nextDueAt, ')
+          ..write('seasonal: $seasonal, ')
           ..write('isActive: $isActive, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
@@ -9118,6 +9170,7 @@ typedef $$RemindersTableCreateCompanionBuilder =
       required DateTime anchorDate,
       required int timeOfDayMinutes,
       Value<DateTime?> nextDueAt,
+      Value<bool> seasonal,
       Value<bool> isActive,
       Value<String?> notes,
       required DateTime createdAt,
@@ -9135,6 +9188,7 @@ typedef $$RemindersTableUpdateCompanionBuilder =
       Value<DateTime> anchorDate,
       Value<int> timeOfDayMinutes,
       Value<DateTime?> nextDueAt,
+      Value<bool> seasonal,
       Value<bool> isActive,
       Value<String?> notes,
       Value<DateTime> createdAt,
@@ -9230,6 +9284,11 @@ class $$RemindersTableFilterComposer
 
   ColumnFilters<DateTime> get nextDueAt => $composableBuilder(
     column: $table.nextDueAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get seasonal => $composableBuilder(
+    column: $table.seasonal,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9351,6 +9410,11 @@ class $$RemindersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get seasonal => $composableBuilder(
+    column: $table.seasonal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isActive => $composableBuilder(
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
@@ -9436,6 +9500,9 @@ class $$RemindersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get nextDueAt =>
       $composableBuilder(column: $table.nextDueAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get seasonal =>
+      $composableBuilder(column: $table.seasonal, builder: (column) => column);
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -9535,6 +9602,7 @@ class $$RemindersTableTableManager
                 Value<DateTime> anchorDate = const Value.absent(),
                 Value<int> timeOfDayMinutes = const Value.absent(),
                 Value<DateTime?> nextDueAt = const Value.absent(),
+                Value<bool> seasonal = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -9550,6 +9618,7 @@ class $$RemindersTableTableManager
                 anchorDate: anchorDate,
                 timeOfDayMinutes: timeOfDayMinutes,
                 nextDueAt: nextDueAt,
+                seasonal: seasonal,
                 isActive: isActive,
                 notes: notes,
                 createdAt: createdAt,
@@ -9567,6 +9636,7 @@ class $$RemindersTableTableManager
                 required DateTime anchorDate,
                 required int timeOfDayMinutes,
                 Value<DateTime?> nextDueAt = const Value.absent(),
+                Value<bool> seasonal = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 required DateTime createdAt,
@@ -9582,6 +9652,7 @@ class $$RemindersTableTableManager
                 anchorDate: anchorDate,
                 timeOfDayMinutes: timeOfDayMinutes,
                 nextDueAt: nextDueAt,
+                seasonal: seasonal,
                 isActive: isActive,
                 notes: notes,
                 createdAt: createdAt,

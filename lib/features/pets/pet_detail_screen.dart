@@ -7,6 +7,7 @@ import '../../core/widgets/pill_button.dart';
 import '../../data/providers.dart';
 import '../../domain/models/pet.dart';
 import '../medical/medical_screen.dart';
+import '../photos/photos_screen.dart';
 import '../premium/premium_gate.dart';
 import '../weight/weight_section.dart';
 import 'pet_edit_screen.dart';
@@ -91,6 +92,8 @@ class PetDetailScreen extends ConsumerWidget {
           _Header(pet: pet),
           const SizedBox(height: 20),
           _MedicalCard(petId: petId),
+          const SizedBox(height: 12),
+          _PhotosCard(petId: petId),
           const SizedBox(height: 24),
           WeightSection(petId: petId),
         ],
@@ -195,4 +198,38 @@ class _MedicalCard extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// The way into the pet's album.
+class _PhotosCard extends ConsumerWidget {
+  const _PhotosCard({required this.petId});
+
+  final String petId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final album = ref.watch(photosForPetProvider(petId));
+    final count = album.hasValue ? album.requireValue.length : 0;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.photo_library_outlined),
+        title: const Text('Photos'),
+        subtitle: Text(
+          switch (count) {
+            0 => 'Nothing yet \u2014 add the first one',
+            1 => '1 photo',
+            _ => '$count photos',
+          },
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => PhotosScreen(petId: petId),
+          ),
+        ),
+      ),
+    );
+  }
 }

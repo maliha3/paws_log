@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -83,6 +84,30 @@ class PhotoStore {
       await file.delete();
     }
   }
+}
+
+/// Hands back fixed paths instead of asking the OS. For tests, and for
+/// walking the photo flows without a camera.
+@visibleForTesting
+class FixedPhotoStore extends PhotoStore {
+  FixedPhotoStore({this.taken, this.picked = const []});
+
+  /// What the camera "returns". Null means the owner backed out.
+  final String? taken;
+
+  /// What the Photos picker "returns".
+  final List<String> picked;
+
+  @override
+  Future<String?> pick(
+    ImageSource source, {
+    String folder = PhotoStore.petPhotos,
+  }) async => taken;
+
+  @override
+  Future<List<String>> pickMany({
+    String folder = PhotoStore.visitAttachments,
+  }) async => picked;
 }
 
 final photoStoreProvider = Provider<PhotoStore>((ref) => PhotoStore());

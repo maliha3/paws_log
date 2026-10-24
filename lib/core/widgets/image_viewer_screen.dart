@@ -59,24 +59,28 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           itemCount: widget.paths.length,
           onPageChanged: (page) => setState(() => _page = page),
           itemBuilder: (context, index) =>
-              _ZoomablePage(path: widget.paths[index]),
+              ZoomablePhoto(path: widget.paths[index]),
         ),
       ),
     );
   }
 }
 
-/// One page, pinch to zoom and double-tap to fill the screen.
-class _ZoomablePage extends StatefulWidget {
-  const _ZoomablePage({required this.path});
+/// One photo, pinch to zoom and double-tap to fill the screen.
+///
+/// Public so that screens needing their own chrome around a photo — an album
+/// with per-photo actions, say — reuse the gesture handling rather than
+/// growing a second copy of it.
+class ZoomablePhoto extends StatefulWidget {
+  const ZoomablePhoto({required this.path, super.key});
 
   final String path;
 
   @override
-  State<_ZoomablePage> createState() => _ZoomablePageState();
+  State<ZoomablePhoto> createState() => _ZoomablePhotoState();
 }
 
-class _ZoomablePageState extends State<_ZoomablePage> {
+class _ZoomablePhotoState extends State<ZoomablePhoto> {
   final TransformationController _transform = TransformationController();
 
   static const double _doubleTapScale = 2.5;
@@ -117,15 +121,16 @@ class _ZoomablePageState extends State<_ZoomablePage> {
         child: Image.file(
           File(widget.path),
           fit: BoxFit.contain,
-          errorBuilder: (context, _, _) => const _MissingPage(),
+          errorBuilder: (context, _, _) => const MissingPhoto(),
         ),
       ),
     ),
   );
 }
 
-class _MissingPage extends StatelessWidget {
-  const _MissingPage();
+/// What stands in for a photo whose file is no longer there.
+class MissingPhoto extends StatelessWidget {
+  const MissingPhoto({super.key});
 
   @override
   Widget build(BuildContext context) => const Padding(

@@ -5,6 +5,7 @@ import 'package:paws_log/app.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/medicine_repository.dart';
+import 'package:paws_log/data/repositories/pet_photo_repository.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
 import 'package:paws_log/data/repositories/reminder_repository.dart';
 import 'package:paws_log/data/repositories/vet_visit_repository.dart';
@@ -68,6 +69,13 @@ void main() {
       measuredOn: DateTime.utc(2026, 5, 1),
       grams: 4450,
     );
+    await PetPhotoRepository(db).add(
+      petId: pet.id,
+      path: '/pet_vault/sink.jpg',
+      takenAt: DateTime.utc(2026, 4, 2),
+      caption: 'Fast asleep in the bathroom sink, again, at four in the '
+          'afternoon',
+    );
     await VetVisitRepository(db).create(
       petId: pet.id,
       visitedOn: DateTime.utc(2026, 4, 20),
@@ -103,7 +111,11 @@ void main() {
           ),
         ],
         child: MediaQuery(
-          data: MediaQueryData(
+          // Built from the test surface rather than from scratch, so the
+          // phone size and pixel ratio `usePhoneSurface` set are kept. A
+          // bare MediaQueryData would hand every screen a zero-sized
+          // window.
+          data: MediaQueryData.fromView(tester.view).copyWith(
             platformBrightness: brightness,
             textScaler: TextScaler.linear(textScale),
           ),
@@ -188,6 +200,17 @@ void main() {
       for (final segment in ['Vaccines', 'Vet visits', 'Prescriptions']) {
         await tapAndSettle(tester, find.text(segment));
       }
+    });
+
+    forEachAppearance('the photo album', (tester) async {
+      await tapAndSettle(tester, find.text('Pets'));
+      await tapAndSettle(tester, find.text('Mochi'));
+      await scrollAndTap(tester, find.text('Photos'));
+      expect(find.byTooltip('Add a photo'), findsOneWidget);
+
+      await tapAndSettle(tester, find.byType(Image).first);
+      expect(find.text('Photo'), findsOneWidget);
+      expect(find.textContaining('Fast asleep'), findsOneWidget);
     });
 
     forEachAppearance('the prescription review', (tester) async {

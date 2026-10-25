@@ -1,3 +1,8 @@
+<!-- The published page is privacy-policy.html, generated from this file.
+     GitHub Pages only renders Markdown through Jekyll when it has front
+     matter, so a bare .md would serve as a text file — and a policy URL
+     that does not render is a rejection. Edit both, or regenerate. -->
+
 # Privacy Policy for Paws Log
 
 **Last updated: 25 October 2026**

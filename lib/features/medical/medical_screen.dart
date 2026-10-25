@@ -12,6 +12,7 @@ import '../../domain/models/pet_condition.dart';
 import '../../domain/models/vaccination_record.dart';
 import '../../domain/models/prescription.dart';
 import '../health/visit_edit_screen.dart';
+import '../premium/premium_gate.dart';
 import 'condition_edit_screen.dart';
 import 'prescription_detail_screen.dart';
 import 'vaccination_edit_screen.dart';
@@ -103,8 +104,7 @@ class _MedicalScreenState extends ConsumerState<MedicalScreen> {
     ),
     MedicalSegment.prescriptions => FloatingActionButton(
       tooltip: 'Add a prescription',
-      onPressed: () =>
-          showAddPrescriptionSheet(context, ref, petId: widget.petId),
+      onPressed: _addPrescription,
       child: const Icon(Icons.add),
     ),
     MedicalSegment.medicines => FloatingActionButton(
@@ -131,6 +131,29 @@ class _MedicalScreenState extends ConsumerState<MedicalScreen> {
       child: const Icon(Icons.add),
     ),
   };
+
+  /// Scanning is free for the first few, then paid.
+  ///
+  /// Checked before the camera opens rather than after: asking someone to
+  /// photograph a page and only then telling them it cannot be read would be
+  /// a small act of contempt.
+  Future<void> _addPrescription() async {
+    final scanned = await ref.read(prescriptionRepositoryProvider).count();
+    if (!mounted) {
+      return;
+    }
+    if (scanned < freeScanLimit) {
+      await showAddPrescriptionSheet(context, ref, petId: widget.petId);
+      return;
+    }
+    await runIfUnlocked(
+      context,
+      ref,
+      feature: PremiumFeature.prescriptionScans,
+      action: () =>
+          showAddPrescriptionSheet(context, ref, petId: widget.petId),
+    );
+  }
 
   /// Two kinds of record behind one button, so the sheet asks which.
   Future<void> _addHealthRecord() => showModalBottomSheet<void>(

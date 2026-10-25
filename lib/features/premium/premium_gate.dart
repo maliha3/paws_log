@@ -7,29 +7,36 @@ import '../../data/providers.dart';
 import 'paywall_screen.dart';
 
 /// The things the free tier does not include.
+///
+/// Three, and they hang off one idea: **one cat free, the household paid**.
+/// Photos on a visit used to be a fourth, which stopped making sense the day
+/// the photo album became free and unlimited — an owner who could keep five
+/// hundred pictures of their cat but not attach one to the visit it belonged
+/// to would rightly read that as arbitrary.
 enum PremiumFeature {
   /// Keeping more than one pet.
   extraPets,
 
-  /// Attaching photos to a vet visit.
-  visitPhotos,
+  /// Scanning a prescription, past the first few.
+  prescriptionScans,
 
   /// The vet summary PDF.
   vetSummary;
 
   String get headline => switch (this) {
     PremiumFeature.extraPets => 'Add another pet',
-    PremiumFeature.visitPhotos => 'Attach photos to a visit',
+    PremiumFeature.prescriptionScans => 'Scan another prescription',
     PremiumFeature.vetSummary => 'Take a summary to the vet',
   };
 
   String get explanation => switch (this) {
     PremiumFeature.extraPets =>
-      'The free version keeps one pet. Unlock PawsLog to track the whole '
-          'household.',
-    PremiumFeature.visitPhotos =>
-      'Keep lab results, prescriptions and photos of what you noticed, '
-          'attached to the visit they belong to.',
+      'The free version keeps one cat. Unlock PawsLog once and it covers the '
+          'whole household.',
+    PremiumFeature.prescriptionScans =>
+      'The free version reads $freeScanLimit prescriptions. Unlock PawsLog '
+          'and it reads every one — the pages you have already scanned stay '
+          'where they are.',
     PremiumFeature.vetSummary =>
       'One page with everything your vet asks for: vaccines and their dates, '
           'current medicines, how the weight is moving, and recent visits.',
@@ -38,6 +45,13 @@ enum PremiumFeature {
 
 /// How many pets the free tier covers.
 const int freePetLimit = 1;
+
+/// How many prescriptions the free tier reads.
+///
+/// Enough to feel what the scanner does — which is the whole argument for
+/// charging for it — and few enough that an owner whose cat is on a course
+/// of anything will reach the end of them.
+const int freeScanLimit = 3;
 
 /// Runs [action] if the feature is unlocked, otherwise shows the paywall.
 ///

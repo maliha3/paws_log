@@ -5,9 +5,11 @@ import 'package:paws_log/app.dart';
 import 'package:paws_log/data/db/app_database.dart';
 import 'package:paws_log/data/providers.dart';
 import 'package:paws_log/data/repositories/pet_repository.dart';
+import 'package:paws_log/data/repositories/prescription_repository.dart';
 import 'package:paws_log/data/repositories/settings_repository.dart';
 import 'package:paws_log/data/repositories/vet_visit_repository.dart';
 import 'package:paws_log/features/premium/paywall_screen.dart';
+import 'package:paws_log/features/premium/premium_gate.dart';
 
 import '../helpers/harness.dart';
 
@@ -128,13 +130,17 @@ void main() {
       await tapAndSettle(tester, find.text('Annual checkup'));
     }
 
-    testWidgets('adding one hits the paywall when locked', (tester) async {
+    testWidgets('are free, like the album they would contradict', (
+      tester,
+    ) async {
+      // Gating these while the photo album is free and unlimited meant an
+      // owner could keep five hundred pictures of their cat but not attach
+      // one to the visit it belonged to.
       await openVisit(tester);
 
       await tapAndSettle(tester, find.widgetWithText(TextButton, 'Add'));
 
-      expect(find.byType(PaywallScreen), findsOneWidget);
-      expect(find.text('Attach photos to a visit'), findsOneWidget);
+      expect(find.byType(PaywallScreen), findsNothing);
 
       await disposeTree(tester);
     });
@@ -159,6 +165,94 @@ void main() {
         findsNothing,
         reason: 'the attachment is still listed',
       );
+
+      await disposeTree(tester);
+    });
+  });
+
+  group('scanning prescriptions', () {
+    Future<void> openPrescriptions(WidgetTester tester) async {
+      await openPets(tester);
+      await tapAndSettle(tester, find.text('Mochi'));
+      await scrollAndTap(tester, find.text('Medical record'));
+    }
+
+    /// Fills the free allowance, as scanning that many pages would.
+    Future<void> scanned(String petId, int count) async {
+      final prescriptions = PrescriptionRepository(db);
+      for (var index = 0; index < count; index++) {
+        await prescriptions.create(
+          petId: petId,
+          date: DateTime.utc(2026, 5, 4),
+          imagePaths: const [],
+        );
+      }
+    }
+
+    testWidgets('the first few are free', (tester) async {
+      final pet = await pets.create(name: 'Mochi');
+      await scanned(pet.id, freeScanLimit - 1);
+      await openPrescriptions(tester);
+
+      await tapAndSettle(tester, find.byTooltip('Add a prescription'));
+
+      expect(find.byType(PaywallScreen), findsNothing);
+      expect(find.text('Scan the pages'), findsOneWidget);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('the next one hits the paywall when locked', (tester) async {
+      final pet = await pets.create(name: 'Mochi');
+      await scanned(pet.id, freeScanLimit);
+      await openPrescriptions(tester);
+
+      await tapAndSettle(tester, find.byTooltip('Add a prescription'));
+
+      expect(find.byType(PaywallScreen), findsOneWidget);
+      expect(find.text('Scan another prescription'), findsOneWidget);
+      expect(
+        find.text('Scan the pages'),
+        findsNothing,
+        reason: 'the camera never opened, which is the point of checking '
+            'before it does',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('unlocked, it goes straight through', (tester) async {
+      final pet = await pets.create(name: 'Mochi');
+      await scanned(pet.id, freeScanLimit + 5);
+      await settings.setPremium(value: true);
+      await openPrescriptions(tester);
+
+      await tapAndSettle(tester, find.byTooltip('Add a prescription'));
+
+      expect(find.byType(PaywallScreen), findsNothing);
+      expect(find.text('Scan the pages'), findsOneWidget);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('pages already scanned stay readable when locked', (
+      tester,
+    ) async {
+      // Gates are on doing, never on seeing.
+      final pet = await pets.create(name: 'Mochi');
+      await PrescriptionRepository(db).create(
+        petId: pet.id,
+        date: DateTime.utc(2026, 5, 4),
+        imagePaths: const ['/pages/one.jpg'],
+        extractedText: 'Amoxicillin 50 mg twice daily for 7 days',
+      );
+      await scanned(pet.id, freeScanLimit);
+      await openPrescriptions(tester);
+
+      await tapAndSettle(tester, find.text('May 4, 2026').first);
+
+      expect(find.byType(PaywallScreen), findsNothing);
+      expect(find.text('Medicines from this page'), findsOneWidget);
 
       await disposeTree(tester);
     });

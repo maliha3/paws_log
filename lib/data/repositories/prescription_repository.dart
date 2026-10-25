@@ -33,6 +33,16 @@ class PrescriptionRepository {
     );
   }
 
+  /// How many prescriptions this owner has scanned, across every pet.
+  ///
+  /// Across pets rather than per pet because the free tier only has one, and
+  /// an allowance that reset per pet would be no allowance at all.
+  Future<int> count() async {
+    final total = _db.prescriptions.id.count();
+    final query = _db.selectOnly(_db.prescriptions)..addColumns([total]);
+    return (await query.getSingle()).read(total) ?? 0;
+  }
+
   Future<Prescription?> findById(String id) async {
     final row = await (_db.select(_db.prescriptions)
           ..where((row) => row.id.equals(id)))

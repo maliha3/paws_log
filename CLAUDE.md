@@ -28,10 +28,12 @@ No backend, no accounts, no analytics in v1. All data is local.
 
 ## The premium gate
 
-Entitlements come from RevenueCat. Every product — monthly, yearly and
-lifetime — grants one entitlement (`premium`), so the app only ever asks
-whether that is active and never which plan paid for it. Upgrading from
-monthly to lifetime is therefore a non-event in the code.
+Entitlements come from RevenueCat. Every product grants one entitlement
+(`premium`), so the app only ever asks whether that is active and never which
+plan paid for it. **v1 sells one thing: a lifetime unlock.** The app has no
+servers to fund, so a recurring charge would be hard to justify and easy to
+resent; the code still handles subscriptions, so adding one later is a
+dashboard change rather than a release.
 
 `docs/monetisation-setup.md` is the App Store Connect and RevenueCat
 checklist.
@@ -53,7 +55,18 @@ checklist.
 - Backing out of the store sheet is the commonest outcome there is. It is
   never reported as an error.
 
-Gated: a second pet, photos on a visit, the vet summary.
+Gated: a second pet, scanning past the first three prescriptions, the vet
+summary. They hang off one idea — **one cat free, the whole household paid**
+— because three unrelated unlocks read as thin whatever the price.
+
+Photos on a visit used to be a fourth. It stopped making sense the day the
+photo album became free and unlimited: an owner who can keep five hundred
+pictures of their cat but not attach one to the visit it belongs to reads
+that as arbitrary, and is right to.
+
+The scan allowance is checked **before the camera opens**. Asking someone to
+photograph a page and only then telling them it cannot be read would be a
+small act of contempt.
 
 - **Gates are on doing, never on seeing.** An owner whose access lapsed, or
   who restored a backup made on a paid install, keeps every pet, photo and

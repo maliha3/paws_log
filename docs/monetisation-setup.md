@@ -23,23 +23,62 @@ reason a paywall comes up empty.
 Create the app with the bundle identifier `com.malihazaman.pawsLog` — it must
 match `PRODUCT_BUNDLE_IDENTIFIER` in the Xcode project exactly.
 
-### The three products
+### The products
 
-Create a **subscription group** (name it something like "PawsLog Premium"),
-then inside it:
+**Ship one: the lifetime unlock at $9.99.**
 
-| Product | Type | Suggested ID | Duration |
+| Product | Type | Suggested ID | Price |
 |---|---|---|---|
-| Monthly | Auto-renewable subscription | `com.malihazaman.pawsLog.premium.monthly` | 1 month |
-| Yearly | Auto-renewable subscription | `com.malihazaman.pawsLog.premium.yearly` | 1 year |
-| Lifetime | **Non-consumable** | `com.malihazaman.pawsLog.premium.lifetime` | — |
+| Lifetime | **Non-consumable** | `com.malihazaman.pawsLog.premium.lifetime` | $9.99 |
 
-Lifetime is a non-consumable, not a subscription, and lives outside the
-subscription group. The app already treats it differently: it never claims to
-renew.
+A non-consumable, not a subscription, so it lives outside any subscription
+group. The app already treats it differently: it never claims to renew.
 
-Each product needs a price, and a localised display name and description for
-every language you ship. Each subscription also needs a review screenshot.
+Why one price and why that price:
+
+- **No subscription.** The app is deliberately low-engagement — it exists so
+  nobody has to think about it — and it has no servers to fund. Monthly
+  billing for that invites churn, refund requests and resentment, and users
+  increasingly know when there is no recurring cost behind a recurring
+  charge.
+- **$9.99.** Apple keeps 15% under the Small Business Program, so you net
+  about $8.49. Against the $99/year developer fee that is **twelve sales a
+  year to break even** — one a month, which is a number you can believe in
+  from a first release with no reviews. $24.99 would need five, but each one
+  asks a stranger for $25 on an app they found yesterday.
+- **Raise it later, not lower.** Buyers of a non-consumable keep what they
+  bought, so a price rise is easy once there are reviews to justify it.
+  Going down is the move you cannot take back.
+- Use **per-territory pricing** to come down in South Asia and Latin America.
+  $10 is a different proposition in Dhaka than in Munich.
+
+You may still want to create the monthly and yearly subscriptions in App
+Store Connect without putting them in the offering. RevenueCat offerings are
+server-side, so they could be tested later without shipping a release. That
+is an experiment, not the launch.
+
+The product needs a price and a localised display name and description for
+every language you ship.
+
+### What the money is for
+
+Three things, and they hang off one idea: **one cat free, the whole household
+paid.**
+
+| Paid | |
+|---|---|
+| A second pet and beyond | The gate owners find fairest, and multi-cat households get the most value |
+| Scanning past the first 3 prescriptions | The headline feature. Let them feel it work, then charge |
+| The vet summary PDF | A discrete thing you hand over at the appointment |
+
+Everything else is free, including all reminders and notifications, medicines
+and doses, the photo album, vet visits **and their photos**, weight, the
+health record, and backup export and import.
+
+Photos on a visit used to be paid. That stopped making sense the day the
+photo album became free and unlimited: an owner who can keep five hundred
+pictures of their cat but not attach one to the visit it belongs to reads
+that as arbitrary, and is right to.
 
 ### Privacy and terms
 

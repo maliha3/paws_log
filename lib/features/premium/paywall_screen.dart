@@ -38,21 +38,26 @@ class PaywallScreen extends ConsumerStatefulWidget {
 }
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
+  /// What unlocking buys, under the one line that explains it.
+  ///
+  /// A list of three unrelated unlocks reads as thin whatever the price. One
+  /// idea — the household rather than the cat — reads as a product, and the
+  /// other two become things that come with it.
   static const List<({IconData icon, String title, String detail})> _benefits =
       [
         (
           icon: Icons.pets_outlined,
-          title: 'Every pet',
-          detail: 'Track the whole household, not just one.',
+          title: 'Every cat you have',
+          detail: 'Reminders, medicines and records for all of them.',
         ),
         (
-          icon: Icons.photo_library_outlined,
-          title: 'Photos on visits',
-          detail: 'Lab results and prescriptions, kept with the visit.',
+          icon: Icons.document_scanner_outlined,
+          title: 'Every prescription',
+          detail: 'Scan and read as many as you are given.',
         ),
         (
           icon: Icons.description_outlined,
-          title: 'Vet summary',
+          title: 'The vet summary',
           detail: 'One page to hand over at the appointment.',
         ),
       ];
@@ -139,7 +144,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            // The whole offer in one line, above the list rather than
+            // assembled from it.
+            Text(
+              'One cat free. The whole household, once.',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
             for (final benefit in _benefits) ...[
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

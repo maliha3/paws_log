@@ -102,24 +102,16 @@ you submit. That is normal and not a mistake you have made.
 
 ---
 
-## 5 · Set up RevenueCat
+## 5 · Nothing to set up
 
-Full detail is in `monetisation-setup.md` §2. The short version:
+There is no second dashboard. The app buys through StoreKit directly, so once
+the product exists in App Store Connect there is nothing else to configure —
+no key, no issuer id, no shared secret, no offering.
 
-1. Create a project and add an **App Store** app with the bundle ID.
-2. Give it the credentials from App Store Connect: the **In-App Purchase
-   Key** (`.p8` — downloadable once, keep it), the **Shared Secret**, and
-   the **Server Notifications V2** URLs.
-3. Create a product with the same product ID as step 4.
-4. Create an entitlement with the identifier **`premium`** — this exact
-   string is what the app checks — and attach the product to it.
-5. Create an **Offering**, mark it *Current*, and put the product in it as a
-   package. The paywall shows whatever is in the current offering, so this
-   is where the "one product only" decision actually lives.
-6. Copy the **public SDK key** (starts `appl_`). It is not a secret, but it
-   is not in the repo either.
-
----
+If you already started a RevenueCat project, you can delete it, and the `.p8`
+you downloaded is no longer needed by this app. Revoke it in **App Store
+Connect → Users and Access → Integrations → In-App Purchase** if you would
+rather it not exist.
 
 ## 6 · Test the purchase on a real iPhone
 
@@ -133,8 +125,7 @@ on-device OCR have only ever been exercised on a simulator.
 
    ```
    flutter run --release -d <your-iphone> \
-     --dart-define=REVENUECAT_IOS_KEY=appl_xxx \
-     --dart-define=PRIVACY_URL=https://your-policy-url
+     --dart-define=PRIVACY_URL=https://maliha3.github.io/paws_log/privacy-policy.html
    ```
 
 3. Work through **`device-qa.md`**. It is about an hour and covers every
@@ -145,9 +136,9 @@ on-device OCR have only ever been exercised on a simulator.
    live.
 
 **If the paywall says purchases are unavailable**, the cause is almost
-always one of: no `--dart-define` key, the Paid Applications agreement not
-Active, or the product not yet attached to the offering. The app is telling
-you the truth, not failing.
+always one of: a debug build (release builds sell, debug ones do not), the
+Paid Applications agreement not Active, or the product not yet approved. The
+app is telling you the truth, not failing.
 
 ---
 
@@ -172,8 +163,7 @@ sizes. You will need to write or approve:
    `1.0.0+1` becomes `1.0.0+2`. Apple rejects a duplicate build number.
 2. ```
    flutter build ipa --release \
-     --dart-define=REVENUECAT_IOS_KEY=appl_xxx \
-     --dart-define=PRIVACY_URL=https://your-policy-url
+     --dart-define=PRIVACY_URL=https://maliha3.github.io/paws_log/privacy-policy.html
    ```
 3. Upload `build/ios/ipa/*.ipa` with **Transporter** (free, Mac App Store),
    or open the Xcode archive and distribute from there.
@@ -202,7 +192,7 @@ sizes. You will need to write or approve:
 |---|---|
 | Privacy policy URL unreachable | Step 2's check skipped |
 | "In-app purchase not submitted" | The product was not ticked alongside the build |
-| Paywall shows no price to the reviewer | Agreement not Active, or offering not marked Current |
+| Paywall shows no price to the reviewer | Agreement not Active, or the product not submitted with the build |
 | Guideline 2.1 — "we could not find the feature" | No review notes explaining the free tier |
 
 Expect one rejection. It is normal, the reply is usually specific, and the
@@ -214,7 +204,7 @@ turnaround after a fix is a day or two.
 
 - `ITSAppUsesNonExemptEncryption` is declared `false` in `Info.plist`, so
   uploads skip the export-compliance question. The app adds no encryption of
-  its own and RevenueCat uses standard HTTPS, which is exempt.
+  its own and the App Store connection is Apple's, which is exempt.
 - Camera and photo permission strings are written and say what they are for.
 - Deployment target is iOS 14.0.
 - App icons: all twenty, correct sizes, no alpha channel.

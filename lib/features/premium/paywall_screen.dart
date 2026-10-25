@@ -222,7 +222,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             // Debug *and* no real store behind it. A build that can take
             // money must never offer a button that skips paying, not even
             // one a reviewer would have to go looking for.
-            if (kDebugMode && !PurchaseConfig.hasStoreKeys) ...[
+            if (kDebugMode && !PurchaseConfig.sellsThroughStore) ...[
               const SizedBox(height: 12),
               OutlinedButton(
                 // Debug only. Without it the paid half of the app would be
@@ -382,7 +382,7 @@ class _LegalFooter extends StatelessWidget {
     // requires a policy link before it does. Shipping without one used to
     // hide the link and say nothing.
     final missingPolicy =
-        PurchaseConfig.hasStoreKeys && PurchaseConfig.privacyUrl.isEmpty;
+        PurchaseConfig.sellsThroughStore && PurchaseConfig.privacyUrl.isEmpty;
 
     return Column(
       children: [

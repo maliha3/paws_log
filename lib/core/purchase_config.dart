@@ -1,38 +1,23 @@
-/// Store and RevenueCat configuration.
+import 'package:flutter/foundation.dart';
+
+/// What the app sells, and the links Apple requires beside it.
 ///
-/// Keys come from `--dart-define` and are never committed. A build with no
-/// key falls back to the stub entitlement source, so development, CI and the
-/// whole test suite keep working without credentials — and so a missing key
-/// can never be mistaken for a working store.
+/// There is no store key here any more. The app sells one non-consumable
+/// straight through StoreKit, so Apple is the only party involved: no
+/// receipt server, no SDK key, nothing to configure but the product id —
+/// which is public by nature, since the store needs it to show a price.
 abstract final class PurchaseConfig {
-  /// RevenueCat public SDK key for Apple platforms.
+  /// The one thing on sale, as created in App Store Connect.
   ///
-  ///     flutter run --dart-define=REVENUECAT_IOS_KEY=appl_xxx
-  static const String iosApiKey = String.fromEnvironment(
-    'REVENUECAT_IOS_KEY',
+  /// Overridable at build time only so a test build can point at a different
+  /// product; there is no secret here and no reason to keep it out of the
+  /// repository.
+  static const String unlockProductId = String.fromEnvironment(
+    'UNLOCK_PRODUCT_ID',
+    defaultValue: 'com.malihazaman.pawsLog.premium.lifetime',
   );
 
-  /// RevenueCat public SDK key for Google Play.
-  static const String androidApiKey = String.fromEnvironment(
-    'REVENUECAT_ANDROID_KEY',
-  );
-
-  /// The entitlement identifier configured in the RevenueCat dashboard.
-  ///
-  /// Every product — monthly, yearly and lifetime — must grant this one
-  /// entitlement, which is what the app actually checks.
-  static const String entitlementId = String.fromEnvironment(
-    'REVENUECAT_ENTITLEMENT',
-    defaultValue: 'premium',
-  );
-
-  /// The offering identifier to show on the paywall. Empty means whichever
-  /// offering is marked current in the dashboard, which is the normal case.
-  static const String offeringId = String.fromEnvironment(
-    'REVENUECAT_OFFERING',
-  );
-
-  /// Apple requires a link to the terms the subscription is sold under.
+  /// Apple requires a link to the terms the purchase is made under.
   ///
   /// Apple's standard EULA is the default, and is acceptable when you have
   /// not written your own. Replace it if you have.
@@ -46,7 +31,22 @@ abstract final class PurchaseConfig {
   /// Connect. There is no sensible default: this one must be your own.
   static const String privacyUrl = String.fromEnvironment('PRIVACY_URL');
 
-  /// Whether this build can actually sell anything.
-  static bool get hasStoreKeys =>
-      iosApiKey.isNotEmpty || androidApiKey.isNotEmpty;
+  /// Whether this build talks to Apple's store at all.
+  ///
+  /// **Release builds sell; debug builds do not.** Under RevenueCat this was
+  /// decided by whether an API key had been passed, which gave the useful
+  /// property that a missing key could never be mistaken for a working
+  /// store. StoreKit needs no key, so the build mode carries that instead —
+  /// and the result is one fewer thing to remember, because the builds that
+  /// should sell are exactly the ones that are released.
+  ///
+  /// Tests and CI run in debug and get the stub, which sells nothing. A
+  /// debug build on a real device can opt in with
+  /// `--dart-define=PAWSLOG_STORE_ENABLED=true`, though sandbox purchases
+  /// are better tested against a release build anyway.
+  static bool get sellsThroughStore => kReleaseMode || _storeOverride;
+
+  static const bool _storeOverride = bool.fromEnvironment(
+    'PAWSLOG_STORE_ENABLED',
+  );
 }

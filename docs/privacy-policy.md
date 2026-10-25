@@ -13,8 +13,7 @@ Paws Log keeps everything about your cats on your phone. There is no account
 to create, no server holding your records, and nothing is collected about how
 you use the app.
 
-The only time it talks to anyone is when you buy or restore the unlock, and
-that conversation is about the purchase, not about you or your cats.
+Nothing you enter ever leaves your device. Not to us, not to anyone.
 
 ## What stays on your phone
 
@@ -39,20 +38,11 @@ deciding when to notify you.
 
 ## What leaves your phone
 
-**When you buy or restore the unlock.** Payment is handled entirely by Apple,
-and the developer never sees your card details, your name or your Apple
-Account. Paws Log uses RevenueCat to check whether a purchase is valid.
-RevenueCat receives:
-
-- an anonymous identifier it generates for the installation — not your name,
-  your email, or your Apple Account
-- the purchase receipt Apple issued
-- basic technical information such as the device model, operating system
-  version and country
-
-RevenueCat never receives anything about your cats or any record you have
-entered. Their privacy policy is at
-<https://www.revenuecat.com/privacy/>.
+**When you buy or restore the unlock.** Payment is handled entirely by Apple.
+Your device talks to Apple's App Store and to nobody else — there is no
+service in between, and the developer never sees your card details, your
+name or your Apple Account. Apple tells your device whether the purchase
+exists; that is the whole exchange.
 
 **When you choose to share something.** Exporting a backup, sharing a photo,
 or sending the vet summary hands a file to the iOS share sheet, and you

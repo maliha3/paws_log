@@ -18,7 +18,7 @@ import '../services/backup/backup_sharing.dart';
 import '../core/purchase_config.dart';
 import '../services/entitlements/entitlement_service.dart';
 import '../services/entitlements/entitlement_source.dart';
-import '../services/entitlements/revenuecat_entitlements.dart';
+import '../services/entitlements/store_kit_entitlements.dart';
 import '../services/entitlements/stub_entitlements.dart';
 import '../services/photo_store.dart';
 import '../services/prescriptions/ocr_service.dart';
@@ -152,14 +152,16 @@ final settingsRepositoryProvider = Provider<SettingsRepository>(
 
 /// Where the entitlement comes from.
 ///
-/// RevenueCat when the build has a key, and a local stub otherwise — so
-/// development, CI and the tests work without credentials, and a missing key
-/// can never look like a working store.
+/// Apple's store on a real build, and a local stub when the store is turned
+/// off — so CI and the tests work without one, and the stub can never be
+/// mistaken for a working store because it sells nothing.
 final entitlementSourceProvider = Provider<EntitlementSource>((ref) {
-  if (!PurchaseConfig.hasStoreKeys) {
+  if (!PurchaseConfig.sellsThroughStore) {
     return StubEntitlements(ref.watch(settingsRepositoryProvider));
   }
-  return RevenueCatEntitlements();
+  final source = StoreKitEntitlements();
+  ref.onDispose(source.dispose);
+  return source;
 });
 
 final entitlementServiceProvider = Provider<EntitlementService>(

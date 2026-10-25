@@ -3,7 +3,7 @@
 The code is done and tested, but it cannot sell anything until the two
 dashboards below are configured. Nothing here can be done from the repo.
 
-Until a build is given a RevenueCat key it falls back to a stub that sells
+Until a build is given a the store key it falls back to a stub that sells
 nothing, so the app, CI and the whole test suite keep working meanwhile.
 
 ---
@@ -14,7 +14,7 @@ nothing, so the app, CI and the whole test suite keep working meanwhile.
 
 **Agreements, Tax, and Banking → Paid Applications.** The agreement must show
 **Active**, with banking and tax details complete. Until it does, products
-stay in "Missing Metadata", the SDK returns no offerings, and the paywall
+stay in "Missing Metadata", the store returns no products, and the paywall
 will correctly say purchases are unavailable. This is the single most common
 reason a paywall comes up empty.
 
@@ -52,10 +52,10 @@ Why one price and why that price:
 - Use **per-territory pricing** to come down in South Asia and Latin America.
   $10 is a different proposition in Dhaka than in Munich.
 
-You may still want to create the monthly and yearly subscriptions in App
-Store Connect without putting them in the offering. RevenueCat offerings are
-server-side, so they could be tested later without shipping a release. That
-is an experiment, not the launch.
+Selling a subscription later would mean creating it here *and* shipping a
+build — there is no server-side switch any more, which is the honest trade
+for having no server. `PlanKind` and the paywall still handle subscriptions,
+so it is a day's work rather than a rewrite.
 
 The product needs a price and a localised display name and description for
 every language you ship.
@@ -96,29 +96,25 @@ that as arbitrary, and is right to.
   |---|---|
   | Data used to track you | **None.** No ads, no advertising identifier, no data shared with brokers |
   | Data linked to you | **None.** There is no account, so nothing is linked to an identity |
-  | Data *not* linked to you | **Purchases → Purchase History**, for app functionality. That is RevenueCat validating a receipt |
+  | Data *not* linked to you | **Purchases → Purchase History**, for app functionality. That is the store validating a receipt |
 
   Everything the owner enters — pets, photos, prescriptions, weights — never
   leaves the device, so none of it is "collected" in Apple's sense and none
   of it is declared. Photos and camera are *permissions*, not collection.
 
-  RevenueCat publishes its own App Privacy guidance for the exact boxes its
+  the store publishes its own App Privacy guidance for the exact boxes its
   SDK requires; follow theirs over this table if the two disagree, because
   it changes when their SDK does.
 - **Terms of Use (EULA).** Apple's standard EULA is the default in the app.
   If you use your own, set `TERMS_URL` at build time and also paste it into
   App Store Connect.
 
-### Credentials RevenueCat needs
+### Credentials
 
-- **App-Specific Shared Secret** — App Information → App-Specific Shared
-  Secret.
-- **In-App Purchase Key** — Users and Access → Integrations → In-App
-  Purchase. Download the `.p8` once (you cannot download it again) and note
-  the Key ID and Issuer ID.
-- **App Store Server Notifications V2** — set the Production and Sandbox URLs
-  to the ones RevenueCat gives you. Without this, renewals, cancellations and
-  refunds reach the app late or not at all.
+**None.** The app talks to StoreKit on the device, so there is no key to
+generate, no `.p8` to keep safe, no issuer id, no shared secret and no server
+notification endpoint. Apple handles validation; the device asks and Apple
+answers.
 
 ### Testing accounts
 
@@ -128,71 +124,33 @@ purchases will then prompt for the sandbox account.
 
 ---
 
-## 2. RevenueCat
+## 2. The build
 
-1. **Create a project**, then add an **App Store** app with the same bundle
-   identifier.
-2. Upload the **shared secret** and the **In-App Purchase key** (`.p8`, Key
-   ID, Issuer ID).
-3. Copy RevenueCat's **server notification URL** back into App Store Connect
-   (above).
-4. **Products** — import the three product IDs from App Store Connect.
-5. **Entitlements** — create one called **`premium`** and attach *all three*
-   products to it.
+There is no second dashboard. The app talks to Apple and nobody else, so the
+only thing a release build needs beyond the product existing is the privacy
+policy URL the paywall links to:
 
-   This matters: the app asks one question — is `premium` active — and never
-   which plan paid for it. That is what makes upgrading from monthly to
-   lifetime a non-event in the code. If you name it something else, pass
-   `--dart-define=REVENUECAT_ENTITLEMENT=<name>`.
-
-6. **Offerings** — create one (`default` is fine) and mark it **Current**,
-   with three packages using the **standard identifiers**:
-
-   | Package | Attach |
-   |---|---|
-   | `$rc_monthly` | the monthly subscription |
-   | `$rc_annual` | the yearly subscription |
-   | `$rc_lifetime` | the lifetime non-consumable |
-
-   The app maps those three package types to the plans it shows. A custom
-   package identifier will be ignored rather than shown as something the
-   owner cannot understand — so if you use custom ones, update `_kindOf` in
-   `lib/services/entitlements/revenuecat_entitlements.dart`.
-
-7. **API keys** — copy the **public** Apple SDK key (starts with `appl_`).
-   It is safe in a client. Never put a secret key in the app.
-
----
-
-## 3. Building with the keys
-
-Keys are passed at build time and never committed:
-
-```sh
-flutter run \
-  --dart-define=REVENUECAT_IOS_KEY=appl_xxxxxxxxxxxx \
-  --dart-define=PRIVACY_URL=https://example.com/privacy
+```
+flutter build ipa --release \
+  --dart-define=PRIVACY_URL=https://maliha3.github.io/paws_log/privacy-policy.html
 ```
 
-Optional: `REVENUECAT_ENTITLEMENT` (default `premium`),
-`REVENUECAT_OFFERING` (default: whichever is Current), `TERMS_URL` (default:
-Apple's standard EULA), `REVENUECAT_ANDROID_KEY`.
+`PAWSLOG_STORE_ENABLED` is not needed for a release build — release builds
+sell by definition. Pass it only to let a *debug* build reach the real store.
 
-For CI and release builds, put these in your build configuration — an Xcode
-scheme, a Codemagic/Fastlane environment, or whatever you use — not in the
-repo.
+If the product id ever changes, `--dart-define=UNLOCK_PRODUCT_ID=...`
+overrides it; otherwise the default in `PurchaseConfig` is the one above.
 
----
-
-## 4. What to check before submitting
+## 3. What to check before submitting
 
 The paywall already carries everything Apple requires, but it is worth
 reading it on a device once the real products load:
 
 - [ ] Each plan shows its **title, duration and price**, in the store's own
       localised currency.
-- [ ] Subscriptions say they **renew automatically until cancelled**;
-      lifetime says it does not.
+- [ ] The footer says this is a **one-off purchase, nothing to renew** —
+      not the subscription wording, which would describe something the buyer
+      is not buying.
 - [ ] **Restore purchases** is reachable without buying anything.
 - [ ] **Terms of Use** and **Privacy Policy** links open.
 - [ ] Buying, then deleting and reinstalling the app, then **Restore**, gets
@@ -202,9 +160,12 @@ reading it on a device once the real products load:
 
 ---
 
-## 5. Android, if you go there
+## 4. Android, if you go there
 
-The code already supports it: pass `REVENUECAT_ANDROID_KEY` and configure a
-Play Console app in the same RevenueCat project, with its own products
-attached to the same `premium` entitlement. Play requires its own service
-account credentials, which RevenueCat's dashboard walks through.
+`in_app_purchase` covers Google Play too, so the implementation mostly
+carries over: create the product in the Play Console with the same id and
+`StoreKitEntitlements` works against it unchanged — the name becomes a lie,
+but the plugin does not care.
+
+What does not carry over is the OCR. Vision is Apple's; Android needs ML Kit
+behind `OcrService`, which is the reason that interface exists.

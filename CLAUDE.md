@@ -28,30 +28,57 @@ No backend, no accounts, no analytics in v1. All data is local.
 
 ## The premium gate
 
-Entitlements come from RevenueCat. Every product grants one entitlement
-(`premium`), so the app only ever asks whether that is active and never which
-plan paid for it. **v1 sells one thing: a lifetime unlock.** The app has no
-servers to fund, so a recurring charge would be hard to justify and easy to
-resent; the code still handles subscriptions, so adding one later is a
-dashboard change rather than a release.
+**v1 sells one thing: a lifetime unlock, straight through StoreKit.**
 
-`docs/monetisation-setup.md` is the App Store Connect and RevenueCat
-checklist.
+RevenueCat was wired up first and then removed. For a single non-consumable
+it earns nothing: Apple already records the purchase against the buyer's
+Apple Account, syncs it across their devices, and replays it on a restore.
+What it cost was the thing the app sells itself on — it was the only network
+call in an app whose whole claim is that nothing leaves the phone, and it
+needed a dashboard, a `.p8`, an issuer id and a shared secret to deliver a
+boolean. The privacy policy now says *nothing leaves your device*, full stop,
+which is a stronger claim and a true one.
 
-- Keys arrive by `--dart-define` and are never committed. A build with **no
-  key falls back to a stub that sells nothing**, so development, CI and the
-  tests work without credentials and a missing key can never be mistaken for
-  a working store. A debug-only button flips the stub.
+`EntitlementSource` is why the swap was contained: five methods, one new
+implementation, two wiring lines. If a subscription or Android ever arrives,
+the same door works the other way.
+
+`docs/monetisation-setup.md` is the App Store Connect checklist.
+
+- **Release builds sell; debug builds do not.** Under RevenueCat this was
+  decided by whether an API key had been passed, which usefully meant a
+  missing key could never look like a working store. StoreKit needs no key,
+  so the build mode carries that property instead — and there is one fewer
+  thing to forget, because the builds that should sell are exactly the ones
+  that are released. A debug build can opt in with
+  `--dart-define=PAWSLOG_STORE_ENABLED=true`. A debug-only button flips the
+  stub.
+- **Ownership cannot be asked for on demand.** `in_app_purchase` exposes no
+  "what does this person own"; the only way to ask is `restorePurchases`,
+  which replays past purchases through the purchase stream. So the app
+  restores once at launch, listens, and lets the settings cache answer
+  everything before that lands. That cache was always load-bearing; now it
+  is what makes a cold start instant.
+- **Every transaction must be completed**, whatever its outcome. Apple
+  redelivers one until it is acknowledged, so `completePurchase` runs on
+  failures and cancellations too, not just on success.
 - `EntitlementService` mirrors every answer into the settings table. That
   cache is the point: a paying owner opening the app on a train must not be
-  told they have lost access because RevenueCat is unreachable. The store
-  stays the source of truth; the cache only covers the gap.
+  told they have lost access because the store has not answered yet. Apple
+  stays the source of truth; the cache covers the gap, which under StoreKit
+  is every moment before the launch restore lands.
 - Prices are **always** the store's own localised strings. The app has no
   idea about the owner's currency, tax or regional pricing, and must never
   format a price itself.
 - The paywall carries what Apple requires before a purchase: title, duration
-  and price per plan, that a subscription renews until cancelled, Restore
-  Purchases, and links to the terms and privacy policy.
+  and price per plan, Restore Purchases, and links to the terms and privacy
+  policy. The renewal sentence follows **what is actually on offer** — saying
+  a subscription renews on a paywall selling a one-off purchase describes
+  something the buyer is not buying.
+- A build that can sell **must** link the policy. That link used to be
+  conditional on `PRIVACY_URL` being passed, so a build without it simply had
+  no link and said nothing; now that combination says so on the paywall, in
+  red.
 - Backing out of the store sheet is the commonest outcome there is. It is
   never reported as an error.
 
@@ -692,9 +719,12 @@ assumed.
 85% of lines, and the missing 15% is almost all the plugin boundary — which
 is by design: those interfaces exist so everything above them is testable
 without the plugins. It does mean these have never executed anywhere:
-`revenuecat_entitlements.dart`, the device half of `scan_service.dart`, the
-notification gateway, the share sheet, and the notification actions that run
-on a background isolate.
+the device half of `scan_service.dart`, the notification gateway, the share
+sheet, and the notification actions that run on a background isolate.
+`store_kit_entitlements.dart` used to be on that list under RevenueCat; it
+is now covered by a fake store, which is most of the argument for the swap —
+buying, cancelling, failing, restoring and acknowledging can all be tested
+without a phone.
 
 `docs/device-qa.md` is the pass that covers them, on a real phone. It is the
 only testing those paths get before a stranger does it.

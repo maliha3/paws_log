@@ -13,8 +13,7 @@ Build it with your real keys first:
 
 ```
 flutter run --release -d <your-iphone> \
-  --dart-define=REVENUECAT_IOS_KEY=appl_xxx \
-  --dart-define=PRIVACY_URL=https://your-policy-url
+  --dart-define=PRIVACY_URL=https://maliha3.github.io/paws_log/privacy-policy.html
 ```
 
 Release, not debug: debug builds are slow enough to hide a stutter, and the

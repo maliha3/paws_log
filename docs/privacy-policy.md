@@ -99,6 +99,6 @@ will be noted in the app's release notes.
 
 ## Contact
 
-Questions about this policy: **[your support email]**
+Questions about this policy: **malihazmn12@gmail.com**
 
 Paws Log is made by Maliha Zaman.

@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Credentials. The repo is public: an App Store key committed here is an
+# App Store key on the internet, and anyone holding it can validate receipts
+# as this developer. RevenueCat and store keys are passed with --dart-define
+# at build time and belong nowhere near version control.
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+.env
+.env.*

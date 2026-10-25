@@ -687,6 +687,24 @@ The migration tests build a real database at each old version from the DDL
 drift emitted at the time, so a jump like v1 to v3 is exercised and not
 assumed.
 
+## What the tests do not cover
+
+85% of lines, and the missing 15% is almost all the plugin boundary — which
+is by design: those interfaces exist so everything above them is testable
+without the plugins. It does mean these have never executed anywhere:
+`revenuecat_entitlements.dart`, the device half of `scan_service.dart`, the
+notification gateway, the share sheet, and the notification actions that run
+on a background isolate.
+
+`docs/device-qa.md` is the pass that covers them, on a real phone. It is the
+only testing those paths get before a stranger does it.
+
+`runMaintenanceWith` is tested for the one piece of ordering that matters:
+the window is rebuilt **after** both writes, asserted by a `ScheduleSync`
+that snapshots the database at the moment it is called and compares that to
+the end state. A sync that ran first would see neither the sweep nor the
+top-up.
+
 ## Working agreements
 
 - Run `flutter analyze` and `flutter test` before every commit. Both clean.

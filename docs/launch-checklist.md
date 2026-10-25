@@ -137,14 +137,12 @@ on-device OCR have only ever been exercised on a simulator.
      --dart-define=PRIVACY_URL=https://your-policy-url
    ```
 
-3. Walk the whole app and check, in this order:
-   - onboarding, and a notification actually arriving
-   - **scan a real prescription** — this is the one feature that has never
-     touched a camera
-   - the paywall shows a price, not "Purchases are not available"
-   - buy it. **You sign in with the sandbox account at the purchase sheet**,
-     not in Settings. A sandbox purchase charges nothing.
-   - delete the app, reinstall, and **Restore purchases** brings it back
+3. Work through **`device-qa.md`**. It is about an hour and covers every
+   path the automated tests cannot reach: the camera, the scanner, OCR on a
+   real prescription, notifications arriving with the app closed, a sandbox
+   purchase, restore, and sharing. Do not skip the handwritten prescription
+   or the airplane-mode check — those two are where the unpleasant surprises
+   live.
 
 **If the paywall says purchases are unavailable**, the cause is almost
 always one of: no `--dart-define` key, the Paid Applications agreement not

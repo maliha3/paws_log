@@ -46,7 +46,7 @@ void main() {
     await pumpApp(tester);
 
     // 1 — Welcome.
-    expect(find.text('PawsLog'), findsOneWidget);
+    expect(find.text('Paws Log'), findsOneWidget);
     await tapAndSettle(tester, find.text('Get started'));
 
     // 2 — Add the first cat.

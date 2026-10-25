@@ -124,7 +124,7 @@ class BackupService {
         .where((file) => file.name == _manifest)
         .firstOrNull;
     if (manifestFile == null) {
-      throw const BackupFormatException('This file is not a PawsLog backup.');
+      throw const BackupFormatException('This file is not a Paws Log backup.');
     }
 
     final manifest =
@@ -133,7 +133,7 @@ class BackupService {
     final version = manifest['formatVersion'] as int?;
     if (version == null || version > formatVersion) {
       throw BackupFormatException(
-        'This backup was made by a newer version of PawsLog.',
+        'This backup was made by a newer version of Paws Log.',
       );
     }
 

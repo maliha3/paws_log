@@ -52,6 +52,15 @@ void main() {
     await tapAndSettle(tester, find.text('Add a pet'));
   }
 
+  /// Opens the paywall with a specific set of plans on offer.
+  Future<void> showPaywallWith(
+    WidgetTester tester,
+    List<PremiumPlan> plans,
+  ) async {
+    source = FakeEntitlementSource(plansOnOffer: plans);
+    await openPaywall(tester);
+  }
+
   testWidgets('every plan shows its price and what it commits to', (
     tester,
   ) async {
@@ -122,7 +131,7 @@ void main() {
     await tapAndSettle(tester, find.text('Monthly'));
 
     expect(find.byType(PaywallScreen), findsNothing);
-    expect(find.text('PawsLog is unlocked.'), findsOneWidget);
+    expect(find.text('Paws Log is unlocked.'), findsOneWidget);
     expect(await cachedPremium(db), isTrue);
 
     await disposeTree(tester);
@@ -211,6 +220,50 @@ void main() {
 
     await disposeTree(tester);
   });
+
+  group('the legal footer', () {
+    testWidgets('a one-off purchase is not described as renewing', (
+      tester,
+    ) async {
+      await showPaywallWith(tester, const [
+        PremiumPlan(id: 'life', kind: PlanKind.lifetime, price: r'$9.99'),
+      ]);
+
+      expect(find.textContaining('one-off purchase'), findsOneWidget);
+      expect(
+        find.textContaining('renews automatically'),
+        findsNothing,
+        reason: 'nothing on offer renews, so saying so is just confusing',
+      );
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('a subscription still carries the renewal terms', (
+      tester,
+    ) async {
+      await showPaywallWith(tester, const [
+        PremiumPlan(id: 'year', kind: PlanKind.yearly, price: r'$11.99'),
+      ]);
+
+      expect(find.textContaining('renews automatically'), findsOneWidget);
+      expect(find.textContaining('one-off purchase'), findsNothing);
+
+      await disposeTree(tester);
+    });
+
+    testWidgets('a mixed offering carries the renewal terms', (tester) async {
+      await showPaywallWith(tester, const [
+        PremiumPlan(id: 'year', kind: PlanKind.yearly, price: r'$11.99'),
+        PremiumPlan(id: 'life', kind: PlanKind.lifetime, price: r'$24.99'),
+      ]);
+
+      expect(find.textContaining('renews automatically'), findsOneWidget);
+
+      await disposeTree(tester);
+    });
+  });
+
 }
 
 /// Reads the cached entitlement straight from the database.

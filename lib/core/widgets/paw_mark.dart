@@ -163,7 +163,7 @@ class PawLogo extends StatelessWidget {
           PawMark(size: size),
         SizedBox(width: size * 0.3),
         Text(
-          'PawsLog',
+          'Paws Log',
           style: theme.textTheme.displaySmall?.copyWith(
             fontSize: size * 0.82,
             letterSpacing: -0.5,

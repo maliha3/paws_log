@@ -71,7 +71,7 @@ void main() {
       'the welcome screen',
       () => find.text('Get started').evaluate().isNotEmpty,
     );
-    expect(find.text('PawsLog'), findsOneWidget);
+    expect(find.text('Paws Log'), findsOneWidget);
 
     // 2 — Add the cat.
     await tapAndPump(tester, find.text('Get started'));

@@ -36,7 +36,10 @@ class _PawsLogAppState extends ConsumerState<PawsLogApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'PawsLog',
+    // Off even in debug: it covers the top-right corner of every
+    // screenshot, and screenshots are how this app gets reviewed and sold.
+    debugShowCheckedModeBanner: false,
+    title: 'Paws Log',
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
     home: const _Root(),

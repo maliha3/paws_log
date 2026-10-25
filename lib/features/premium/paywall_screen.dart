@@ -95,7 +95,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(bought ? 'PawsLog is unlocked.' : 'Purchases restored.'),
+          content: Text(bought ? 'Paws Log is unlocked.' : 'Purchases restored.'),
         ),
       );
       return;
@@ -213,8 +213,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   : const Text('Restore purchases'),
             ),
             const SizedBox(height: 8),
-            _LegalFooter(onOpen: _open),
-            if (kDebugMode) ...[
+            _LegalFooter(
+              onOpen: _open,
+              // Only describe renewal when something on screen renews.
+              renews: plans.hasValue &&
+                  plans.requireValue.any((plan) => plan.kind.renews),
+            ),
+            // Debug *and* no real store behind it. A build that can take
+            // money must never offer a button that skips paying, not even
+            // one a reviewer would have to go looking for.
+            if (kDebugMode && !PurchaseConfig.hasStoreKeys) ...[
               const SizedBox(height: 12),
               OutlinedButton(
                 // Debug only. Without it the paid half of the app would be
@@ -357,9 +365,12 @@ class _Unavailable extends StatelessWidget {
 }
 
 class _LegalFooter extends StatelessWidget {
-  const _LegalFooter({required this.onOpen});
+  const _LegalFooter({required this.onOpen, required this.renews});
 
   final Future<void> Function(String url) onOpen;
+
+  /// Whether anything on offer actually renews.
+  final bool renews;
 
   @override
   Widget build(BuildContext context) {
@@ -367,13 +378,23 @@ class _LegalFooter extends StatelessWidget {
     final style = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
+    // A build with store keys is a build that can take money, and Apple
+    // requires a policy link before it does. Shipping without one used to
+    // hide the link and say nothing.
+    final missingPolicy =
+        PurchaseConfig.hasStoreKeys && PurchaseConfig.privacyUrl.isEmpty;
 
     return Column(
       children: [
         Text(
-          'Payment is charged to your Apple Account. A subscription renews '
-          'automatically unless it is cancelled at least 24 hours before the '
-          'period ends. Manage or cancel it in your Apple Account settings.',
+          renews
+              ? 'Payment is charged to your Apple Account. A subscription '
+                    'renews automatically unless it is cancelled at least 24 '
+                    'hours before the period ends. Manage or cancel it in '
+                    'your Apple Account settings.'
+              : 'Payment is charged to your Apple Account. This is a '
+                    'one-off purchase, not a subscription \u2014 there is '
+                    'nothing to renew or cancel.',
           textAlign: TextAlign.center,
           style: style,
         ),
@@ -392,6 +413,16 @@ class _LegalFooter extends StatelessWidget {
               ),
           ],
         ),
+        if (missingPolicy) ...[
+          const SizedBox(height: 4),
+          Text(
+            'This build has store keys but no PRIVACY_URL. Apple requires '
+            'the policy link on the paywall \u2014 rebuild with '
+            '--dart-define=PRIVACY_URL=...',
+            textAlign: TextAlign.center,
+            style: style?.copyWith(color: theme.colorScheme.error),
+          ),
+        ],
       ],
     );
   }

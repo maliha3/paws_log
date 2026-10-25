@@ -40,8 +40,8 @@ class BackupSharing {
     final result = await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path, mimeType: 'application/zip')],
-        subject: 'PawsLog backup',
-        title: 'PawsLog backup',
+        subject: 'Paws Log backup',
+        title: 'Paws Log backup',
       ),
     );
     return result.status != ShareResultStatus.dismissed;
@@ -55,7 +55,7 @@ class BackupSharing {
   /// Returns null if the owner picked nothing.
   Future<BackupSummary?> pickAndImport() async {
     final picked = await FilePicker.pickFiles(
-      dialogTitle: 'Choose a PawsLog backup',
+      dialogTitle: 'Choose a Paws Log backup',
       type: FileType.custom,
       allowedExtensions: const ['zip'],
     );

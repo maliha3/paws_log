@@ -31,10 +31,10 @@ enum PremiumFeature {
 
   String get explanation => switch (this) {
     PremiumFeature.extraPets =>
-      'The free version keeps one cat. Unlock PawsLog once and it covers the '
+      'The free version keeps one cat. Unlock Paws Log once and it covers the '
           'whole household.',
     PremiumFeature.prescriptionScans =>
-      'The free version reads $freeScanLimit prescriptions. Unlock PawsLog '
+      'The free version reads $freeScanLimit prescriptions. Unlock Paws Log '
           'and it reads every one — the pages you have already scanned stay '
           'where they are.',
     PremiumFeature.vetSummary =>

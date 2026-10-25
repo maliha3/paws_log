@@ -47,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
                             ),
                         const SizedBox(height: 32),
                         Text(
-                              'PawsLog',
+                              'Paws Log',
                               style: theme.textTheme.displaySmall?.copyWith(
                                 letterSpacing: -0.5,
                               ),

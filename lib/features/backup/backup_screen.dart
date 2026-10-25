@@ -67,7 +67,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Restore from a backup?'),
         content: const Text(
-          'Everything currently in PawsLog will be replaced by what is in '
+          'Everything currently in Paws Log will be replaced by what is in '
           'the backup file. This cannot be undone.',
         ),
         actions: [
@@ -133,7 +133,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'PawsLog keeps everything on this device and nowhere else, so a '
+              'Paws Log keeps everything on this device and nowhere else, so a '
               'backup is the only way to move to a new phone.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

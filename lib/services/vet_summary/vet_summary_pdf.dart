@@ -26,7 +26,7 @@ class VetSummaryPdf {
 
   Future<Uint8List> build(VetSummary summary) async {
     final document = pw.Document(
-      title: 'PawsLog summary — ${summary.pet.name}',
+      title: 'Paws Log summary — ${summary.pet.name}',
     );
 
     document.addPage(
@@ -422,7 +422,7 @@ class VetSummaryPdf {
             child: pw.Text(
               // The same standing note the app carries: this is a record of
               // what the owner entered, not a clinical document.
-              'Recorded by the owner in PawsLog. '
+              'Recorded by the owner in Paws Log. '
               '${AppConstants.vetDisclaimer}',
               style: const pw.TextStyle(fontSize: 8, color: _muted),
             ),

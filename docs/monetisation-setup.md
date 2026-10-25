@@ -82,9 +82,29 @@ that as arbitrary, and is right to.
 
 ### Privacy and terms
 
-- **App Privacy** must be filled in, and the **Privacy Policy URL** is
-  required for any app that sells a subscription. You need a real URL; there
-  is no sensible default and the app does not ship one.
+- **Privacy Policy URL** is required for any app that sells anything.
+  `docs/privacy-policy.md` is written to match what the app actually does —
+  fill in the support email, then publish it. GitHub Pages costs nothing:
+  turn it on for this repo and the URL is
+  `https://<user>.github.io/<repo>/privacy-policy`. Pass the same URL to the
+  build as `--dart-define=PRIVACY_URL=...`, since the paywall links to it.
+
+- **App Privacy** (the nutrition label) has to be filled in by hand. What the
+  app does:
+
+  | Question | Answer |
+  |---|---|
+  | Data used to track you | **None.** No ads, no advertising identifier, no data shared with brokers |
+  | Data linked to you | **None.** There is no account, so nothing is linked to an identity |
+  | Data *not* linked to you | **Purchases → Purchase History**, for app functionality. That is RevenueCat validating a receipt |
+
+  Everything the owner enters — pets, photos, prescriptions, weights — never
+  leaves the device, so none of it is "collected" in Apple's sense and none
+  of it is declared. Photos and camera are *permissions*, not collection.
+
+  RevenueCat publishes its own App Privacy guidance for the exact boxes its
+  SDK requires; follow theirs over this table if the two disagree, because
+  it changes when their SDK does.
 - **Terms of Use (EULA).** Apple's standard EULA is the default in the app.
   If you use your own, set `TERMS_URL` at build time and also paste it into
   App Store Connect.

@@ -66,6 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- The app adds no encryption of its own. RevenueCat talks over
+	     standard HTTPS, which is exempt, so every upload can skip the
+	     export-compliance question instead of asking it again. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose a photo of your cat, or a prescription you have already photographed, to keep with their records.</string>
 	<key>NSCameraUsageDescription</key>
